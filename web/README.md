@@ -9,14 +9,14 @@ Everything runs in the browser. No file leaves this computer.
 
 ## What it does, in five steps
 
-1. **Load files.** Two boxes. Order exports: the working workbook as it is kept, the `.csv`
-   from Amazon Business, or each export as its own file; every sheet is scanned and the exports
-   are found by their columns. Last year's report, or the item master and prices files: the
-   report workbook carries all three tables on its own sheets, so on a returning year that one
-   file is enough. Both boxes read every file the same way. The year is read from the order
-   dates and can be corrected. Top N defaults to 25. After reading, two strips show what went
-   in (rows and date range per file, as they sit in the export) and what the tool kept (order
-   lines, the dates they cover, and how many items the master now knows).
+1. **Load files.** One box. Drop in the working workbook as it is kept, the `.csv` from Amazon
+   Business, or each export as its own file; on a returning year, add last year's report
+   workbook, or the item master and prices files. Every sheet of every file is scanned and
+   recognised by its columns, so it does not matter how many files go in the box or which of
+   these they are. The year is read from the order dates and can be corrected. Top N defaults
+   to 25. After reading, two strips show what went in (rows and date range per file, as they
+   sit in the export) and what the tool kept (order lines, the dates they cover, and how many
+   items the master now knows).
 2. **Review.** Every item the tool does not already know, blocking ones first, with a count
    per queue reason above the table. Set include, units per pack, unit, canonical name and a
    note. Suggestions sit read-only beside each cell with a **use** button.
@@ -116,6 +116,12 @@ layer and is not covered by them beyond a few pure helpers it exports.
 or `master` that touches `web/`, after the tests above pass. Asset paths are all relative, so
 the same folder also works under a subdirectory when the page eventually moves to the internal
 directory site.
+
+GitHub Pages caches every file for ten minutes, so a browser open across a deploy can end up
+mixing an old file with a new one. Before publishing, the workflow copies this folder into a
+build directory and stamps a version onto every script, stylesheet, module import and the AI
+prompt fetch, so a deploy is either fully old or fully new, never a mix. See
+`scripts/stamp_assets.py` at the repository root for how, and `../docs/webapp-spec.md` section 8.
 
 ## Privacy
 

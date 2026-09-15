@@ -66,7 +66,7 @@ const XLSX_MIME =
 /* ───────────────────────────── state ───────────────────────────── */
 
 const state = {
-  files: { exports: [], carry: [] },
+  files: [],
   // One entry per uploaded export file: {file, sheets:[{name, grid}]}. A .csv is one
   // unnamed sheet. pipeline.js decides which sheets are exports; the page never guesses.
   exportFiles: [],
@@ -709,10 +709,10 @@ function fact(label, value, sub) {
 
 function renderLoad() {
   const f = state.files;
-  // Either box is enough to try: both feed the same classifier, so a person who
-  // dropped everything on one of them gets the real answer from pipeline.js
-  // rather than a dead button with nothing to explain it.
-  const anyFile = f.exports.length + f.carry.length > 0;
+  // One box, one list, one classifier: whatever was dropped is enough to try,
+  // and pipeline.js gives the real answer rather than a dead button with
+  // nothing to explain it.
+  const anyFile = f.length > 0;
   $("#btn-read").disabled = !anyFile || state.busy || !modulesSettled;
   $("#load-state").textContent = !modulesSettled
     ? "Still loading, one moment."
@@ -720,24 +720,18 @@ function renderLoad() {
       ? `${plural(state.lines.length, "order line")} read`
       : (anyFile ? "Ready to read" : "Nothing loaded yet");
 
-  const ZONE_EMPTY = {
-    exports: "Drop the files here or choose them",
-    carry: "Optional. Drop the files here or choose them",
-  };
-  for (const kind of ["exports", "carry"]) {
-    const note = $(`#note-${kind}`);
-    const zone = document.querySelector(`.dropzone[data-for="file-${kind}"]`);
-    if (!note || !zone) continue;
-    const chosen = f[kind] || [];
-    if (chosen.length) {
-      note.textContent = chosen
+  const note = $("#note-files");
+  const zone = document.querySelector(`.dropzone[data-for="file-input"]`);
+  if (note && zone) {
+    if (f.length) {
+      note.textContent = f
         .map((file) => `${file.name} (${Math.round(file.size / 1024)} KB)`)
         .join(", ");
       zone.classList.add("is-loaded");
     } else {
-      // Put the prompt back when a zone is emptied, rather than leaving the
+      // Put the prompt back when the box is emptied, rather than leaving the
       // name of a file that is no longer loaded.
-      note.textContent = ZONE_EMPTY[kind];
+      note.textContent = "Drop the files here or choose them";
       zone.classList.remove("is-loaded");
     }
   }
@@ -1775,12 +1769,13 @@ async function onReadFiles() {
       return;
     }
     say("Reading the files");
-    // Both drop zones feed one list and one classifier, so a report workbook
-    // dropped on either is handled the same way and the page and the command
-    // line agree about every file. pipeline.js is the one place that decides
-    // what a sheet is; it throws with the reason when nothing is an export.
+    // One box feeds one list and one classifier, so a report workbook and an
+    // export dropped together are handled the same way and the page and the
+    // command line agree about every file. pipeline.js is the one place that
+    // decides what a sheet is; it throws with the reason when nothing is an
+    // export.
     state.exportFiles = [];
-    for (const file of [...state.files.exports, ...state.files.carry]) {
+    for (const file of state.files) {
       state.exportFiles.push(await readExportFile(file));
     }
     state.classified = pipe.classifyFiles(state.exportFiles);
@@ -1992,12 +1987,10 @@ function downloadRun() {
 }
 
 function resetAll() {
-  for (const kind of ["exports", "carry"]) {
-    const input = $(`#file-${kind}`);
-    if (input) input.value = "";
-  }
+  const input = $("#file-input");
+  if (input) input.value = "";
   Object.assign(state, {
-    files: { exports: [], carry: [] },
+    files: [],
     exportFiles: [], classified: null,
     uploadedPrices: null, uploadedRetired: [],
     master: null, lines: null, run: null, ingestWarnings: [],
@@ -2019,11 +2012,9 @@ function resetAll() {
 
 /* ───────────────────────────── wiring ───────────────────────────── */
 
-/** Both zones hold a list of files; either accepts a workbook or a .csv. */
+/** The one box holds a single list of files; each can be a workbook or a .csv. */
 function takeFiles(input, fileList) {
-  const files = Array.from(fileList || []);
-  if (input.multiple) state.files[input.dataset.kind] = files;
-  else state.files[input.dataset.kind] = files[0] || null;
+  state.files = Array.from(fileList || []);
 }
 
 function wireFileInputs() {

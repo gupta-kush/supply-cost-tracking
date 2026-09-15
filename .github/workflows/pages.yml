@@ -43,8 +43,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Stamp a cache-busting version onto every asset reference
+        # GitHub Pages caches each file (Cache-Control: max-age=600), and the page is a graph
+        # of ES modules loaded one file at a time, so a browser open across a deploy can load a
+        # mix of old and new files. Stamping ?v=<short sha> onto every script, stylesheet,
+        # module import and the AI prompt fetch makes a deploy fully old or fully new, never a
+        # mix. Never edits web/ itself - it copies it into build/web and stamps the copy.
+        # See docs/webapp-spec.md section 8 and scripts/stamp_assets.py.
+        run: python scripts/stamp_assets.py web build/web "${GITHUB_SHA::7}"
+      - name: Check the stamped JS still parses
+        run: |
+          for f in build/web/js/*.js; do
+            echo "node --check $f"
+            node --check "$f"
+          done
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web
+          path: build/web
       - id: deployment
         uses: actions/deploy-pages@v4
