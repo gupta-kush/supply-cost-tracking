@@ -1,0 +1,425 @@
+[
+  {
+    "input": "Avery Printable Name Tags, 400 Printable Name Tag Inserts, 3 x 4 Inches",
+    "output": [
+      [
+        400,
+        "400 Printable Name Tag Inserts"
+      ]
+    ]
+  },
+  {
+    "input": "Avery Name Badge Inserts, 400 Printable Name Tag Inserts, 3 x 4 in, White",
+    "output": [
+      [
+        400,
+        "400 Printable Name Tag Inserts"
+      ]
+    ]
+  },
+  {
+    "input": "Hammermill Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton",
+    "output": [
+      [
+        500,
+        "500 Sheets"
+      ],
+      [
+        10,
+        "10 Reams/Carton"
+      ]
+    ]
+  },
+  {
+    "input": "BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count",
+    "output": [
+      [
+        60,
+        "60-Count"
+      ]
+    ]
+  },
+  {
+    "input": "BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count",
+    "output": [
+      [
+        60,
+        "60-Count"
+      ]
+    ]
+  },
+  {
+    "input": "Post-it Notes, 3 x 3 Inches, Canary Yellow, 12 Pads",
+    "output": [
+      [
+        12,
+        "12 Pads"
+      ]
+    ]
+  },
+  {
+    "input": "Bubly Sparkling Water, Variety Pack, 18 Count",
+    "output": [
+      [
+        18,
+        "18 Count"
+      ]
+    ]
+  },
+  {
+    "input": "Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls",
+    "output": [
+      [
+        6,
+        "6 Rolls"
+      ]
+    ]
+  },
+  {
+    "input": "Sharpie Permanent Markers, Fine Point, Assorted, 12 Count",
+    "output": [
+      [
+        12,
+        "12 Count"
+      ]
+    ]
+  },
+  {
+    "input": "Kleenex Professional Facial Tissue, Display Pack of 6",
+    "output": [
+      [
+        6,
+        "Pack of 6"
+      ]
+    ]
+  },
+  {
+    "input": "Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)",
+    "output": [
+      [
+        1000,
+        "1000 Pack"
+      ]
+    ]
+  },
+  {
+    "input": "EXPO Low-Odor Dry Erase Markers, Chisel Tip, Assorted, 48/Pack",
+    "output": [
+      [
+        48,
+        "48/Pack"
+      ]
+    ]
+  },
+  {
+    "input": "Copy Paper 8.5 x 11 20lb White",
+    "output": []
+  },
+  {
+    "input": "Binder Clips Medium Black",
+    "output": []
+  },
+  {
+    "input": "Permanent Marker Fine Point Black",
+    "output": []
+  },
+  {
+    "input": "Copy Paper 8.5 x 11 20lb White",
+    "output": []
+  },
+  {
+    "input": "Letterhead Printed 2 Colour",
+    "output": []
+  },
+  {
+    "input": "Sturdy 2 Inch Ring Binders, Black",
+    "output": []
+  },
+  {
+    "input": "Heavy Duty 3 Ring Binder, Blue",
+    "output": []
+  },
+  {
+    "input": "Index Dividers, 5 Tab, Multicolour",
+    "output": []
+  },
+  {
+    "input": "Index Dividers, 26 Tab, A-Z",
+    "output": []
+  },
+  {
+    "input": "Presentation Binder, 1\" Capacity",
+    "output": []
+  },
+  {
+    "input": "Laminating Pouches, 5 mil, Letter Size",
+    "output": []
+  },
+  {
+    "input": "Paper Towels, 2 Ply, White",
+    "output": []
+  },
+  {
+    "input": "Copier Paper, 20 lb, Bright White",
+    "output": []
+  },
+  {
+    "input": "Filing Envelopes 9 x 12, Kraft",
+    "output": []
+  },
+  {
+    "input": "Poster Board 22 x 28, Assorted",
+    "output": []
+  },
+  {
+    "input": "Ink Cartridge PFI1000 Matte Black",
+    "output": []
+  },
+  {
+    "input": "Copy Paper (38111), White",
+    "output": []
+  },
+  {
+    "input": "Pack of 6 Highlighters",
+    "output": [
+      [
+        6,
+        "Pack of 6"
+      ]
+    ]
+  },
+  {
+    "input": "Pack of 24 Markers",
+    "output": [
+      [
+        24,
+        "Pack of 24"
+      ]
+    ]
+  },
+  {
+    "input": "12-Count Pencils",
+    "output": [
+      [
+        12,
+        "12-Count"
+      ]
+    ]
+  },
+  {
+    "input": "500-Count Sticky Notes",
+    "output": [
+      [
+        500,
+        "500-Count"
+      ]
+    ]
+  },
+  {
+    "input": "48/Pack Dry Erase Markers",
+    "output": [
+      [
+        48,
+        "48/Pack"
+      ]
+    ]
+  },
+  {
+    "input": "6/Pack Correction Tape",
+    "output": [
+      [
+        6,
+        "6/Pack"
+      ]
+    ]
+  },
+  {
+    "input": "Case of 10 Packs Legal Pads",
+    "output": [
+      [
+        10,
+        "Case of 10"
+      ]
+    ]
+  },
+  {
+    "input": "Case of 4 Packs Paper Towels",
+    "output": [
+      [
+        4,
+        "Case of 4"
+      ]
+    ]
+  },
+  {
+    "input": "Toner 3.5 Pack",
+    "output": []
+  },
+  {
+    "input": "Legal Pads, 8.5 x 14, 50 Sheets",
+    "output": [
+      [
+        50,
+        "50 Sheets"
+      ]
+    ]
+  },
+  {
+    "input": "3 x 5 Index Cards, 100 Count",
+    "output": [
+      [
+        100,
+        "100 Count"
+      ]
+    ]
+  },
+  {
+    "input": "100 Pack",
+    "output": [
+      [
+        100,
+        "100 Pack"
+      ]
+    ]
+  },
+  {
+    "input": "1000-Pack",
+    "output": [
+      [
+        1000,
+        "1000-Pack"
+      ]
+    ]
+  },
+  {
+    "input": "Binder Clips, Box of 50",
+    "output": [
+      [
+        50,
+        "Box of 50"
+      ]
+    ]
+  },
+  {
+    "input": "Sticky Notes, Bundle of 12",
+    "output": [
+      [
+        12,
+        "Bundle of 12"
+      ]
+    ]
+  },
+  {
+    "input": "Tape Dispenser, Set of 3",
+    "output": [
+      [
+        3,
+        "Set of 3"
+      ]
+    ]
+  },
+  {
+    "input": "Paper, 10 Reams per Carton",
+    "output": [
+      [
+        10,
+        "10 Reams per Carton"
+      ]
+    ]
+  },
+  {
+    "input": "Report Covers, 25 Sheets per Box",
+    "output": [
+      [
+        25,
+        "25 Sheets"
+      ]
+    ]
+  },
+  {
+    "input": "Envelopes, 100/Box",
+    "output": [
+      [
+        100,
+        "100/Box"
+      ]
+    ]
+  },
+  {
+    "input": "Two Dozen Pencils",
+    "output": []
+  },
+  {
+    "input": "12 Dozen Pencils",
+    "output": []
+  },
+  {
+    "input": "9 x 12 Envelopes, Pack of 250",
+    "output": [
+      [
+        250,
+        "Pack of 250"
+      ]
+    ]
+  },
+  {
+    "input": "Notebook, 100 Pages",
+    "output": []
+  },
+  {
+    "input": "5 Star Rated Stapler",
+    "output": []
+  },
+  {
+    "input": "Binder 3-Ring 2 Inch White",
+    "output": []
+  },
+  {
+    "input": "12/Pack, Case of 10 Packs",
+    "output": [
+      [
+        12,
+        "12/Pack"
+      ],
+      [
+        10,
+        "Case of 10"
+      ]
+    ]
+  },
+  {
+    "input": "1000 Sheets/Ream, 5 Reams/Carton",
+    "output": [
+      [
+        1000,
+        "1000 Sheets"
+      ],
+      [
+        5,
+        "5 Reams/Carton"
+      ]
+    ]
+  },
+  {
+    "input": "Highlighters, 6ct, Assorted Colors",
+    "output": [
+      [
+        6,
+        "6ct"
+      ]
+    ]
+  },
+  {
+    "input": "Sticky Flags, 4 Pads of 50 Sheets",
+    "output": [
+      [
+        4,
+        "4 Pads"
+      ],
+      [
+        50,
+        "50 Sheets"
+      ]
+    ]
+  }
+]

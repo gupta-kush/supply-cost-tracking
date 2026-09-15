@@ -1,0 +1,481 @@
+/* Page-specific rules only.
+ *
+ * Everything else comes from vendor/main.css, which is the firm Style Guide's own compiled
+ * Bootstrap build (house palette, Work Sans, Bootstrap Icons). No hex value below is new:
+ * the page background and the shadow tint are the two fixed house values the guide names
+ * outside the Bootstrap tokens, and every colour beyond them is a Bootstrap CSS variable.
+ * Every custom surface here is styled for both themes, because the guide allows no
+ * light-only surfaces.
+ */
+
+:root {
+  --app-page-bg: #F1F6F8;                       /* house page background, light */
+  --app-shadow: 0 8px 24px rgba(41, 48, 61, 0.16);   /* house shadow tint, resting */
+  --app-shadow-lifted: 0 16px 40px rgba(41, 48, 61, 0.20);
+}
+
+[data-bs-theme="dark"] {
+  --app-page-bg: #111112;                       /* house page background, dark */
+}
+
+html, body {
+  background-color: var(--app-page-bg);
+}
+
+body {
+  /* Work Sans when the machine has it; main.css's webfont import was removed so the page
+     makes no network calls. The rest of the stack is what Bootstrap itself falls back to. */
+  font-family: "Work Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+.app-mark {
+  opacity: 0.9;
+}
+
+/* Small caption / label pattern from the Style Guide. */
+.caption {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+/* Sentence-case helper text that should not be shouted. */
+.caption.caption-plain {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* A short working note under a step title, or beside a control. Sentence case, body colour
+   at a smaller size, so it reads as instruction rather than as chrome. */
+.step-note {
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
+  max-width: 62rem;
+  margin-bottom: 0.9rem;
+}
+
+/* ─────────────────────────── summary strips ─────────────────────────── */
+
+/* The before-and-after line for a step: a row of small fact chips. */
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.summary-strip:empty {
+  display: none;
+}
+
+/* One fact: a quiet uppercase label with the number under it. Same shape as .coverage-chip
+   so the price coverage row and these read as one family. */
+.fact {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-body-bg);
+  padding: 0.35rem 0.7rem;
+  line-height: 1.25;
+}
+
+.fact .fact-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--bs-secondary-color);
+}
+
+.fact .fact-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fact .fact-sub {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--bs-secondary-color);
+}
+
+/* A fact that is a group header for the chips beside it, for example one file. */
+.fact.fact-wide {
+  min-width: 14rem;
+}
+
+/* What an action changed, or what moved in or out of the top N. Neutral surface, not an
+   alert: nothing here is wrong, it is a record of what just happened. */
+.change-note {
+  border: 1px solid var(--bs-border-color);
+  border-left: 3px solid var(--bs-primary);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-tertiary-bg);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.change-note ul {
+  margin-bottom: 0;
+  padding-left: 1.1rem;
+}
+
+.change-note .caption {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+/* The file list on the download step: name, what is in it, how big it is. */
+.file-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.file-list .file-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.6rem;
+  align-items: baseline;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  font-size: 0.85rem;
+}
+
+.file-list .file-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.file-list .file-name {
+  font-weight: 600;
+  font-family: var(--bs-font-monospace);
+  font-size: 0.8rem;
+}
+
+.file-list .file-what {
+  color: var(--bs-secondary-color);
+}
+
+.file-list .file-row.is-held .file-name {
+  text-decoration: line-through;
+}
+
+/* ─────────────────────────── cards ─────────────────────────── */
+
+.app-card {
+  box-shadow: var(--app-shadow);
+  border-color: var(--bs-border-color);
+}
+
+.app-card > .card-header {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.app-card.is-locked > .card-body {
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* A locked step still shows its warnings, and they stay clickable: the findings are how
+   somebody works out what to go back and fix. */
+.app-card.is-locked .always-on {
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+/* ─────────────────────────── step header ─────────────────────────── */
+
+.steps {
+  margin-bottom: 0;
+}
+
+.step {
+  border: 1px solid var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+  color: var(--bs-secondary-color);
+  border-radius: 2rem;
+  padding: 0.25rem 0.9rem 0.25rem 0.35rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.step:hover:not(:disabled) {
+  border-color: var(--bs-primary);
+  color: var(--bs-body-color);
+}
+
+.step:disabled {
+  opacity: 0.55;
+}
+
+.step .step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.step[aria-current="step"] {
+  border-color: var(--bs-primary);
+  color: var(--bs-body-color);
+  font-weight: 600;
+}
+
+.step[aria-current="step"] .step-n,
+.step.is-done .step-n {
+  background-color: var(--bs-primary);
+  color: #fff;
+}
+
+.step.is-done {
+  color: var(--bs-body-color);
+}
+
+/* The numbered badge inside a card header, same shape, quieter. */
+.card-header .step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background-color: var(--bs-secondary-bg);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* ─────────────────────────── drop zones ─────────────────────────── */
+
+.dropzone {
+  border: 1px dashed var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  padding: 0.85rem;
+  height: 100%;
+  background-color: var(--bs-body-bg);
+  transition: border-color 0.12s ease-in-out, background-color 0.12s ease-in-out;
+}
+
+.dropzone.is-over {
+  border-color: var(--bs-primary);
+  border-style: solid;
+  background-color: var(--bs-tertiary-bg);
+  box-shadow: var(--app-shadow-lifted);
+}
+
+.dropzone.is-loaded {
+  border-style: solid;
+  border-color: var(--bs-success);
+}
+
+.dropzone .form-label {
+  margin-bottom: 0.1rem;
+}
+
+/* ─────────────────────────── tables ─────────────────────────── */
+
+.table-wrap {
+  max-height: 32rem;
+  overflow: auto;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+}
+
+.app-table {
+  font-size: 0.85rem;                 /* the guide's compact-grid size */
+  margin-bottom: 0;
+}
+
+.app-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--bs-tertiary-bg);
+  border-bottom: 2px solid var(--bs-border-color);
+  white-space: nowrap;
+}
+
+.app-table th.num,
+.app-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.app-table th.sortable:hover {
+  color: var(--bs-primary);
+}
+
+.app-table tbody tr.is-blocking > td:first-child {
+  box-shadow: inset 3px 0 0 var(--bs-danger);
+}
+
+.app-table tbody tr.is-top {
+  background-color: var(--bs-tertiary-bg);
+  font-weight: 600;
+}
+
+.app-table tbody tr.is-hit > td {
+  background-color: rgba(181, 225, 234, 0.45);   /* $info #B5E1EA, as a wash */
+}
+
+[data-bs-theme="dark"] .app-table tbody tr.is-hit > td {
+  background-color: rgba(181, 225, 234, 0.16);
+}
+
+.group-row th {
+  position: sticky;
+  top: 2.2rem;
+  z-index: 1;
+  background-color: var(--bs-secondary-bg);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.app-table td .form-control,
+.app-table td .form-select {
+  font-size: 0.85rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.cell-suggestion {
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+}
+
+.w-name { min-width: 15rem; }
+.w-title { min-width: 18rem; max-width: 28rem; }
+.w-upp { width: 6rem; }
+.w-unit { width: 6rem; }
+.w-inc { width: 5rem; }
+.w-note { min-width: 10rem; }
+
+/* The review table is wider than any screen, so the two columns a person works from stay
+   put while the middle scrolls: the item on the left, the Confirm buttons on the right.
+   Only thead and tbody cells are pinned - the grouping rows keep their full width. */
+
+#review-table thead th:first-child,
+#review-table tbody td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  width: 3rem;
+  min-width: 3rem;
+  background-color: var(--bs-body-bg);
+}
+
+#review-table thead th:nth-child(2),
+#review-table tbody td:nth-child(2) {
+  position: sticky;
+  left: 3rem;
+  z-index: 3;
+  background-color: var(--bs-body-bg);
+  box-shadow: inset -1px 0 0 var(--bs-border-color);
+}
+
+#review-table thead th:last-child,
+#review-table tbody td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  background-color: var(--bs-body-bg);
+  box-shadow: inset 1px 0 0 var(--bs-border-color);
+}
+
+/* The header's own pinned cells sit above the pinned body cells they scroll over. */
+#review-table thead th:first-child,
+#review-table thead th:nth-child(2),
+#review-table thead th:last-child {
+  z-index: 5;
+  background-color: var(--bs-tertiary-bg);
+}
+
+/* ─────────────────────────── prices ─────────────────────────── */
+
+.price-table td.vendor-cell {
+  min-width: 11rem;
+}
+
+.price-table .price-input {
+  max-width: 7rem;
+}
+
+.price-table .helper {
+  font-size: 0.7rem;
+  color: var(--bs-secondary-color);
+}
+
+.badge-new {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid var(--bs-warning);
+  border-radius: 2rem;
+  padding: 0 0.4rem;
+  color: var(--bs-warning-text-emphasis);
+  background-color: var(--bs-warning-bg-subtle);
+  white-space: nowrap;
+}
+
+.coverage-chip {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 2rem;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.8rem;
+  background-color: var(--bs-body-bg);
+}
+
+/* ─────────────────────────── findings ─────────────────────────── */
+
+.finding {
+  display: flex;
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.finding:last-child {
+  border-bottom: 0;
+}
+
+.finding .badge {
+  flex: 0 0 auto;
+  min-width: 3.4rem;
+}
+
+.finding code {
+  font-size: 0.75rem;
+}
+
+/* ─────────────────────────── a11y ─────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+[data-bs-theme="dark"] :focus-visible {
+  outline-color: var(--bs-info);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropzone { transition: none; }
+}

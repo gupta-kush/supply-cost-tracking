@@ -1,0 +1,86 @@
+[
+  {
+    "input": "CT10",
+    "output": 10
+  },
+  {
+    "input": "BX100",
+    "output": 100
+  },
+  {
+    "input": "CS1",
+    "output": 1
+  },
+  {
+    "input": "Each",
+    "output": 1
+  },
+  {
+    "input": "EA",
+    "output": 1
+  },
+  {
+    "input": "ea.",
+    "output": 1
+  },
+  {
+    "input": "1",
+    "output": 1
+  },
+  {
+    "input": "CT2500",
+    "output": 2500
+  },
+  {
+    "input": "pk12",
+    "output": 12
+  },
+  {
+    "input": "",
+    "output": null
+  },
+  {
+    "input": "   ",
+    "output": null
+  },
+  {
+    "input": "ASSORTED",
+    "output": null
+  },
+  {
+    "input": "BX-",
+    "output": null
+  },
+  {
+    "input": null,
+    "output": null
+  },
+  {
+    "input": "CT0",
+    "output": null
+  },
+  {
+    "input": "0",
+    "output": null
+  },
+  {
+    "input": "cs1",
+    "output": 1
+  },
+  {
+    "input": "XYZ1234567",
+    "output": null
+  },
+  {
+    "input": "each ",
+    "output": 1
+  },
+  {
+    "input": " Each",
+    "output": 1
+  },
+  {
+    "input": "PK5",
+    "output": 5
+  }
+]

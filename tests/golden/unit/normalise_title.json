@@ -1,0 +1,130 @@
+[
+  {
+    "input": "  BIC  Round   Stic  ",
+    "output": "bic round stic"
+  },
+  {
+    "input": "3/4 x 1000 (Bulk) - 8.5",
+    "output": "3/4 x 1000 (bulk) - 8.5"
+  },
+  {
+    "input": "Sharpie®, Fine Point; #2",
+    "output": "sharpie fine point 2"
+  },
+  {
+    "input": "Café Notebook",
+    "output": "caf notebook"
+  },
+  {
+    "input": "",
+    "output": ""
+  },
+  {
+    "input": null,
+    "output": ""
+  },
+  {
+    "input": "ALL CAPS TITLE",
+    "output": "all caps title"
+  },
+  {
+    "input": "already lowercase title",
+    "output": "already lowercase title"
+  },
+  {
+    "input": "Tabs\tand\nnewlines\tcollapse",
+    "output": "tabs and newlines collapse"
+  },
+  {
+    "input": "Product™ Name©",
+    "output": "producttm name"
+  },
+  {
+    "input": "Product #123 (Model-X)",
+    "output": "product 123 (model-x)"
+  },
+  {
+    "input": "50% Off Sale!!!",
+    "output": "50 off sale"
+  },
+  {
+    "input": "Multi   Space    Title",
+    "output": "multi space title"
+  },
+  {
+    "input": "Ünïcödé Áccénts",
+    "output": "n c d cc nts"
+  },
+  {
+    "input": "Ｆｕｌｌｗｉｄｔｈ",
+    "output": "fullwidth"
+  },
+  {
+    "input": "ﬁle folder ﬂap",
+    "output": "file folder flap"
+  },
+  {
+    "input": "América Brand",
+    "output": "am rica brand"
+  },
+  {
+    "input": "Product—Name Dash",
+    "output": "product name dash"
+  },
+  {
+    "input": "Kirkland’s “Best” Paper",
+    "output": "kirkland s best paper"
+  },
+  {
+    "input": "8.5 x 11 Paper",
+    "output": "8.5 x 11 paper"
+  },
+  {
+    "input": "N/A Widget",
+    "output": "n/a widget"
+  },
+  {
+    "input": "Item#42: Deluxe (Pro), v2.0!",
+    "output": "item 42 deluxe (pro) v2.0"
+  },
+  {
+    "input": "paper clips",
+    "output": "paper clips"
+  },
+  {
+    "input": "!!!@@@###",
+    "output": ""
+  },
+  {
+    "input": "   ",
+    "output": ""
+  },
+  {
+    "input": ".Test.",
+    "output": ".test."
+  },
+  {
+    "input": "Price: €5.00 Each",
+    "output": "price 5.00 each"
+  },
+  {
+    "input": "((Test))",
+    "output": "((test))"
+  },
+  {
+    "input": "Foo Bar",
+    "output": "foo bar"
+  },
+  {
+    "input": "咖啡 Notebook",
+    "output": "notebook"
+  },
+  {
+    "input": "CO₂ Absorber",
+    "output": "co2 absorber"
+  },
+  {
+    "input": "１２３ Widget",
+    "output": "123 widget"
+  }
+]

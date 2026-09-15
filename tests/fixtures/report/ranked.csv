@@ -1,0 +1,31 @@
+rank,canonical_name,eaches,packs,units_per_pack,unit_label,keys,sources,last_paid_per_each,upp_source
+1,Copy Paper 8.5x11 White,9600,20,480,RM,amz:SYN001,amazon,4.85,master
+2,Ballpoint Pens Black Medium,4800,40,120,EA,amz:SYN002,amazon,0.18,master
+3,Sticky Notes 3x3 Yellow,3600,30,120,EA,pbs:SYN003,preferred,,title
+4,Binder Clips Medium,3200,16,200,EA,amz:SYN004,amazon,0.06,master
+5,File Folders Letter Manila,2880,24,120,EA,amz:SYN005,amazon,0.21,master
+6,Manila Envelopes Number 10,2500,25,100,EA,pbs:SYN006,preferred,,master
+7,Highlighters Assorted Colors,2400,40,60,EA,amz:SYN007,amazon,0.42,master
+8,Dry Erase Markers Black,2160,36,60,EA,amz:SYN008,amazon,0.55,2025-workbook
+9,Standard Staples Box,2000,20,100,EA,pbs:SYN009,preferred,,master
+10,Paper Clips Jumbo,1980,18,110,EA,amz:SYN010,amazon,0.03,master
+11,Rubber Bands Assorted Size,1800,12,150,EA,amz:SYN011,amazon,0.02,title
+12,Legal Pads Yellow Letter,1650,30,55,EA,pbs:SYN012,preferred,,master
+13,Correction Tape Roller,1500,30,50,EA,amz:SYN013,amazon,1.60,master
+14,Packing Tape 2in Clear,1440,24,60,EA,amz:SYN014,amazon,2.40,master
+15,Index Cards 3x5 Ruled,1400,20,70,EA,pbs:SYN015,preferred,,master
+16,Hanging File Folders Letter,1350,27,50,EA,amz:SYN016,amazon,0.65,title
+17,Expanding File Wallets,1200,24,50,EA,amz:SYN017,amazon,1.35,master
+18,Printer Toner Black Compatible,1100,22,50,EA,pbs:SYN018,preferred,,master
+19,Colored Copy Paper Assorted,1080,18,60,RM,amz:SYN019,amazon,6.10,2025-workbook
+20,Spiral Notebooks Wide Ruled,1000,25,40,EA,amz:SYN020,amazon,1.05,master
+21,Whiteboard Cleaning Spray,960,24,40,EA,pbs:SYN021,preferred,,master
+22,Batteries AA 4-Pack,900,15,60,EA,amz:SYN022,amazon,3.10,master
+23,Hand Sanitizer 8oz Pump,864,18,48,EA,amz:SYN023,amazon,2.55,master
+24,Facial Tissue Box 160ct,825,15,55,EA,pbs:SYN024,preferred,,master
+25,Trash Can Liners 33 Gallon,800,16,50,EA,amz:SYN025,amazon,0.19,master
+26,Disinfecting Wipes Canister,750,25,30,EA,amz:SYN026,amazon,3.95,title
+27,Gel Pens Blue Fine Point,720,24,30,EA,pbs:SYN027,preferred,,master
+28,Mailing Labels 2x4 Sheet,700,14,50,EA,amz:SYN028,amazon,0.07,master
+29,Sheet Protectors Clear Heavyweight,675,15,45,EA,amz:SYN029,amazon,0.14,master
+30,Binder 3-Ring 2 Inch White,620,20,31,EA,pbs:SYN030,preferred,,2025-workbook

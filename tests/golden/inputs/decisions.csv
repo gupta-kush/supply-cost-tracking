@@ -1,0 +1,16 @@
+key,source,raw_title,amazon_category,include,units_per_pack,canonical_name,unit_label,note
+pbs:SAN30001,preferred,Permanent Marker Fine Point Black,,y,1,Permanent Marker Fine Point Black,EA,
+amz:bic round stic ballpoint pens medium point black 60-count,amazon,"BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count",Office Product,y,60,BIC Ballpoint Pens Black Medium,EA,
+amz:bubly sparkling water variety pack 18 count,amazon,"Bubly Sparkling Water, Variety Pack, 18 Count",Grocery,n,,Bubly Sparkling Water,EA,excluded: Grocery item is not an office supply
+amz:post-it notes 3 x 3 inches canary yellow 12 pads,amazon,"Post-it Notes, 3 x 3 Inches, Canary Yellow, 12 Pads",Office Product,y,12,Post-it Notes 3x3 Yellow,EA,
+pbs:PBS9001,preferred,Letterhead Printed 2 Colour,,y,1,Letterhead Printed 2 Colour,EA,
+pbs:UNV35668,preferred,Binder Clips Medium Black,,y,100,Binder Clips Medium Black,EA,
+pbs:UNV21200,preferred,Copy Paper 8.5 x 11 20lb White,,y,10,Preferred Copy Paper 8.5x11 White,EA,
+amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton,amazon,"Hammermill Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton",Office Product,y,10,Hammermill Copy Paper 8.5x11,RM,purchase unit is the carton: 10 reams per carton
+amz:kleenex professional facial tissue display pack of 6,amazon,"Kleenex Professional Facial Tissue, Display Pack of 6","Business, Industrial, & Scientific Supplies Basic",y,6,Kleenex Professional Facial Tissue,EA,
+amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches,amazon,"Avery Printable Name Tags, 400 Printable Name Tag Inserts, 3 x 4 Inches",Office Product,y,400,Avery Name Tag Inserts,EA,
+amz:expo low-odor dry erase markers chisel tip assorted 48/pack,amazon,"EXPO Low-Odor Dry Erase Markers, Chisel Tip, Assorted, 48/Pack",Office Product,y,48,EXPO Dry Erase Markers Assorted,EA,
+amz:sharpie permanent markers fine point assorted 12 count,amazon,"Sharpie Permanent Markers, Fine Point, Assorted, 12 Count",Office Product,y,24,Sharpie Permanent Markers Assorted,EA,title says 12 Count; box actually holds two dozen; confirmed against invoice
+amz:avery name badge inserts 400 printable name tag inserts 3 x 4 in white,amazon,"Avery Name Badge Inserts, 400 Printable Name Tag Inserts, 3 x 4 in, White",Office Product,y,200,Avery Name Tag Inserts,EA,listing states 400 but this SKU ships a half case (200); merged with the other Name Tag listing
+amz:cable zip ties 8 inch black (bulk 1000 pack),amazon,"Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)",Tools & Home Improvement,n,,Cable Zip Ties,EA,excluded by the office manager in 2025
+amz:scotch magic tape 3/4 x 1000 inches 6 rolls,amazon,"Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls",Office Product,y,6,Scotch Magic Tape 3/4in,EA,

@@ -1,0 +1,31 @@
+{
+  "amazon_file": "amazon_2025_sample.xlsx",
+  "amazon_rows": 12,
+  "date_max": "2025-11-06",
+  "date_min": "2024-12-28",
+  "dates_out_of_year": [
+    {
+      "order_date": "2024-12-28",
+      "order_id": "111-0000009-0000009",
+      "source": "amazon",
+      "title": "Sharpie Permanent Markers, Fine Point, Assorted, 12 Count"
+    }
+  ],
+  "ingested_at": "<TIMESTAMP>",
+  "non_closed": [
+    {
+      "order_id": "111-0000008-0000008",
+      "source": "amazon",
+      "status": "Cancelled",
+      "title": "Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls"
+    }
+  ],
+  "preferred_file": "preferred_2025_sample.xlsx",
+  "preferred_rows": 5,
+  "rows_written": 17,
+  "warnings": [
+    "amazon_2025_sample.xlsx: 1 line(s) are dated outside 2025: 111-0000009-0000009 on 2024-12-28",
+    "amazon_2025_sample.xlsx: 1 line(s) have a status other than Closed: 111-0000008-0000008 is Cancelled"
+  ],
+  "year": 2025
+}

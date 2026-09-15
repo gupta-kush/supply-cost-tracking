@@ -1,0 +1,302 @@
+[
+  {
+    "input": {
+      "amazon_category": "Business, Industrial, & Scientific Supplies Basic",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "y",
+      "reason": "category Business, Industrial, & Scientific Supplies Basic is an office-supply category"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Business, Industrial, & Scientific Supplies Basic",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Office Product",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "y",
+      "reason": "category Office Product is an office-supply category"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Office Product",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Apparel",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category Apparel is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Apparel",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Baby Product",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category Baby Product is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Baby Product",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Grocery",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category Grocery is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Grocery",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Home",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category Home is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Home",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Kitchen",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category Kitchen is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Kitchen",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Pet Supplies",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category Pet Supplies is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Pet Supplies",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Sports",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category Sports is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Sports",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Toys",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category Toys is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Toys",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Tools & Home Improvement",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "",
+      "reason": "category Tools & Home Improvement needs a decision"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "Tools & Home Improvement",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "",
+      "reason": "no Amazon category on this line, needs a decision"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "  Office Product  ",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "y",
+      "reason": "category Office Product is an office-supply category"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "  Office Product  ",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "GROCERY",
+      "source": "amazon"
+    },
+    "output": {
+      "include": "n",
+      "reason": "category GROCERY is not an office supply"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": "GROCERY",
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": null,
+      "source": "amazon"
+    },
+    "output": {
+      "include": "",
+      "reason": "no Amazon category on this line, needs a decision"
+    }
+  },
+  {
+    "input": {
+      "amazon_category": null,
+      "source": "preferred"
+    },
+    "output": {
+      "include": "y",
+      "reason": "Preferred is an office-supply vendor"
+    }
+  }
+]

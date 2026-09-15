@@ -1,0 +1,32 @@
+[
+  {
+    "code": "DATE_OUT_OF_YEAR",
+    "level": "warn",
+    "message": "1 line(s) are dated outside 2025: Sharpie Permanent Markers, Fine Point, Assorted, 1 on 2024-12-28. They are still counted; re-export with the right date range if that is wrong."
+  },
+  {
+    "code": "STATUS_NOT_CLOSED",
+    "level": "warn",
+    "message": "1 line(s) have an order status other than Closed: 111-0000008-0000008 is Cancelled. A cancelled or returned order still counts here."
+  },
+  {
+    "code": "UPP_TITLE_MISMATCH",
+    "level": "warn",
+    "message": "2 item(s) have a pack size that disagrees with the title: Avery Name Tag Inserts: master says 200, the title says 400 (400 Printable Name Tag Inserts); Sharpie Permanent Markers Assorted: master says 24, the title says 12 (12 Count). Check which is right - this changes the ranking."
+  },
+  {
+    "code": "PRICES_UNPRICED",
+    "level": "warn",
+    "message": "1 item/vendor pair(s) still need a price: Preferred Copy Paper 8.5x11 White / Amazon"
+  },
+  {
+    "code": "VENDOR_COVERAGE",
+    "level": "warn",
+    "message": "Amazon has 11 priced item(s), fewer than the best-covered vendor (12)."
+  },
+  {
+    "code": "VENDOR_COVERAGE",
+    "level": "warn",
+    "message": "Staples has 9 priced item(s), fewer than the best-covered vendor (12)."
+  }
+]

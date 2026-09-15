@@ -1,0 +1,49 @@
+rank,canonical_name,vendor,unit_price,status,url,checked_on,note
+1,Avery Name Tag Inserts,Office Depot,3.10,priced,https://example.com/avery-od,2026-04-01,
+1,Avery Name Tag Inserts,Preferred,2.95,priced,https://example.com/avery-pref,2026-04-01,
+1,Avery Name Tag Inserts,Amazon,3.05,priced,https://example.com/avery-amz,2026-04-01,last paid per each: 0.1105
+1,Avery Name Tag Inserts,Staples,3.20,priced,https://example.com/avery-stpl,2026-04-01,
+2,BIC Ballpoint Pens Black Medium,Office Depot,0.22,priced,https://example.com/bic-od,2026-04-01,
+2,BIC Ballpoint Pens Black Medium,Preferred,0.19,priced,https://example.com/bic-pref,2026-04-01,
+2,BIC Ballpoint Pens Black Medium,Amazon,0.20,priced,https://example.com/bic-amz,2026-04-01,last paid per each: 0.0997
+2,BIC Ballpoint Pens Black Medium,Staples,,not_available,,2026-04-01,discontinued line at Staples
+3,Binder Clips Medium Black,Office Depot,1.05,priced,https://example.com/binder-od,2026-04-01,
+3,Binder Clips Medium Black,Preferred,0.95,priced,https://example.com/binder-pref,2026-04-01,
+3,Binder Clips Medium Black,Amazon,1.00,priced,https://example.com/binder-amz,2026-04-01,
+3,Binder Clips Medium Black,Staples,1.10,priced,https://example.com/binder-stpl,2026-04-01,
+4,EXPO Dry Erase Markers Assorted,Office Depot,$9.50,priced,https://example.com/expo-od,2026-04-01,
+4,EXPO Dry Erase Markers Assorted,Preferred,8.60,priced,https://example.com/expo-pref,2026-04-01,
+4,EXPO Dry Erase Markers Assorted,Amazon,8.90,priced,https://example.com/expo-amz,2026-04-01,last paid per each: 0.8331
+4,EXPO Dry Erase Markers Assorted,Staples,9.75,priced,https://example.com/expo-stpl,2026-04-01,
+5,Post-it Notes 3x3 Yellow,Office Depot,4.75,priced,https://example.com/postit-od,2026-04-01,
+5,Post-it Notes 3x3 Yellow,Preferred,4.30,priced,https://example.com/postit-pref,2026-04-01,
+5,Post-it Notes 3x3 Yellow,Amazon,4.45,priced,https://example.com/postit-amz,2026-04-01,last paid per each: 1.2292
+5,Post-it Notes 3x3 Yellow,Staples,,discontinued,,2026-04-02,
+6,Sharpie Permanent Markers Assorted,Office Depot,0.65,priced,https://example.com/sharpie-od,2026-04-01,
+6,Sharpie Permanent Markers Assorted,Preferred,0.58,priced,https://example.com/sharpie-pref,2026-04-01,
+6,Sharpie Permanent Markers Assorted,Amazon,0.60,priced,https://example.com/sharpie-amz,2026-04-01,last paid per each: 0.4717
+6,Sharpie Permanent Markers Assorted,Staples,0.68,priced,https://example.com/sharpie-stpl,2026-04-01,
+7,Hammermill Copy Paper 8.5x11,Office Depot,44.25,priced,https://example.com/hammermill-od,2026-04-01,
+7,Hammermill Copy Paper 8.5x11,Preferred,39.99,priced,https://example.com/hammermill-pref,2026-04-01,
+7,Hammermill Copy Paper 8.5x11,Amazon,41.10,priced,https://example.com/hammermill-amz,2026-04-01,last paid per each: 5.499
+7,Hammermill Copy Paper 8.5x11,Staples,46.00,priced,https://example.com/hammermill-stpl,2026-04-01,
+8,Preferred Copy Paper 8.5x11 White,Office Depot,4.30,priced,https://example.com/prefpaper-od,2026-04-01,
+8,Preferred Copy Paper 8.5x11 White,Preferred,3.95,priced,https://example.com/prefpaper-pref,2026-04-01,
+8,Preferred Copy Paper 8.5x11 White,Amazon,,unpriced,,,
+8,Preferred Copy Paper 8.5x11 White,Staples,4.55,priced,https://example.com/prefpaper-stpl,2026-04-01,
+9,Kleenex Professional Facial Tissue,Office Depot,12.49,priced,https://example.com/kleenex-od,2026-04-01,
+9,Kleenex Professional Facial Tissue,Preferred,11.20,priced,https://example.com/kleenex-pref,2026-04-01,
+9,Kleenex Professional Facial Tissue,Amazon,11.60,priced,https://example.com/kleenex-amz,2026-04-01,last paid per each: 3.1
+9,Kleenex Professional Facial Tissue,Staples,12.95,priced,https://example.com/kleenex-stpl,2026-04-01,
+10,Permanent Marker Fine Point Black,Office Depot,1.10,priced,https://example.com/marker-od,2026-04-01,
+10,Permanent Marker Fine Point Black,Preferred,0.98,priced,https://example.com/marker-pref,2026-04-01,
+10,Permanent Marker Fine Point Black,Amazon,1.02,priced,https://example.com/marker-amz,2026-04-01,
+10,Permanent Marker Fine Point Black,Staples,1.15,priced,https://example.com/marker-stpl,2026-04-01,
+11,Scotch Magic Tape 3/4in,Office Depot,5.49,priced,https://example.com/scotch-od,2026-04-01,
+11,Scotch Magic Tape 3/4in,Preferred,4.95,priced,https://example.com/scotch-pref,2026-04-01,
+11,Scotch Magic Tape 3/4in,Amazon,5.10,priced,https://example.com/scotch-amz,2026-04-01,last paid per each: 2.165
+11,Scotch Magic Tape 3/4in,Staples,5.75,priced,https://example.com/scotch-stpl,2026-04-01,
+12,Letterhead Printed 2 Colour,Office Depot,0.42,priced,https://example.com/letterhead-od,2026-04-01,
+12,Letterhead Printed 2 Colour,Preferred,0.38,priced,https://example.com/letterhead-pref,2026-04-01,
+12,Letterhead Printed 2 Colour,Amazon,0.40,priced,https://example.com/letterhead-amz,2026-04-01,
+12,Letterhead Printed 2 Colour,Staples,,not_available,,2026-04-01,

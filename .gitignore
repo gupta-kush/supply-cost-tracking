@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# Runtime data and outputs. The item master, the order exports and the finished
+# workbook all carry firm purchasing data, so nothing under data/ or out/ is
+# committed -- the code is the deliverable, the numbers are not.
+data/
+out/
+
+# Vendor exports and the leadership workbook are spreadsheets; the CSVs the
+# pipeline writes are firm data too. The only spreadsheets and CSVs worth
+# committing are the invented test fixtures.
+*.xlsx
+*.xlsm
+*.csv
+!tests/fixtures/**
+!tests/golden/**
+
+# The re-inclusion rules above are recursive and would otherwise pull back in
+# any __pycache__/*.pyc created when these directories' scripts are imported.
+tests/fixtures/__pycache__/
+tests/golden/__pycache__/

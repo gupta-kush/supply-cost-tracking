@@ -1,0 +1,2305 @@
+{
+  "sheet_order": [
+    "Top 25",
+    "All items",
+    "Excluded",
+    "Sources"
+  ],
+  "sheets": {
+    "All items": {
+      "cells": {
+        "A1": {
+          "f": null,
+          "t": "s",
+          "v": "rank"
+        },
+        "A10": {
+          "f": null,
+          "t": "s",
+          "v": "9"
+        },
+        "A11": {
+          "f": null,
+          "t": "s",
+          "v": "10"
+        },
+        "A12": {
+          "f": null,
+          "t": "s",
+          "v": "11"
+        },
+        "A13": {
+          "f": null,
+          "t": "s",
+          "v": "12"
+        },
+        "A2": {
+          "f": null,
+          "t": "s",
+          "v": "1"
+        },
+        "A3": {
+          "f": null,
+          "t": "s",
+          "v": "2"
+        },
+        "A4": {
+          "f": null,
+          "t": "s",
+          "v": "3"
+        },
+        "A5": {
+          "f": null,
+          "t": "s",
+          "v": "4"
+        },
+        "A6": {
+          "f": null,
+          "t": "s",
+          "v": "5"
+        },
+        "A7": {
+          "f": null,
+          "t": "s",
+          "v": "6"
+        },
+        "A8": {
+          "f": null,
+          "t": "s",
+          "v": "7"
+        },
+        "A9": {
+          "f": null,
+          "t": "s",
+          "v": "8"
+        },
+        "B1": {
+          "f": null,
+          "t": "s",
+          "v": "canonical_name"
+        },
+        "B10": {
+          "f": null,
+          "t": "s",
+          "v": "Kleenex Professional Facial Tissue"
+        },
+        "B11": {
+          "f": null,
+          "t": "s",
+          "v": "Permanent Marker Fine Point Black"
+        },
+        "B12": {
+          "f": null,
+          "t": "s",
+          "v": "Scotch Magic Tape 3/4in"
+        },
+        "B13": {
+          "f": null,
+          "t": "s",
+          "v": "Letterhead Printed 2 Colour"
+        },
+        "B2": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Tag Inserts"
+        },
+        "B3": {
+          "f": null,
+          "t": "s",
+          "v": "BIC Ballpoint Pens Black Medium"
+        },
+        "B4": {
+          "f": null,
+          "t": "s",
+          "v": "Binder Clips Medium Black"
+        },
+        "B5": {
+          "f": null,
+          "t": "s",
+          "v": "EXPO Dry Erase Markers Assorted"
+        },
+        "B6": {
+          "f": null,
+          "t": "s",
+          "v": "Post-it Notes 3x3 Yellow"
+        },
+        "B7": {
+          "f": null,
+          "t": "s",
+          "v": "Sharpie Permanent Markers Assorted"
+        },
+        "B8": {
+          "f": null,
+          "t": "s",
+          "v": "Hammermill Copy Paper 8.5x11"
+        },
+        "B9": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred Copy Paper 8.5x11 White"
+        },
+        "C1": {
+          "f": null,
+          "t": "s",
+          "v": "eaches"
+        },
+        "C10": {
+          "f": null,
+          "t": "s",
+          "v": "18"
+        },
+        "C11": {
+          "f": null,
+          "t": "s",
+          "v": "12"
+        },
+        "C12": {
+          "f": null,
+          "t": "s",
+          "v": "6"
+        },
+        "C13": {
+          "f": null,
+          "t": "s",
+          "v": "4"
+        },
+        "C2": {
+          "f": null,
+          "t": "s",
+          "v": "1000"
+        },
+        "C3": {
+          "f": null,
+          "t": "s",
+          "v": "600"
+        },
+        "C4": {
+          "f": null,
+          "t": "s",
+          "v": "300"
+        },
+        "C5": {
+          "f": null,
+          "t": "s",
+          "v": "96"
+        },
+        "C6": {
+          "f": null,
+          "t": "s",
+          "v": "60"
+        },
+        "C7": {
+          "f": null,
+          "t": "s",
+          "v": "48"
+        },
+        "C8": {
+          "f": null,
+          "t": "s",
+          "v": "30"
+        },
+        "C9": {
+          "f": null,
+          "t": "s",
+          "v": "30"
+        },
+        "D1": {
+          "f": null,
+          "t": "s",
+          "v": "packs"
+        },
+        "D10": {
+          "f": null,
+          "t": "s",
+          "v": "3"
+        },
+        "D11": {
+          "f": null,
+          "t": "s",
+          "v": "12"
+        },
+        "D12": {
+          "f": null,
+          "t": "s",
+          "v": "1"
+        },
+        "D13": {
+          "f": null,
+          "t": "s",
+          "v": "4"
+        },
+        "D2": {
+          "f": null,
+          "t": "s",
+          "v": "3"
+        },
+        "D3": {
+          "f": null,
+          "t": "s",
+          "v": "10"
+        },
+        "D4": {
+          "f": null,
+          "t": "s",
+          "v": "3"
+        },
+        "D5": {
+          "f": null,
+          "t": "s",
+          "v": "2"
+        },
+        "D6": {
+          "f": null,
+          "t": "s",
+          "v": "5"
+        },
+        "D7": {
+          "f": null,
+          "t": "s",
+          "v": "2"
+        },
+        "D8": {
+          "f": null,
+          "t": "s",
+          "v": "3"
+        },
+        "D9": {
+          "f": null,
+          "t": "s",
+          "v": "3"
+        },
+        "E1": {
+          "f": null,
+          "t": "s",
+          "v": "units_per_pack"
+        },
+        "E10": {
+          "f": null,
+          "t": "s",
+          "v": "6"
+        },
+        "E11": {
+          "f": null,
+          "t": "s",
+          "v": "1"
+        },
+        "E12": {
+          "f": null,
+          "t": "s",
+          "v": "6"
+        },
+        "E13": {
+          "f": null,
+          "t": "s",
+          "v": "1"
+        },
+        "E3": {
+          "f": null,
+          "t": "s",
+          "v": "60"
+        },
+        "E4": {
+          "f": null,
+          "t": "s",
+          "v": "100"
+        },
+        "E5": {
+          "f": null,
+          "t": "s",
+          "v": "48"
+        },
+        "E6": {
+          "f": null,
+          "t": "s",
+          "v": "12"
+        },
+        "E7": {
+          "f": null,
+          "t": "s",
+          "v": "24"
+        },
+        "E8": {
+          "f": null,
+          "t": "s",
+          "v": "10"
+        },
+        "E9": {
+          "f": null,
+          "t": "s",
+          "v": "10"
+        },
+        "F1": {
+          "f": null,
+          "t": "s",
+          "v": "unit_label"
+        },
+        "F10": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F11": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F12": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F13": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F2": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F3": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F4": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F5": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F6": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F7": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "F8": {
+          "f": null,
+          "t": "s",
+          "v": "RM"
+        },
+        "F9": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G1": {
+          "f": null,
+          "t": "s",
+          "v": "keys"
+        },
+        "G10": {
+          "f": null,
+          "t": "s",
+          "v": "amz:kleenex professional facial tissue display pack of 6"
+        },
+        "G11": {
+          "f": null,
+          "t": "s",
+          "v": "pbs:SAN30001"
+        },
+        "G12": {
+          "f": null,
+          "t": "s",
+          "v": "amz:scotch magic tape 3/4 x 1000 inches 6 rolls"
+        },
+        "G13": {
+          "f": null,
+          "t": "s",
+          "v": "pbs:PBS9001"
+        },
+        "G2": {
+          "f": null,
+          "t": "s",
+          "v": "amz:avery name badge inserts 400 printable name tag inserts 3 x 4 in white|amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches"
+        },
+        "G3": {
+          "f": null,
+          "t": "s",
+          "v": "amz:bic round stic ballpoint pens medium point black 60-count"
+        },
+        "G4": {
+          "f": null,
+          "t": "s",
+          "v": "pbs:UNV35668"
+        },
+        "G5": {
+          "f": null,
+          "t": "s",
+          "v": "amz:expo low-odor dry erase markers chisel tip assorted 48/pack"
+        },
+        "G6": {
+          "f": null,
+          "t": "s",
+          "v": "amz:post-it notes 3 x 3 inches canary yellow 12 pads"
+        },
+        "G7": {
+          "f": null,
+          "t": "s",
+          "v": "amz:sharpie permanent markers fine point assorted 12 count"
+        },
+        "G8": {
+          "f": null,
+          "t": "s",
+          "v": "amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton"
+        },
+        "G9": {
+          "f": null,
+          "t": "s",
+          "v": "pbs:UNV21200"
+        },
+        "H1": {
+          "f": null,
+          "t": "s",
+          "v": "sources"
+        },
+        "H10": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "H11": {
+          "f": null,
+          "t": "s",
+          "v": "preferred"
+        },
+        "H12": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "H13": {
+          "f": null,
+          "t": "s",
+          "v": "preferred"
+        },
+        "H2": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "H3": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "H4": {
+          "f": null,
+          "t": "s",
+          "v": "preferred"
+        },
+        "H5": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "H6": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "H7": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "H8": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "H9": {
+          "f": null,
+          "t": "s",
+          "v": "preferred"
+        },
+        "I1": {
+          "f": null,
+          "t": "s",
+          "v": "last_paid_per_each"
+        },
+        "I10": {
+          "f": null,
+          "t": "s",
+          "v": "3.1"
+        },
+        "I12": {
+          "f": null,
+          "t": "s",
+          "v": "2.165"
+        },
+        "I2": {
+          "f": null,
+          "t": "s",
+          "v": "0.1105"
+        },
+        "I3": {
+          "f": null,
+          "t": "s",
+          "v": "0.0997"
+        },
+        "I5": {
+          "f": null,
+          "t": "s",
+          "v": "0.8331"
+        },
+        "I6": {
+          "f": null,
+          "t": "s",
+          "v": "1.2292"
+        },
+        "I7": {
+          "f": null,
+          "t": "s",
+          "v": "0.4717"
+        },
+        "I8": {
+          "f": null,
+          "t": "s",
+          "v": "5.499"
+        },
+        "J1": {
+          "f": null,
+          "t": "s",
+          "v": "upp_source"
+        },
+        "J10": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J11": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J12": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J13": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J2": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J3": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J4": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J5": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J6": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J7": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J8": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "J9": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        }
+      },
+      "column_widths": {},
+      "conditional_formatting": [],
+      "fills": {},
+      "freeze_panes": "A2",
+      "merged_cells": []
+    },
+    "Excluded": {
+      "cells": {
+        "A1": {
+          "f": null,
+          "t": "s",
+          "v": "key"
+        },
+        "A2": {
+          "f": null,
+          "t": "s",
+          "v": "amz:bubly sparkling water variety pack 18 count"
+        },
+        "A3": {
+          "f": null,
+          "t": "s",
+          "v": "amz:cable zip ties 8 inch black (bulk 1000 pack)"
+        },
+        "B1": {
+          "f": null,
+          "t": "s",
+          "v": "source"
+        },
+        "B2": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B3": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "C1": {
+          "f": null,
+          "t": "s",
+          "v": "raw_title"
+        },
+        "C2": {
+          "f": null,
+          "t": "s",
+          "v": "Bubly Sparkling Water, Variety Pack, 18 Count"
+        },
+        "C3": {
+          "f": null,
+          "t": "s",
+          "v": "Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)"
+        },
+        "D1": {
+          "f": null,
+          "t": "s",
+          "v": "amazon_category"
+        },
+        "D2": {
+          "f": null,
+          "t": "s",
+          "v": "Grocery"
+        },
+        "D3": {
+          "f": null,
+          "t": "s",
+          "v": "Tools & Home Improvement"
+        },
+        "E1": {
+          "f": null,
+          "t": "s",
+          "v": "packs"
+        },
+        "E2": {
+          "f": null,
+          "t": "s",
+          "v": "6"
+        },
+        "E3": {
+          "f": null,
+          "t": "s",
+          "v": "1"
+        },
+        "F1": {
+          "f": null,
+          "t": "s",
+          "v": "reason"
+        },
+        "F2": {
+          "f": null,
+          "t": "s",
+          "v": "include=n"
+        },
+        "F3": {
+          "f": null,
+          "t": "s",
+          "v": "include=n"
+        }
+      },
+      "column_widths": {},
+      "conditional_formatting": [],
+      "fills": {},
+      "freeze_panes": "A2",
+      "merged_cells": []
+    },
+    "Sources": {
+      "cells": {
+        "A1": {
+          "f": null,
+          "t": "s",
+          "v": "year"
+        },
+        "A10": {
+          "f": null,
+          "t": "s",
+          "v": "warnings"
+        },
+        "A11": {
+          "f": null,
+          "t": "s",
+          "v": "dates_out_of_year"
+        },
+        "A12": {
+          "f": null,
+          "t": "s",
+          "v": "non_closed"
+        },
+        "A13": {
+          "f": null,
+          "t": "s",
+          "v": "ranked_at"
+        },
+        "A14": {
+          "f": null,
+          "t": "s",
+          "v": "ranked_items"
+        },
+        "A15": {
+          "f": null,
+          "t": "s",
+          "v": "included_lines"
+        },
+        "A16": {
+          "f": null,
+          "t": "s",
+          "v": "excluded_lines"
+        },
+        "A17": {
+          "f": null,
+          "t": "s",
+          "v": "item master rows"
+        },
+        "A18": {
+          "f": null,
+          "t": "s",
+          "v": "items with upp_source != master"
+        },
+        "A19": {
+          "f": null,
+          "t": "s",
+          "v": "top_n"
+        },
+        "A2": {
+          "f": null,
+          "t": "s",
+          "v": "amazon_file"
+        },
+        "A20": {
+          "f": null,
+          "t": "s",
+          "v": "unpriced cells"
+        },
+        "A21": {
+          "f": null,
+          "t": "s",
+          "v": "report built at"
+        },
+        "A3": {
+          "f": null,
+          "t": "s",
+          "v": "preferred_file"
+        },
+        "A4": {
+          "f": null,
+          "t": "s",
+          "v": "amazon_rows"
+        },
+        "A5": {
+          "f": null,
+          "t": "s",
+          "v": "preferred_rows"
+        },
+        "A6": {
+          "f": null,
+          "t": "s",
+          "v": "date_min"
+        },
+        "A7": {
+          "f": null,
+          "t": "s",
+          "v": "date_max"
+        },
+        "A8": {
+          "f": null,
+          "t": "s",
+          "v": "ingested_at"
+        },
+        "A9": {
+          "f": null,
+          "t": "s",
+          "v": "rows_written"
+        },
+        "B1": {
+          "f": null,
+          "t": "n",
+          "v": 2025
+        },
+        "B10": {
+          "f": null,
+          "t": "s",
+          "v": "amazon_2025_sample.xlsx: 1 line(s) are dated outside 2025: 111-0000009-0000009 on 2024-12-28; amazon_2025_sample.xlsx: 1 line(s) have a status other than Closed: 111-0000008-0000008 is Cancelled; 1 line(s) are dated outside 2025: Sharpie Permanent Markers, Fine Point, Assorted, 1 on 2024-12-28. They are still counted; re-export with the right date range if that is wrong.; 1 line(s) have an order status other than Closed: 111-0000008-0000008 is Cancelled. A cancelled or returned order still counts here.; 2 item(s) have a pack size that disagrees with the title: Avery Name Tag Inserts: master says 200, the title says 400 (400 Printable Name Tag Inserts); Sharpie Permanent Markers Assorted: master says 24, the title says 12 (12 Count). Check which is right - this changes the ranking."
+        },
+        "B11": {
+          "f": null,
+          "t": "s",
+          "v": "{'source': 'amazon', 'order_id': '111-0000009-0000009', 'order_date': '2024-12-28', 'title': 'Sharpie Permanent Markers, Fine Point, Assorted, 12 Count'}"
+        },
+        "B12": {
+          "f": null,
+          "t": "s",
+          "v": "{'source': 'amazon', 'order_id': '111-0000008-0000008', 'status': 'Cancelled', 'title': 'Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls'}"
+        },
+        "B13": {
+          "f": null,
+          "t": "s",
+          "v": "<TIMESTAMP>"
+        },
+        "B14": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "B15": {
+          "f": null,
+          "t": "n",
+          "v": 15
+        },
+        "B16": {
+          "f": null,
+          "t": "n",
+          "v": 2
+        },
+        "B17": {
+          "f": null,
+          "t": "n",
+          "v": 15
+        },
+        "B19": {
+          "f": null,
+          "t": "n",
+          "v": 25
+        },
+        "B2": {
+          "f": null,
+          "t": "s",
+          "v": "amazon_2025_sample.xlsx"
+        },
+        "B20": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "B21": {
+          "f": null,
+          "t": "s",
+          "v": "<TIMESTAMP>"
+        },
+        "B3": {
+          "f": null,
+          "t": "s",
+          "v": "preferred_2025_sample.xlsx"
+        },
+        "B4": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "B5": {
+          "f": null,
+          "t": "n",
+          "v": 5
+        },
+        "B6": {
+          "f": null,
+          "t": "s",
+          "v": "2024-12-28"
+        },
+        "B7": {
+          "f": null,
+          "t": "s",
+          "v": "2025-11-06"
+        },
+        "B8": {
+          "f": null,
+          "t": "s",
+          "v": "<TIMESTAMP>"
+        },
+        "B9": {
+          "f": null,
+          "t": "n",
+          "v": 17
+        }
+      },
+      "column_widths": {
+        "A": 32.0,
+        "B": 70.0
+      },
+      "conditional_formatting": [],
+      "fills": {},
+      "freeze_panes": null,
+      "merged_cells": []
+    },
+    "Top 25": {
+      "cells": {
+        "B10": {
+          "f": null,
+          "t": "n",
+          "v": 4
+        },
+        "B11": {
+          "f": null,
+          "t": "n",
+          "v": 5
+        },
+        "B12": {
+          "f": null,
+          "t": "n",
+          "v": 6
+        },
+        "B13": {
+          "f": null,
+          "t": "n",
+          "v": 7
+        },
+        "B14": {
+          "f": null,
+          "t": "n",
+          "v": 8
+        },
+        "B15": {
+          "f": null,
+          "t": "n",
+          "v": 9
+        },
+        "B16": {
+          "f": null,
+          "t": "n",
+          "v": 10
+        },
+        "B17": {
+          "f": null,
+          "t": "n",
+          "v": 11
+        },
+        "B18": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "B37": {
+          "f": null,
+          "t": "s",
+          "v": "Lowest price for row item"
+        },
+        "B4": {
+          "f": null,
+          "t": "s",
+          "v": "Top 25 Items By Quantity"
+        },
+        "B6": {
+          "f": null,
+          "t": "s",
+          "v": "Ranking"
+        },
+        "B7": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "B8": {
+          "f": null,
+          "t": "n",
+          "v": 2
+        },
+        "B9": {
+          "f": null,
+          "t": "n",
+          "v": 3
+        },
+        "C10": {
+          "f": null,
+          "t": "s",
+          "v": "EXPO Dry Erase Markers Assorted"
+        },
+        "C11": {
+          "f": null,
+          "t": "s",
+          "v": "Post-it Notes 3x3 Yellow"
+        },
+        "C12": {
+          "f": null,
+          "t": "s",
+          "v": "Sharpie Permanent Markers Assorted"
+        },
+        "C13": {
+          "f": null,
+          "t": "s",
+          "v": "Hammermill Copy Paper 8.5x11"
+        },
+        "C14": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred Copy Paper 8.5x11 White"
+        },
+        "C15": {
+          "f": null,
+          "t": "s",
+          "v": "Kleenex Professional Facial Tissue"
+        },
+        "C16": {
+          "f": null,
+          "t": "s",
+          "v": "Permanent Marker Fine Point Black"
+        },
+        "C17": {
+          "f": null,
+          "t": "s",
+          "v": "Scotch Magic Tape 3/4in"
+        },
+        "C18": {
+          "f": null,
+          "t": "s",
+          "v": "Letterhead Printed 2 Colour"
+        },
+        "C33": {
+          "f": null,
+          "t": "s",
+          "v": "Total Cost"
+        },
+        "C34": {
+          "f": null,
+          "t": "s",
+          "v": "Priced items"
+        },
+        "C35": {
+          "f": null,
+          "t": "s",
+          "v": "Comparable basket"
+        },
+        "C6": {
+          "f": null,
+          "t": "s",
+          "v": "Description"
+        },
+        "C7": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Tag Inserts"
+        },
+        "C8": {
+          "f": null,
+          "t": "s",
+          "v": "BIC Ballpoint Pens Black Medium"
+        },
+        "C9": {
+          "f": null,
+          "t": "s",
+          "v": "Binder Clips Medium Black"
+        },
+        "D10": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D11": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D12": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D13": {
+          "f": null,
+          "t": "s",
+          "v": "1 RM"
+        },
+        "D14": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D15": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D16": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D17": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D18": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D6": {
+          "f": null,
+          "t": "s",
+          "v": "Pack/Size"
+        },
+        "D7": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D8": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "D9": {
+          "f": null,
+          "t": "s",
+          "v": "1 EA"
+        },
+        "E10": {
+          "f": null,
+          "t": "n",
+          "v": 96
+        },
+        "E11": {
+          "f": null,
+          "t": "n",
+          "v": 60
+        },
+        "E12": {
+          "f": null,
+          "t": "n",
+          "v": 48
+        },
+        "E13": {
+          "f": null,
+          "t": "n",
+          "v": 30
+        },
+        "E14": {
+          "f": null,
+          "t": "n",
+          "v": 30
+        },
+        "E15": {
+          "f": null,
+          "t": "n",
+          "v": 18
+        },
+        "E16": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "E17": {
+          "f": null,
+          "t": "n",
+          "v": 6
+        },
+        "E18": {
+          "f": null,
+          "t": "n",
+          "v": 4
+        },
+        "E6": {
+          "f": null,
+          "t": "s",
+          "v": "Quantity"
+        },
+        "E7": {
+          "f": null,
+          "t": "n",
+          "v": 1000
+        },
+        "E8": {
+          "f": null,
+          "t": "n",
+          "v": 600
+        },
+        "E9": {
+          "f": null,
+          "t": "n",
+          "v": 300
+        },
+        "F10": {
+          "f": null,
+          "t": "n",
+          "v": 9.5
+        },
+        "F11": {
+          "f": null,
+          "t": "n",
+          "v": 4.75
+        },
+        "F12": {
+          "f": null,
+          "t": "n",
+          "v": 0.65
+        },
+        "F13": {
+          "f": null,
+          "t": "n",
+          "v": 44.25
+        },
+        "F14": {
+          "f": null,
+          "t": "n",
+          "v": 4.3
+        },
+        "F15": {
+          "f": null,
+          "t": "n",
+          "v": 12.49
+        },
+        "F16": {
+          "f": null,
+          "t": "n",
+          "v": 1.1
+        },
+        "F17": {
+          "f": null,
+          "t": "n",
+          "v": 5.49
+        },
+        "F18": {
+          "f": null,
+          "t": "n",
+          "v": 0.42
+        },
+        "F34": {
+          "f": "=COUNT(F7:F31)&\" / 25\"",
+          "t": "f",
+          "v": "=COUNT(F7:F31)&\" / 25\""
+        },
+        "F5": {
+          "f": null,
+          "t": "s",
+          "v": "Unit Price (per each)"
+        },
+        "F6": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "F7": {
+          "f": null,
+          "t": "n",
+          "v": 3.1
+        },
+        "F8": {
+          "f": null,
+          "t": "n",
+          "v": 0.22
+        },
+        "F9": {
+          "f": null,
+          "t": "n",
+          "v": 1.05
+        },
+        "G10": {
+          "f": null,
+          "t": "n",
+          "v": 8.6
+        },
+        "G11": {
+          "f": null,
+          "t": "n",
+          "v": 4.3
+        },
+        "G12": {
+          "f": null,
+          "t": "n",
+          "v": 0.58
+        },
+        "G13": {
+          "f": null,
+          "t": "n",
+          "v": 39.99
+        },
+        "G14": {
+          "f": null,
+          "t": "n",
+          "v": 3.95
+        },
+        "G15": {
+          "f": null,
+          "t": "n",
+          "v": 11.2
+        },
+        "G16": {
+          "f": null,
+          "t": "n",
+          "v": 0.98
+        },
+        "G17": {
+          "f": null,
+          "t": "n",
+          "v": 4.95
+        },
+        "G18": {
+          "f": null,
+          "t": "n",
+          "v": 0.38
+        },
+        "G34": {
+          "f": "=COUNT(G7:G31)&\" / 25\"",
+          "t": "f",
+          "v": "=COUNT(G7:G31)&\" / 25\""
+        },
+        "G6": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "G7": {
+          "f": null,
+          "t": "n",
+          "v": 2.95
+        },
+        "G8": {
+          "f": null,
+          "t": "n",
+          "v": 0.19
+        },
+        "G9": {
+          "f": null,
+          "t": "n",
+          "v": 0.95
+        },
+        "H10": {
+          "f": null,
+          "t": "n",
+          "v": 8.9
+        },
+        "H11": {
+          "f": null,
+          "t": "n",
+          "v": 4.45
+        },
+        "H12": {
+          "f": null,
+          "t": "n",
+          "v": 0.6
+        },
+        "H13": {
+          "f": null,
+          "t": "n",
+          "v": 41.1
+        },
+        "H14": {
+          "f": null,
+          "t": "s",
+          "v": "not priced"
+        },
+        "H15": {
+          "f": null,
+          "t": "n",
+          "v": 11.6
+        },
+        "H16": {
+          "f": null,
+          "t": "n",
+          "v": 1.02
+        },
+        "H17": {
+          "f": null,
+          "t": "n",
+          "v": 5.1
+        },
+        "H18": {
+          "f": null,
+          "t": "n",
+          "v": 0.4
+        },
+        "H34": {
+          "f": "=COUNT(H7:H31)&\" / 25\"",
+          "t": "f",
+          "v": "=COUNT(H7:H31)&\" / 25\""
+        },
+        "H6": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "H7": {
+          "f": null,
+          "t": "n",
+          "v": 3.05
+        },
+        "H8": {
+          "f": null,
+          "t": "n",
+          "v": 0.2
+        },
+        "H9": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "I10": {
+          "f": null,
+          "t": "n",
+          "v": 9.75
+        },
+        "I11": {
+          "f": null,
+          "t": "s",
+          "v": "Discontinued"
+        },
+        "I12": {
+          "f": null,
+          "t": "n",
+          "v": 0.68
+        },
+        "I13": {
+          "f": null,
+          "t": "n",
+          "v": 46
+        },
+        "I14": {
+          "f": null,
+          "t": "n",
+          "v": 4.55
+        },
+        "I15": {
+          "f": null,
+          "t": "n",
+          "v": 12.95
+        },
+        "I16": {
+          "f": null,
+          "t": "n",
+          "v": 1.15
+        },
+        "I17": {
+          "f": null,
+          "t": "n",
+          "v": 5.75
+        },
+        "I18": {
+          "f": null,
+          "t": "s",
+          "v": "not available"
+        },
+        "I34": {
+          "f": "=COUNT(I7:I31)&\" / 25\"",
+          "t": "f",
+          "v": "=COUNT(I7:I31)&\" / 25\""
+        },
+        "I6": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "I7": {
+          "f": null,
+          "t": "n",
+          "v": 3.2
+        },
+        "I8": {
+          "f": null,
+          "t": "s",
+          "v": "not available"
+        },
+        "I9": {
+          "f": null,
+          "t": "n",
+          "v": 1.1
+        },
+        "K10": {
+          "f": "=F10*E10",
+          "t": "f",
+          "v": "=F10*E10"
+        },
+        "K11": {
+          "f": "=F11*E11",
+          "t": "f",
+          "v": "=F11*E11"
+        },
+        "K12": {
+          "f": "=F12*E12",
+          "t": "f",
+          "v": "=F12*E12"
+        },
+        "K13": {
+          "f": "=F13*E13",
+          "t": "f",
+          "v": "=F13*E13"
+        },
+        "K14": {
+          "f": "=F14*E14",
+          "t": "f",
+          "v": "=F14*E14"
+        },
+        "K15": {
+          "f": "=F15*E15",
+          "t": "f",
+          "v": "=F15*E15"
+        },
+        "K16": {
+          "f": "=F16*E16",
+          "t": "f",
+          "v": "=F16*E16"
+        },
+        "K17": {
+          "f": "=F17*E17",
+          "t": "f",
+          "v": "=F17*E17"
+        },
+        "K18": {
+          "f": "=F18*E18",
+          "t": "f",
+          "v": "=F18*E18"
+        },
+        "K32": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot Total Cost"
+        },
+        "K33": {
+          "f": "=SUM(K7:K31)",
+          "t": "f",
+          "v": "=SUM(K7:K31)"
+        },
+        "K35": {
+          "f": "=SUM(K7,K9,K10,K12,K13,K15,K16,K17)",
+          "t": "f",
+          "v": "=SUM(K7,K9,K10,K12,K13,K15,K16,K17)"
+        },
+        "K5": {
+          "f": null,
+          "t": "s",
+          "v": "Total Cost at 2025 volume"
+        },
+        "K6": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "K7": {
+          "f": "=F7*E7",
+          "t": "f",
+          "v": "=F7*E7"
+        },
+        "K8": {
+          "f": "=F8*E8",
+          "t": "f",
+          "v": "=F8*E8"
+        },
+        "K9": {
+          "f": "=F9*E9",
+          "t": "f",
+          "v": "=F9*E9"
+        },
+        "L10": {
+          "f": "=G10*E10",
+          "t": "f",
+          "v": "=G10*E10"
+        },
+        "L11": {
+          "f": "=G11*E11",
+          "t": "f",
+          "v": "=G11*E11"
+        },
+        "L12": {
+          "f": "=G12*E12",
+          "t": "f",
+          "v": "=G12*E12"
+        },
+        "L13": {
+          "f": "=G13*E13",
+          "t": "f",
+          "v": "=G13*E13"
+        },
+        "L14": {
+          "f": "=G14*E14",
+          "t": "f",
+          "v": "=G14*E14"
+        },
+        "L15": {
+          "f": "=G15*E15",
+          "t": "f",
+          "v": "=G15*E15"
+        },
+        "L16": {
+          "f": "=G16*E16",
+          "t": "f",
+          "v": "=G16*E16"
+        },
+        "L17": {
+          "f": "=G17*E17",
+          "t": "f",
+          "v": "=G17*E17"
+        },
+        "L18": {
+          "f": "=G18*E18",
+          "t": "f",
+          "v": "=G18*E18"
+        },
+        "L32": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred Total Cost"
+        },
+        "L33": {
+          "f": "=SUM(L7:L31)",
+          "t": "f",
+          "v": "=SUM(L7:L31)"
+        },
+        "L35": {
+          "f": "=SUM(L7,L9,L10,L12,L13,L15,L16,L17)",
+          "t": "f",
+          "v": "=SUM(L7,L9,L10,L12,L13,L15,L16,L17)"
+        },
+        "L6": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "L7": {
+          "f": "=G7*E7",
+          "t": "f",
+          "v": "=G7*E7"
+        },
+        "L8": {
+          "f": "=G8*E8",
+          "t": "f",
+          "v": "=G8*E8"
+        },
+        "L9": {
+          "f": "=G9*E9",
+          "t": "f",
+          "v": "=G9*E9"
+        },
+        "M10": {
+          "f": "=H10*E10",
+          "t": "f",
+          "v": "=H10*E10"
+        },
+        "M11": {
+          "f": "=H11*E11",
+          "t": "f",
+          "v": "=H11*E11"
+        },
+        "M12": {
+          "f": "=H12*E12",
+          "t": "f",
+          "v": "=H12*E12"
+        },
+        "M13": {
+          "f": "=H13*E13",
+          "t": "f",
+          "v": "=H13*E13"
+        },
+        "M14": {
+          "f": null,
+          "t": "s",
+          "v": "not priced"
+        },
+        "M15": {
+          "f": "=H15*E15",
+          "t": "f",
+          "v": "=H15*E15"
+        },
+        "M16": {
+          "f": "=H16*E16",
+          "t": "f",
+          "v": "=H16*E16"
+        },
+        "M17": {
+          "f": "=H17*E17",
+          "t": "f",
+          "v": "=H17*E17"
+        },
+        "M18": {
+          "f": "=H18*E18",
+          "t": "f",
+          "v": "=H18*E18"
+        },
+        "M32": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon Total Cost"
+        },
+        "M33": {
+          "f": "=SUM(M7:M31)",
+          "t": "f",
+          "v": "=SUM(M7:M31)"
+        },
+        "M35": {
+          "f": "=SUM(M7,M9,M10,M12,M13,M15,M16,M17)",
+          "t": "f",
+          "v": "=SUM(M7,M9,M10,M12,M13,M15,M16,M17)"
+        },
+        "M6": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "M7": {
+          "f": "=H7*E7",
+          "t": "f",
+          "v": "=H7*E7"
+        },
+        "M8": {
+          "f": "=H8*E8",
+          "t": "f",
+          "v": "=H8*E8"
+        },
+        "M9": {
+          "f": "=H9*E9",
+          "t": "f",
+          "v": "=H9*E9"
+        },
+        "N10": {
+          "f": "=I10*E10",
+          "t": "f",
+          "v": "=I10*E10"
+        },
+        "N11": {
+          "f": null,
+          "t": "s",
+          "v": "Discontinued"
+        },
+        "N12": {
+          "f": "=I12*E12",
+          "t": "f",
+          "v": "=I12*E12"
+        },
+        "N13": {
+          "f": "=I13*E13",
+          "t": "f",
+          "v": "=I13*E13"
+        },
+        "N14": {
+          "f": "=I14*E14",
+          "t": "f",
+          "v": "=I14*E14"
+        },
+        "N15": {
+          "f": "=I15*E15",
+          "t": "f",
+          "v": "=I15*E15"
+        },
+        "N16": {
+          "f": "=I16*E16",
+          "t": "f",
+          "v": "=I16*E16"
+        },
+        "N17": {
+          "f": "=I17*E17",
+          "t": "f",
+          "v": "=I17*E17"
+        },
+        "N18": {
+          "f": null,
+          "t": "s",
+          "v": "not available"
+        },
+        "N32": {
+          "f": null,
+          "t": "s",
+          "v": "Staples Total Cost"
+        },
+        "N33": {
+          "f": "=SUM(N7:N31)",
+          "t": "f",
+          "v": "=SUM(N7:N31)"
+        },
+        "N35": {
+          "f": "=SUM(N7,N9,N10,N12,N13,N15,N16,N17)",
+          "t": "f",
+          "v": "=SUM(N7,N9,N10,N12,N13,N15,N16,N17)"
+        },
+        "N6": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "N7": {
+          "f": "=I7*E7",
+          "t": "f",
+          "v": "=I7*E7"
+        },
+        "N8": {
+          "f": null,
+          "t": "s",
+          "v": "not available"
+        },
+        "N9": {
+          "f": "=I9*E9",
+          "t": "f",
+          "v": "=I9*E9"
+        }
+      },
+      "column_widths": {
+        "B": 9.0,
+        "C": 60.0,
+        "D": 10.0,
+        "E": 11.0,
+        "F": 13.0,
+        "G": 13.0,
+        "H": 13.0,
+        "I": 13.0,
+        "J": 2.0,
+        "K": 15.0,
+        "L": 15.0,
+        "M": 15.0,
+        "N": 15.0
+      },
+      "conditional_formatting": [
+        {
+          "formula": [
+            "AND(ISNUMBER(F7),F7=MIN($F7:$I7))"
+          ],
+          "highlight_fill": {
+            "bgColor": {
+              "rgb": "00FFF2CC",
+              "type": "rgb"
+            },
+            "fgColor": {
+              "rgb": "00000000",
+              "type": "rgb"
+            },
+            "patternType": "solid"
+          },
+          "sqref": "F7:I31",
+          "type": "expression"
+        },
+        {
+          "formula": [
+            "AND(ISNUMBER(K7),K7=MIN($K7:$N7))"
+          ],
+          "highlight_fill": {
+            "bgColor": {
+              "rgb": "00FFF2CC",
+              "type": "rgb"
+            },
+            "fgColor": {
+              "rgb": "00000000",
+              "type": "rgb"
+            },
+            "patternType": "solid"
+          },
+          "sqref": "K7:N31",
+          "type": "expression"
+        }
+      ],
+      "fills": {
+        "B37": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "F6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00DDEBF7",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "G6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00E2EFDA",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "H6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FCE4D6",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "I6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00E4DFEC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J10": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J11": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J12": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J13": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J14": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J15": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J16": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J17": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J18": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J19": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J20": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J21": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J22": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J23": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J24": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J25": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J26": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J27": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J28": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J29": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J30": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J31": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J7": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J8": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "J9": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FFF2CC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "K6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00DDEBF7",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "L6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00E2EFDA",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "M6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00FCE4D6",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        },
+        "N6": {
+          "bgColor": {
+            "rgb": "00000000",
+            "type": "rgb"
+          },
+          "fgColor": {
+            "rgb": "00E4DFEC",
+            "type": "rgb"
+          },
+          "patternType": "solid"
+        }
+      },
+      "freeze_panes": "C7",
+      "merged_cells": [
+        "B4:N4",
+        "F5:I5",
+        "K5:N5"
+      ]
+    }
+  }
+}

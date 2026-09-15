@@ -1,0 +1,18 @@
+source,order_date,order_id,key,raw_title,sku,pack_desc,amazon_category,packs,ppu_paid,line_subtotal,account_user
+amazon,2025-02-11,111-0000001-0000001,amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches,"Avery Printable Name Tags, 400 Printable Name Tag Inserts, 3 x 4 Inches",,,Office Product,2,21.49,42.98,Office Manager
+amazon,2025-06-03,111-0000002-0000002,amz:avery name badge inserts 400 printable name tag inserts 3 x 4 in white,"Avery Name Badge Inserts, 400 Printable Name Tag Inserts, 3 x 4 in, White",,,Office Product,1,22.1,22.1,Office Manager
+amazon,2025-03-04,111-0000003-0000003,amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton,"Hammermill Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton",,,Office Product,3,54.99,164.97,Purchasing Staff
+amazon,2025-01-20,111-0000004-0000004,amz:bic round stic ballpoint pens medium point black 60-count,"BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count",,,Office Product,4,6.24,24.96,Office Manager
+amazon,2025-09-09,111-0000005-0000005,amz:bic round stic ballpoint pens medium point black 60-count,"BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count",,,Office Product,6,5.98,35.88,Office Manager
+amazon,2025-04-02,111-0000006-0000006,amz:post-it notes 3 x 3 inches canary yellow 12 pads,"Post-it Notes, 3 x 3 Inches, Canary Yellow, 12 Pads",,,Office Product,5,14.75,73.75,Purchasing Staff
+amazon,2025-05-14,111-0000007-0000007,amz:bubly sparkling water variety pack 18 count,"Bubly Sparkling Water, Variety Pack, 18 Count",,,Grocery,6,9.48,56.88,Purchasing Staff
+amazon,2025-07-22,111-0000008-0000008,amz:scotch magic tape 3/4 x 1000 inches 6 rolls,"Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls",,,Office Product,1,12.99,12.99,Office Manager
+amazon,2024-12-28,111-0000009-0000009,amz:sharpie permanent markers fine point assorted 12 count,"Sharpie Permanent Markers, Fine Point, Assorted, 12 Count",,,Office Product,2,11.32,22.64,Office Manager
+amazon,2025-03-18,111-0000010-0000010,amz:kleenex professional facial tissue display pack of 6,"Kleenex Professional Facial Tissue, Display Pack of 6",,,"Business, Industrial, & Scientific Supplies Basic",3,18.6,55.8,Purchasing Staff
+amazon,2025-08-05,111-0000011-0000011,amz:cable zip ties 8 inch black (bulk 1000 pack),"Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)",,,Tools & Home Improvement,1,13.45,13.45,Purchasing Staff
+amazon,2025-10-30,111-0000012-0000012,amz:expo low-odor dry erase markers chisel tip assorted 48/pack,"EXPO Low-Odor Dry Erase Markers, Chisel Tip, Assorted, 48/Pack",,,Office Product,2,39.99,79.98,Office Manager
+preferred,2025-02-04,REF-1001,pbs:UNV21200,Copy Paper 8.5 x 11 20lb White,UNV21200,CT10,,2,,,Office Manager
+preferred,2025-04-17,REF-1002,pbs:UNV35668,Binder Clips Medium Black,UNV35668,BX100,,3,,,Office Manager
+preferred,2025-06-11,REF-1003,pbs:SAN30001,Permanent Marker Fine Point Black,SAN30001,Each,,12,,,Purchasing Staff
+preferred,2025-09-23,REF-1004,pbs:UNV21200,Copy Paper 8.5 x 11 20lb White,UNV21200,CT10,,1,,,Office Manager
+preferred,2025-11-06,REF-1005,pbs:PBS9001,Letterhead Printed 2 Colour,PBS9001,CS1,,4,,,Purchasing Staff

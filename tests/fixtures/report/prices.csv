@@ -1,0 +1,101 @@
+rank,canonical_name,vendor,unit_price,status,url,checked_on,note
+1,Copy Paper 8.5x11 White,Office Depot,5.51,priced,https://example.com/item,2026-03-10,
+1,Copy Paper 8.5x11 White,Preferred,4.95,priced,https://example.com/item,2026-03-10,
+1,Copy Paper 8.5x11 White,Amazon,5.10,priced,https://example.com/item,2026-03-10,last paid per each: 4.85
+1,Copy Paper 8.5x11 White,Staples,5.71,priced,https://example.com/item,2026-03-10,
+2,Ballpoint Pens Black Medium,Office Depot,0.23,priced,https://example.com/item,2026-03-10,
+2,Ballpoint Pens Black Medium,Preferred,0.20,priced,https://example.com/item,2026-03-10,
+2,Ballpoint Pens Black Medium,Amazon,0.21,priced,https://example.com/item,2026-03-10,last paid per each: 0.18
+2,Ballpoint Pens Black Medium,Staples,0.24,priced,https://example.com/item,2026-03-10,
+3,Sticky Notes 3x3 Yellow,Office Depot,0.12,priced,https://example.com/item,2026-03-10,
+3,Sticky Notes 3x3 Yellow,Preferred,0.11,priced,https://example.com/item,2026-03-10,
+3,Sticky Notes 3x3 Yellow,Amazon,0.11,priced,https://example.com/item,2026-03-10,last paid per each: 0.09
+3,Sticky Notes 3x3 Yellow,Staples,0.12,priced,https://example.com/item,2026-03-10,
+4,Binder Clips Medium,Office Depot,0.08,priced,https://example.com/item,2026-03-10,
+4,Binder Clips Medium,Preferred,0.07,priced,https://example.com/item,2026-03-10,
+4,Binder Clips Medium,Amazon,0.07,priced,https://example.com/item,2026-03-10,last paid per each: 0.06
+4,Binder Clips Medium,Staples,0.08,priced,https://example.com/item,2026-03-10,
+5,File Folders Letter Manila,Office Depot,0.26,priced,https://example.com/item,2026-03-10,
+5,File Folders Letter Manila,Preferred,,not_available,,2026-03-10,
+5,File Folders Letter Manila,Amazon,0.24,priced,https://example.com/item,2026-03-10,last paid per each: 0.21
+5,File Folders Letter Manila,Staples,0.27,priced,https://example.com/item,2026-03-10,
+6,Manila Envelopes Number 10,Office Depot,0.14,priced,https://example.com/item,2026-03-10,
+6,Manila Envelopes Number 10,Preferred,0.13,priced,https://example.com/item,2026-03-10,
+6,Manila Envelopes Number 10,Amazon,0.13,priced,https://example.com/item,2026-03-10,last paid per each: 0.11
+6,Manila Envelopes Number 10,Staples,0.15,priced,https://example.com/item,2026-03-10,
+7,Highlighters Assorted Colors,Office Depot,0.53,priced,https://example.com/item,2026-03-10,
+7,Highlighters Assorted Colors,Preferred,0.48,priced,https://example.com/item,2026-03-10,
+7,Highlighters Assorted Colors,Amazon,0.49,priced,https://example.com/item,2026-03-10,last paid per each: 0.42
+7,Highlighters Assorted Colors,Staples,0.55,priced,https://example.com/item,2026-03-10,
+8,Dry Erase Markers Black,Office Depot,0.67,priced,https://example.com/item,2026-03-10,
+8,Dry Erase Markers Black,Preferred,0.60,priced,https://example.com/item,2026-03-10,
+8,Dry Erase Markers Black,Amazon,0.62,priced,https://example.com/item,2026-03-10,last paid per each: 0.55
+8,Dry Erase Markers Black,Staples,0.69,priced,https://example.com/item,2026-03-10,
+9,Standard Staples Box,Office Depot,1.24,priced,https://example.com/item,2026-03-10,
+9,Standard Staples Box,Preferred,1.12,priced,https://example.com/item,2026-03-10,
+9,Standard Staples Box,Amazon,,unpriced,,,last paid per each: 1.05
+9,Standard Staples Box,Staples,1.29,priced,https://example.com/item,2026-03-10,
+10,Paper Clips Jumbo,Office Depot,0.04,priced,https://example.com/item,2026-03-10,
+10,Paper Clips Jumbo,Preferred,0.04,priced,https://example.com/item,2026-03-10,
+10,Paper Clips Jumbo,Amazon,0.04,priced,https://example.com/item,2026-03-10,last paid per each: 0.03
+10,Paper Clips Jumbo,Staples,0.04,priced,https://example.com/item,2026-03-10,
+11,Rubber Bands Assorted Size,Office Depot,0.03,priced,https://example.com/item,2026-03-10,
+11,Rubber Bands Assorted Size,Preferred,0.02,priced,https://example.com/item,2026-03-10,
+11,Rubber Bands Assorted Size,Amazon,0.03,priced,https://example.com/item,2026-03-10,last paid per each: 0.02
+11,Rubber Bands Assorted Size,Staples,0.03,priced,https://example.com/item,2026-03-10,
+12,Legal Pads Yellow Letter,Office Depot,$1.350,priced,https://example.com/item,2026-03-10,
+12,Legal Pads Yellow Letter,Preferred,$1.212,priced,https://example.com/item,2026-03-10,
+12,Legal Pads Yellow Letter,Amazon,$1.250,priced,https://example.com/item,2026-03-10,last paid per each: 1.15
+12,Legal Pads Yellow Letter,Staples,,discontinued,,2026-03-11,
+13,Correction Tape Roller,Office Depot,1.89,priced,https://example.com/item,2026-03-10,
+13,Correction Tape Roller,Preferred,1.70,priced,https://example.com/item,2026-03-10,
+13,Correction Tape Roller,Amazon,1.75,priced,https://example.com/item,2026-03-10,last paid per each: 1.60
+13,Correction Tape Roller,Staples,1.96,priced,https://example.com/item,2026-03-10,
+14,Packing Tape 2in Clear,Office Depot,2.81,priced,https://example.com/item,2026-03-10,
+14,Packing Tape 2in Clear,Preferred,2.52,priced,https://example.com/item,2026-03-10,
+14,Packing Tape 2in Clear,Amazon,2.60,priced,https://example.com/item,2026-03-10,last paid per each: 2.40
+14,Packing Tape 2in Clear,Staples,2.91,priced,https://example.com/item,2026-03-10,
+15,Index Cards 3x5 Ruled,Office Depot,0.04,priced,https://example.com/item,2026-03-10,
+15,Index Cards 3x5 Ruled,Preferred,0.03,priced,https://example.com/item,2026-03-10,
+15,Index Cards 3x5 Ruled,Amazon,0.04,priced,https://example.com/item,2026-03-10,last paid per each: 0.03
+15,Index Cards 3x5 Ruled,Staples,0.04,priced,https://example.com/item,2026-03-10,
+16,Hanging File Folders Letter,Office Depot,0.76,priced,https://example.com/item,2026-03-10,
+16,Hanging File Folders Letter,Preferred,0.68,priced,https://example.com/item,2026-03-10,
+16,Hanging File Folders Letter,Amazon,0.70,priced,https://example.com/item,2026-03-10,last paid per each: 0.65
+16,Hanging File Folders Letter,Staples,0.78,priced,https://example.com/item,2026-03-10,
+17,Expanding File Wallets,Office Depot,1.57,priced,https://example.com/item,2026-03-10,
+17,Expanding File Wallets,Preferred,1.41,priced,https://example.com/item,2026-03-10,
+17,Expanding File Wallets,Amazon,1.45,priced,https://example.com/item,2026-03-10,last paid per each: 1.35
+17,Expanding File Wallets,Staples,1.62,priced,https://example.com/item,2026-03-10,
+18,Printer Toner Black Compatible,Office Depot,$44.28,priced,https://example.com/item,2026-03-10,
+18,Printer Toner Black Compatible,Preferred,$39.77,priced,https://example.com/item,2026-03-10,
+18,Printer Toner Black Compatible,Amazon,"$1,050.00",priced,https://example.com/item,2026-03-10,last paid per each: 38.20
+18,Printer Toner Black Compatible,Staples,$45.92,priced,https://example.com/item,2026-03-10,
+19,Colored Copy Paper Assorted,Office Depot,7.02,priced,https://example.com/item,2026-03-10,
+19,Colored Copy Paper Assorted,Preferred,6.30,priced,https://example.com/item,2026-03-10,
+19,Colored Copy Paper Assorted,Amazon,6.50,priced,https://example.com/item,2026-03-10,last paid per each: 6.10
+19,Colored Copy Paper Assorted,Staples,7.28,priced,https://example.com/item,2026-03-10,
+20,Spiral Notebooks Wide Ruled,Office Depot,1.24,priced,https://example.com/item,2026-03-10,
+20,Spiral Notebooks Wide Ruled,Preferred,1.12,priced,https://example.com/item,2026-03-10,
+20,Spiral Notebooks Wide Ruled,Amazon,1.15,priced,https://example.com/item,2026-03-10,last paid per each: 1.05
+20,Spiral Notebooks Wide Ruled,Staples,1.29,priced,https://example.com/item,2026-03-10,
+21,Whiteboard Cleaning Spray,Office Depot,4.43,priced,https://example.com/item,2026-03-10,
+21,Whiteboard Cleaning Spray,Preferred,3.98,priced,https://example.com/item,2026-03-10,
+21,Whiteboard Cleaning Spray,Amazon,4.10,priced,https://example.com/item,2026-03-10,last paid per each: 3.85
+21,Whiteboard Cleaning Spray,Staples,4.59,priced,https://example.com/item,2026-03-10,
+22,Batteries AA 4-Pack,Office Depot,3.67,priced,https://example.com/item,2026-03-10,
+22,Batteries AA 4-Pack,Preferred,3.30,priced,https://example.com/item,2026-03-10,
+22,Batteries AA 4-Pack,Amazon,3.40,priced,https://example.com/item,2026-03-10,last paid per each: 3.10
+22,Batteries AA 4-Pack,Staples,3.81,priced,https://example.com/item,2026-03-10,
+23,Hand Sanitizer 8oz Pump,Office Depot,2.97,priced,https://example.com/item,2026-03-10,
+23,Hand Sanitizer 8oz Pump,Preferred,2.67,priced,https://example.com/item,2026-03-10,
+23,Hand Sanitizer 8oz Pump,Amazon,2.75,priced,https://example.com/item,2026-03-10,last paid per each: 2.55
+23,Hand Sanitizer 8oz Pump,Staples,3.08,priced,https://example.com/item,2026-03-10,
+24,Facial Tissue Box 160ct,Office Depot,1.40,priced,https://example.com/item,2026-03-10,
+24,Facial Tissue Box 160ct,Preferred,1.26,priced,https://example.com/item,2026-03-10,
+24,Facial Tissue Box 160ct,Amazon,1.30,priced,https://example.com/item,2026-03-10,last paid per each: 1.20
+24,Facial Tissue Box 160ct,Staples,1.46,priced,https://example.com/item,2026-03-10,
+25,Trash Can Liners 33 Gallon,Office Depot,0.23,priced,https://example.com/item,2026-03-10,
+25,Trash Can Liners 33 Gallon,Preferred,0.20,priced,https://example.com/item,2026-03-10,
+25,Trash Can Liners 33 Gallon,Amazon,0.21,priced,https://example.com/item,2026-03-10,last paid per each: 0.19
+25,Trash Can Liners 33 Gallon,Staples,0.24,priced,https://example.com/item,2026-03-10,

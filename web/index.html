@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supply Top 25 builder</title>
+<link rel="icon" href="assets/mark.svg">
+<link rel="stylesheet" href="vendor/main.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<nav class="navbar shadow-sm bg-primary" data-bs-theme="dark">
+  <div class="container-fluid px-3 px-lg-4">
+    <span class="navbar-brand d-flex align-items-center gap-2 mb-0">
+      <img src="assets/mark.svg" alt="" width="26" height="26" class="app-mark">
+      <span class="fs-4 mb-0">Supply Top 25 builder</span>
+    </span>
+    <div class="d-flex align-items-center gap-1">
+      <button type="button" class="btn btn-link link-light" id="theme-toggle"
+              aria-pressed="false" title="Switch between light and dark">
+        <i class="bi bi-moon-fill fs-5" id="theme-icon" aria-hidden="true"></i>
+        <span class="visually-hidden">Switch to dark mode</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid px-3 px-lg-4 py-3">
+
+  <!-- Step progress -->
+  <ol class="steps list-unstyled d-flex flex-wrap gap-2 mb-3" id="steps" aria-label="Progress">
+    <li><button type="button" class="step" data-goto="1" aria-current="step"><span class="step-n">1</span> Load files</button></li>
+    <li><button type="button" class="step" data-goto="2"><span class="step-n">2</span> Review</button></li>
+    <li><button type="button" class="step" data-goto="3"><span class="step-n">3</span> Ranking</button></li>
+    <li><button type="button" class="step" data-goto="4"><span class="step-n">4</span> Prices</button></li>
+    <li><button type="button" class="step" data-goto="5"><span class="step-n">5</span> Download</button></li>
+  </ol>
+
+  <!-- Messages -->
+  <div id="alerts" role="alert" aria-live="assertive" aria-atomic="false"></div>
+  <p class="visually-hidden" id="status-live" role="status" aria-live="polite"></p>
+
+  <!-- ─────────────────────────── 1. Load files ─────────────────────────── -->
+  <section class="card app-card mb-3" id="step-1" aria-labelledby="h-step-1">
+    <div class="card-header d-flex align-items-center gap-2">
+      <h2 class="h6 mb-0" id="h-step-1"><span class="step-n me-1">1</span> Load files</h2>
+      <span class="ms-auto caption" id="load-state">Nothing loaded yet</span>
+    </div>
+    <div class="card-body">
+      <p class="step-note">
+        Pick the exports for one year. They are read in this tab and nothing is sent anywhere.
+        Check the row counts and the date range below before moving on.
+      </p>
+      <div class="row g-3">
+        <div class="col-12 col-xl-6">
+          <div class="dropzone" data-for="file-amazon">
+            <label class="form-label fw-semibold" for="file-amazon">Amazon Business export <span class="text-danger">*</span></label>
+            <div class="caption caption-plain mb-2">Order history for the year. .xlsx or .csv</div>
+            <input class="form-control" type="file" id="file-amazon" accept=".xlsx,.csv" data-kind="amazon">
+            <div class="file-note caption caption-plain mt-2" id="note-amazon">Drop a file here or choose one</div>
+          </div>
+        </div>
+        <div class="col-12 col-xl-6">
+          <div class="dropzone" data-for="file-preferred">
+            <label class="form-label fw-semibold" for="file-preferred">Preferred export</label>
+            <div class="caption caption-plain mb-2">Pettus / Preferred order history. .xlsx</div>
+            <input class="form-control" type="file" id="file-preferred" accept=".xlsx" data-kind="preferred">
+            <div class="file-note caption caption-plain mt-2" id="note-preferred">Optional, but the report is Amazon only without it</div>
+          </div>
+        </div>
+        <div class="col-12 col-xl-6">
+          <div class="dropzone" data-for="file-master">
+            <label class="form-label fw-semibold" for="file-master">Item master</label>
+            <div class="caption caption-plain mb-2">item_master.csv from the last run. Leave empty on a first ever run.</div>
+            <input class="form-control" type="file" id="file-master" accept=".csv" data-kind="master">
+            <div class="file-note caption caption-plain mt-2" id="note-master">Optional</div>
+          </div>
+        </div>
+        <div class="col-12 col-xl-6">
+          <div class="dropzone" data-for="file-prices">
+            <label class="form-label fw-semibold" for="file-prices">Prices</label>
+            <div class="caption caption-plain mb-2">prices.csv from the last run, so last year's prices carry over.</div>
+            <input class="form-control" type="file" id="file-prices" accept=".csv" data-kind="prices">
+            <div class="file-note caption caption-plain mt-2" id="note-prices">Optional</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 align-items-end mt-1">
+        <div class="col-6 col-md-3 col-xl-2">
+          <label class="form-label" for="year">Year</label>
+          <input class="form-control" type="number" id="year" min="2000" max="2100" step="1" inputmode="numeric">
+          <div class="caption caption-plain mt-1" id="year-note">Detected from the order dates</div>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+          <label class="form-label" for="top-n">Top N</label>
+          <input class="form-control" type="number" id="top-n" min="1" max="200" step="1" value="25" inputmode="numeric">
+          <div class="caption caption-plain mt-1">Rows on the comparison sheet. Changing it re-cuts the ranking and the price grid.</div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <button type="button" class="btn btn-primary" id="btn-read" disabled>
+          <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Read the files
+        </button>
+        <button type="button" class="btn btn-outline-secondary" id="btn-reset">Start over</button>
+      </div>
+
+      <div id="load-summary" class="mt-3"></div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 2. Review ─────────────────────────── -->
+  <section class="card app-card mb-3 is-locked" id="step-2" aria-labelledby="h-step-2">
+    <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+      <h2 class="h6 mb-0" id="h-step-2"><span class="step-n me-1">2</span> Review</h2>
+      <span class="badge rounded-pill bg-danger" id="blocking-count">0 blocking</span>
+      <span class="badge rounded-pill bg-warning text-dark" id="unconfirmed-count">0 unconfirmed</span>
+      <span class="ms-auto caption" id="review-state">Load the files first</span>
+    </div>
+    <div class="card-body">
+      <p class="step-note">
+        Every item the tool has not seen before, blocking rows first. Set include and how many
+        units come in one pack, then confirm. Step 3 stays locked while any blocking row is left.
+      </p>
+      <div id="queue-breakdown" class="summary-strip mb-3"></div>
+      <div id="review-change" class="mb-3"></div>
+      <div class="row g-2 align-items-end mb-3">
+        <div class="col-12 col-lg-5">
+          <label class="form-label" for="review-filter">Filter</label>
+          <input type="search" class="form-control" id="review-filter" placeholder="Item name, key or reason">
+        </div>
+        <div class="col-12 col-lg-7 d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-primary" id="btn-confirm" disabled>
+            <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Confirm selected
+          </button>
+          <button type="button" class="btn btn-outline-secondary" id="btn-accept" disabled>
+            Accept suggestions for now
+          </button>
+          <button type="button" class="btn btn-outline-secondary" id="btn-use-all">Use every suggestion</button>
+          <button type="button" class="btn btn-link" id="btn-clear-filter" hidden>Clear filter</button>
+        </div>
+        <div class="col-12">
+          <p class="caption caption-plain mb-0" id="review-impact"></p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table table-sm table-hover align-middle app-table" id="review-table">
+          <caption class="visually-hidden">Review queue. Blocking rows first, grouped by reason.</caption>
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <datalist id="canonical-names"></datalist>
+      <p class="caption caption-plain mb-0 mt-2">
+        Confirm selected records your pack size as confirmed. Accept suggestions for now records it as
+        proposed, which still counts but stays flagged until somebody confirms it. Use every suggestion
+        only fills the boxes in the rows on screen; nothing is written until you confirm or accept.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 3. Ranking ─────────────────────────── -->
+  <section class="card app-card mb-3 is-locked" id="step-3" aria-labelledby="h-step-3">
+    <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+      <h2 class="h6 mb-0" id="h-step-3"><span class="step-n me-1">3</span> Ranking</h2>
+      <span class="ms-auto caption" id="rank-state">Clear the blocking rows first</span>
+    </div>
+    <div class="card-body">
+      <p class="step-note">
+        Read-only. Check the top rows and their pack sizes before pricing them. Warnings name the
+        items they are about, and Review these filters step 2 down to those items.
+      </p>
+      <div id="rank-summary" class="summary-strip mb-3"></div>
+      <div id="rank-moved" class="mb-3"></div>
+      <div id="rank-findings" class="mb-3 always-on"></div>
+      <div class="table-wrap">
+        <table class="table table-sm table-hover align-middle app-table" id="rank-table">
+          <caption class="visually-hidden">Every included item, ranked by eaches. The top N is highlighted.</caption>
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="rank-excluded" class="mt-2"></div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 4. Prices ─────────────────────────── -->
+  <section class="card app-card mb-3 is-locked" id="step-4" aria-labelledby="h-step-4">
+    <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+      <h2 class="h6 mb-0" id="h-step-4"><span class="step-n me-1">4</span> Prices</h2>
+      <span class="ms-auto caption" id="prices-state">Ranking has to run first</span>
+    </div>
+    <div class="card-body">
+      <p class="step-note">
+        Type the price per each for every vendor you have a quote for, and set the status beside it.
+        Prices from the file you loaded are already filled in, so you only have to fill the gaps.
+      </p>
+      <div id="price-coverage" class="d-flex flex-wrap gap-2 mb-3"></div>
+      <div id="price-new" class="mb-3"></div>
+      <div id="price-problems" class="mb-3"></div>
+      <div class="table-wrap">
+        <table class="table table-sm align-middle app-table price-table" id="price-table">
+          <caption class="visually-hidden">One row per top item, one column per vendor. Type the price and set the status.</caption>
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="price-retired" class="mt-3"></div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 5. Download ─────────────────────────── -->
+  <section class="card app-card mb-3 is-locked" id="step-5" aria-labelledby="h-step-5">
+    <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+      <h2 class="h6 mb-0" id="h-step-5"><span class="step-n me-1">5</span> Download</h2>
+      <span class="ms-auto caption" id="download-state">Nothing to download yet</span>
+    </div>
+    <div class="card-body">
+      <p class="step-note">
+        What each file holds is listed below, with every failing and warning check above it. The
+        report stays disabled while any check is failing.
+      </p>
+      <div id="download-findings" class="mb-3 always-on"></div>
+      <h3 class="caption mb-2">What you are about to download</h3>
+      <div id="download-files" class="mb-3"></div>
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-primary" id="dl-report" disabled>
+          <i class="bi bi-file-earmark-excel me-1" aria-hidden="true"></i><span id="dl-report-label">Download the report workbook</span>
+        </button>
+        <button type="button" class="btn btn-outline-secondary" id="dl-master">Download item_master.csv</button>
+        <button type="button" class="btn btn-outline-secondary" id="dl-prices">Download prices.csv</button>
+        <button type="button" class="btn btn-outline-secondary" id="dl-retired">Download prices_retired.csv</button>
+        <button type="button" class="btn btn-outline-secondary" id="dl-run">Download run.json</button>
+      </div>
+      <p class="caption caption-plain mt-3 mb-0" id="dl-report-reason"></p>
+      <p class="caption caption-plain mt-2 mb-0">
+        Keep item_master.csv and prices.csv somewhere safe. Loading them next year is what stops the
+        tool asking the same pack size questions again.
+      </p>
+    </div>
+  </section>
+
+  <footer class="py-3 caption caption-plain border-top">
+    Everything runs in your browser. No file leaves this computer.
+  </footer>
+</div>
+
+<!-- ExcelJS attaches window.ExcelJS; it must load before the module script. -->
+<script src="vendor/exceljs.min.js"></script>
+<script type="module" src="js/app.js"></script>
+<script>
+  // Browsers refuse to load ES modules straight off the disk (file://), which leaves
+  // a blank page with only a console error. app.js sets this flag as soon as it runs;
+  // if it never does, say what to do instead of showing nothing.
+  setTimeout(function () {
+    if (window.__supplytrackReady) return;
+    var box = document.getElementById("alerts");
+    if (!box) return;
+    box.insertAdjacentHTML("beforeend",
+      '<div class="alert alert-danger"><strong>The page could not start.</strong> ' +
+      'Most browsers block this kind of page when it is opened straight from a folder. ' +
+      'Open it from its web address instead, or serve the folder locally with ' +
+      '<code>python -m http.server</code> and open <code>http://localhost:8000/</code>. ' +
+      'The browser console has the detail.</div>');
+  }, 1500);
+</script>
+</body>
+</html>

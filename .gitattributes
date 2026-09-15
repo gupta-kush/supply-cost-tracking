@@ -1,0 +1,6 @@
+* text=auto
+*.csv -text
+*.json -text
+*.xlsx binary
+*.woff binary
+*.woff2 binary
