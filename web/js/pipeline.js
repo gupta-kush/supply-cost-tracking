@@ -567,24 +567,75 @@ export const PRICES_HEADER = [
 export const VENDORS = ["Office Depot", "Preferred", "Amazon", "Staples"];
 export const VALID_STATUSES = new Set(["priced", "not_available", "discontinued", "unpriced"]);
 
-export const AMAZON_HEADERS = [
-  "Order Date", "Order ID", "Account Group", "PO Number", "Order Quantity",
-  "Order Subtotal", "Order Shipping & Handling", "Order Promotion", "Order Tax",
-  "Order Net Total", "Order Status", "Account User", "Account User Email",
-  "Payment Date", "Payment Amount", "Payment Instrument Type", "Payment Identifier",
-  "Amazon-Internal Product Category", "Title", "Segment", "Family", "Class",
-  "Commodity", "Brand Code", "Brand", "Purchase PPU", "Item Quantity",
-  "Item Subtotal", "Item Shipping & Handling", "Item Promotion", "Item Tax",
-  "Item Net Total",
+// The columns this tool actually reads, and the only ones an export must have.
+// Amazon documents its report columns as user-selectable and reorderable, and
+// the selectable list keeps growing, so a sheet is matched on these names
+// alone: extra columns are ignored and position and count are never checked.
+//
+// Personal data must never be added to either required list. Account User
+// Email, Payment Identifier and Payment Instrument Type are not read anywhere
+// in this port. Account User is read, but only to copy into the account_user
+// column of lines.csv, so it sits in AMAZON_OPTIONAL_COLUMNS and an export
+// without it still ingests.
+export const AMAZON_REQUIRED_COLUMNS = [
+  "Order Date", "Order ID", "Order Status", "Amazon-Internal Product Category",
+  "Title", "Item Quantity", "Purchase PPU",
 ];
 
-export const PREFERRED_HEADERS = [
-  "Company Name", "Code", "Description", "Pack", "Quan", "Customer Ref",
-  "Contact Name", "Order Date",
+export const PREFERRED_REQUIRED_COLUMNS = ["Code", "Description", "Pack", "Quan", "Order Date"];
+
+// Read when present, blank when not. None of these decides whether a sheet is
+// recognised, so losing one costs a column of detail and nothing else.
+export const AMAZON_OPTIONAL_COLUMNS = ["Item Subtotal", "Account User"];
+export const PREFERRED_OPTIONAL_COLUMNS = ["Customer Ref", "Contact Name"];
+
+// The other Amazon Business reports, so picking the wrong one in the "Show"
+// dropdown is named rather than reported as a pile of missing columns.
+//
+// Each marker list holds only headers that do NOT appear in the Orders report's
+// own column set, and two of them must be present before a sheet is called that
+// report. Sourcing, honestly: the Refunds and Returns markers come from Amazon's
+// own Business Analytics guide and are solid; Return Status, Return Quantity and
+// the Shipments markers were only corroborated by secondary write-ups, so they
+// are deliberately narrow. The Reconciliation markers are the invoice and
+// statement fields of the report Amazon launched in 2026; the legacy
+// Reconciliation layout looks like Orders without the item columns and is not
+// detected here on purpose, because every header it carries is also an Orders
+// header and guessing would misread a trimmed Orders export.
+export const SIBLING_REPORTS = [
+  ["Refunds", ["Refund Date", "Refund Reason", "Refund Status", "Refund Type"]],
+  ["Returns", ["Return Date", "Return Reason", "Return Status", "Return Quantity"]],
+  ["Reconciliation", [
+    "Statement Number", "Invoice Number", "Invoice Due Date", "Document Issue Date",
+    "Document Status", "Credit Memo Number",
+  ]],
+  ["Shipments", ["Carrier Tracking #", "Delivery Status", "Shipment Tracking Number"]],
 ];
 
-const AMAZON_REQUIRED = AMAZON_HEADERS.map(normHeader);
-const PREFERRED_REQUIRED = PREFERRED_HEADERS.map(normHeader);
+// How far down a sheet the header row is looked for, how many markers of one
+// sibling report name that report, and how many columns of a signature make the
+// failure talk about missing columns rather than an unrecognised sheet.
+export const MAX_HEADER_SCAN = 10;
+export const SIBLING_MIN_MARKERS = 2;
+export const NEAR_MISS_MIN_COLUMNS = 2;
+
+const AMAZON_REQUIRED = AMAZON_REQUIRED_COLUMNS.map(normHeader);
+const PREFERRED_REQUIRED = PREFERRED_REQUIRED_COLUMNS.map(normHeader);
+const AMAZON_OPTIONAL = AMAZON_OPTIONAL_COLUMNS.map(normHeader);
+const PREFERRED_OPTIONAL = PREFERRED_OPTIONAL_COLUMNS.map(normHeader);
+
+const SIGNATURES = [["amazon", AMAZON_REQUIRED], ["preferred", PREFERRED_REQUIRED]];
+const VENDOR_LABELS = { amazon: "Amazon", preferred: "Preferred" };
+
+// Matching is on normalised headers; messages name the column the way it is
+// spelled in the export, because that is what somebody looking at the file sees.
+const SPELLING = new Map(
+  AMAZON_REQUIRED_COLUMNS.concat(PREFERRED_REQUIRED_COLUMNS).map((h) => [normHeader(h), h])
+);
+
+function spell(headers) {
+  return headers.map((h) => SPELLING.get(h) || h).join(", ");
+}
 
 export const UNCONFIRMED_UPP_SOURCES = new Set(["title", "proposed"]);
 
@@ -821,10 +872,23 @@ export function categoryExpectedInclude(category) {
 export function normaliseTable(table, name = "the export") {
   const rows = Array.isArray(table) ? table : [];
   if (!rows.length) fail(`${name} is empty - there is no header row to read.`);
-  const headers = (rows[0] || []).map(normHeader);
+  return normaliseGrid(rows, 0);
+}
+
+/**
+ * Split a raw grid into {headers, body} at `headerRow`.
+ *
+ * Rows above the header row are dropped, blank rows are dropped and short rows
+ * are padded to the header width. Ports supplytrack.xlsx.normalise_grid.
+ *
+ * @param {Array<Array<unknown>>} rows
+ * @param {number} headerRow
+ */
+export function normaliseGrid(rows, headerRow = 0) {
+  const headers = (rows[headerRow] || []).map(normHeader);
   const width = headers.length;
   const body = [];
-  for (const raw of rows.slice(1)) {
+  for (const raw of rows.slice(headerRow + 1)) {
     const row = Array.from(raw || []);
     if (!row.some((c) => c != null && String(c).trim() !== "")) continue;
     while (row.length < width) row.push(null);
@@ -833,7 +897,12 @@ export function normaliseTable(table, name = "the export") {
   return { headers, body };
 }
 
-function headerIndex(headers, name, required) {
+/** The first `limit` rows of a grid, each normalised as a header row. */
+export function scanHeaders(grid, limit = MAX_HEADER_SCAN) {
+  return grid.slice(0, limit).map((row) => (row || []).map(normHeader));
+}
+
+function headerIndex(headers, name, required, optional = []) {
   const index = new Map();
   headers.forEach((h, i) => {
     if (h && !index.has(h)) index.set(h, i);
@@ -841,14 +910,247 @@ function headerIndex(headers, name, required) {
   const missing = required.filter((h) => !index.has(h));
   if (missing.length) {
     fail(
-      `${name} is missing ${missing.length} expected column(s): ` +
-        missing.join(", ") +
+      `${name} is missing ${missing.length} required column(s): ` +
+        spell(missing) +
         ". Check that this is the full order-history export and not a filtered view."
     );
   }
   const out = new Map();
   for (const h of required) out.set(h, index.get(h));
+  for (const h of optional) if (index.has(h)) out.set(h, index.get(h));
   return out;
+}
+
+// =========================================================================
+// Sheet recognition
+// =========================================================================
+
+/**
+ * How one sheet is named in a message: the file, and the sheet if it has one.
+ *
+ * Python writes the sheet name with `repr`, so the two sides say the same
+ * thing about the same file; every sheet name this tool meets is plain text,
+ * where repr is a single-quoted string with backslashes and quotes escaped.
+ */
+export function sheetLabel(file, sheet) {
+  if (!sheet) return String(file);
+  const quoted = String(sheet).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return `${file} sheet '${quoted}'`;
+}
+
+/** Every row of one export reduced to the columns that identify it. */
+function rowSignature(exportSheet, required) {
+  const index = new Map();
+  exportSheet.headers.forEach((h, i) => {
+    if (h && !index.has(h)) index.set(h, i);
+  });
+  const columns = required.map((h) => index.get(h));
+  const counts = new Map();
+  for (const row of exportSheet.body) {
+    const key = JSON.stringify(columns.map((i) => (i < row.length ? cleanText(row[i]) : "")));
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return counts;
+}
+
+function contains(big, small) {
+  for (const [key, count] of small) if ((big.get(key) || 0) < count) return false;
+  return true;
+}
+
+function sameCounts(a, b) {
+  return a.size === b.size && contains(a, b) && contains(b, a);
+}
+
+/**
+ * The one export that holds every row of the others, if there is one.
+ *
+ * The working workbook keeps a filtered copy of the Amazon export beside the
+ * raw one - the office manager's own "office supplies only" sheet. Both carry
+ * the export's columns, so both are recognised, and reading either one twice
+ * would double the lines. When one sheet strictly contains every row of the
+ * others it is the export and they are views of it, which is a fact about the
+ * rows rather than a guess from sheet names or row counts. Two sheets that hold
+ * the same rows, or that each hold rows the other does not, are a real
+ * ambiguity and the caller refuses them.
+ */
+function pickFullExport(found, required) {
+  const counts = found.map((e) => rowSignature(e, required));
+  const winners = found.filter((_, i) =>
+    counts.every((small, j) => j === i || (contains(counts[i], small) && !sameCounts(counts[i], small)))
+  );
+  return winners.length === 1 ? winners[0] : null;
+}
+
+function matchSignature(grid) {
+  const scanned = scanHeaders(grid);
+  for (let rowNumber = 0; rowNumber < scanned.length; rowNumber += 1) {
+    const present = new Set(scanned[rowNumber].filter(Boolean));
+    for (const [vendor, required] of SIGNATURES) {
+      if (required.every((h) => present.has(h))) return { vendor, headerRow: rowNumber };
+    }
+  }
+  return null;
+}
+
+/** Every header-shaped value in the rows the scan looked at. */
+function scannedHeaders(grid) {
+  const seen = new Set();
+  for (const headers of scanHeaders(grid)) for (const h of headers) if (h) seen.add(h);
+  return seen;
+}
+
+function siblingReport(grid) {
+  const present = scannedHeaders(grid);
+  for (const [name, markers] of SIBLING_REPORTS) {
+    const hits = markers.filter((m) => present.has(normHeader(m)));
+    if (hits.length >= SIBLING_MIN_MARKERS) return name;
+  }
+  return null;
+}
+
+/** The signature this sheet came closest to, and what it is missing. */
+function nearMiss(grid) {
+  const present = scannedHeaders(grid);
+  let best = null;
+  for (const [vendor, required] of SIGNATURES) {
+    const found = required.filter((h) => present.has(h));
+    if (found.length < NEAR_MISS_MIN_COLUMNS) continue;
+    const missing = required.filter((h) => !present.has(h));
+    if (best === null || found.length > best.found) best = { found: found.length, vendor, missing };
+  }
+  return best;
+}
+
+/**
+ * Why one sheet was passed over, in the words the page and the CLI show.
+ *
+ * A sibling Amazon report is named first: it is the most specific thing that
+ * can be said, and it also carries Order Date and Order ID, so the
+ * missing-column wording would otherwise take over and hide the real problem.
+ */
+function ignoreReason(grid) {
+  const sibling = siblingReport(grid);
+  if (sibling) return `this is the Amazon ${sibling} report, not the Orders report`;
+  const near = nearMiss(grid);
+  if (near) {
+    return (
+      `looks like the ${VENDOR_LABELS[near.vendor]} export but is missing ` +
+      `${near.missing.length} required column(s): ` + spell(near.missing)
+    );
+  }
+  return "not an order export";
+}
+
+/**
+ * The failure when no sheet in any file was an export.
+ *
+ * The sibling and missing-column cases are only raised here, once nothing has
+ * been recognised anywhere. A Refunds sheet sitting beside a good Orders sheet
+ * is a sheet to skip, not a reason to stop.
+ */
+function failNothingRecognised(skipped) {
+  for (const { sheet, grid } of skipped) {
+    const sibling = siblingReport(grid);
+    if (sibling) {
+      fail(
+        `${sheetLabel(sheet.file, sheet.sheet)}: this is the Amazon ${sibling} report. ` +
+          "Export the Orders report instead."
+      );
+    }
+  }
+  for (const { sheet, grid } of skipped) {
+    const near = nearMiss(grid);
+    if (near) {
+      fail(
+        `${sheetLabel(sheet.file, sheet.sheet)} looks like the ${VENDOR_LABELS[near.vendor]} ` +
+          `export but is missing ${near.missing.length} required column(s): ` +
+          spell(near.missing) +
+          ". Check that this is the full order-history export and not a filtered view."
+      );
+    }
+  }
+  const listing =
+    skipped.map(({ sheet }) => sheetLabel(sheet.file, sheet.sheet)).join(", ") || "no sheets at all";
+  fail(
+    "No order export was found in what you gave the tool. Looked at: " +
+      listing +
+      ". An Amazon Orders export needs the columns " +
+      AMAZON_REQUIRED_COLUMNS.join(", ") +
+      ". A Preferred export needs the columns " +
+      PREFERRED_REQUIRED_COLUMNS.join(", ") +
+      "."
+  );
+}
+
+/**
+ * Sort raw sheets into the exports this tool reads and the ones it skips.
+ *
+ * `sources` is `{file, sheet, grid}` per sheet, in the order the files were
+ * given. A sheet is an export when its header row carries every required column
+ * of one signature; the header row is looked for in the first MAX_HEADER_SCAN
+ * rows, because a sheet somebody pasted an export into often has a title line
+ * above it. Ports supplytrack.ingest.classify_grids.
+ *
+ * @returns {{recognised: object[], ignored: object[]}}
+ */
+export function classifyGrids(sources) {
+  const recognised = [];
+  const ignored = [];
+  const skipped = [];
+
+  for (const source of sources || []) {
+    const grid = Array.isArray(source.grid) ? source.grid : [];
+    const file = source.file == null ? "" : String(source.file);
+    const sheet = source.sheet == null ? "" : String(source.sheet);
+    const match = matchSignature(grid);
+    if (!match) {
+      const entry = { file, sheet, reason: ignoreReason(grid) };
+      ignored.push(entry);
+      skipped.push({ sheet: entry, grid });
+      continue;
+    }
+    const { headers, body } = normaliseGrid(grid, match.headerRow);
+    recognised.push({ vendor: match.vendor, file, sheet, headers, body });
+  }
+
+  for (const [vendor, required] of SIGNATURES) {
+    const found = recognised.filter((e) => e.vendor === vendor);
+    if (found.length < 2) continue;
+    const full = pickFullExport(found, required);
+    if (!full) {
+      fail(
+        `Found ${found.length} ${VENDOR_LABELS[vendor]} exports and cannot tell which one ` +
+          "to use: " +
+          found.map((e) => sheetLabel(e.file, e.sheet)).join(", ") +
+          ". Remove the copies you do not want and try again."
+      );
+    }
+    for (const other of found) {
+      if (other === full) continue;
+      recognised.splice(recognised.indexOf(other), 1);
+      ignored.push({
+        file: other.file,
+        sheet: other.sheet,
+        reason: `a filtered view of ${sheetLabel(full.file, full.sheet)}, ` +
+          "which this tool reads in full",
+      });
+    }
+  }
+
+  if (!recognised.length) failNothingRecognised(skipped);
+  return { recognised, ignored };
+}
+
+/** classifyGrids over files as the page holds them: {file, sheets:[{name, grid}]}. */
+export function classifyFiles(files) {
+  const sources = [];
+  for (const entry of files || []) {
+    for (const sheet of entry.sheets || []) {
+      sources.push({ file: entry.file, sheet: sheet.name || "", grid: sheet.grid });
+    }
+  }
+  return classifyGrids(sources);
 }
 
 function cellAt(row, index, header) {
@@ -880,14 +1182,16 @@ function summarise(name, notes, year) {
   return warnings;
 }
 
-function readAmazon(table, year, name) {
-  const { headers, body } = normaliseTable(table, name);
-  const index = headerIndex(headers, name, AMAZON_REQUIRED);
+function readAmazon(exportSheet, year) {
+  const { headers, body } = exportSheet;
+  const label = sheetLabel(exportSheet.file, exportSheet.sheet);
+  const name = exportSheet.file;
+  const index = headerIndex(headers, label, AMAZON_REQUIRED, AMAZON_OPTIONAL);
   const notes = { warnings: [], dates_out_of_year: [], non_closed: [] };
   const rows = [];
 
   body.forEach((raw, offset) => {
-    const where = `${name} row ${offset + 2}`;
+    const where = `${label} row ${offset + 2}`;
     const title = cleanText(cellAt(raw, index, normHeader("Title")));
     if (!title) {
       fail(
@@ -929,14 +1233,16 @@ function readAmazon(table, year, name) {
   return { rows, notes };
 }
 
-function readPreferred(table, year, name) {
-  const { headers, body } = normaliseTable(table, name);
-  const index = headerIndex(headers, name, PREFERRED_REQUIRED);
+function readPreferred(exportSheet, year) {
+  const { headers, body } = exportSheet;
+  const label = sheetLabel(exportSheet.file, exportSheet.sheet);
+  const name = exportSheet.file;
+  const index = headerIndex(headers, label, PREFERRED_REQUIRED, PREFERRED_OPTIONAL);
   const notes = { warnings: [], dates_out_of_year: [], non_closed: [] };
   const rows = [];
 
   body.forEach((raw, offset) => {
-    const where = `${name} row ${offset + 2}`;
+    const where = `${label} row ${offset + 2}`;
     const code = cleanText(cellAt(raw, index, normHeader("Code")));
     if (!code) {
       fail(
@@ -973,15 +1279,34 @@ function readPreferred(table, year, name) {
   return { rows, notes };
 }
 
+/** One line of run.json's `exports`: where it came from and what it held. */
+function exportRecord(exportSheet, rows) {
+  const dates = rows.map((r) => r.order_date).filter(Boolean).sort(cmpCodePoint);
+  return {
+    vendor: exportSheet.vendor,
+    file: exportSheet.file,
+    sheet: exportSheet.sheet,
+    rows: rows.length,
+    date_min: dates.length ? dates[0] : "",
+    date_max: dates.length ? dates[dates.length - 1] : "",
+  };
+}
+
 /**
- * Turn the two vendor exports into one normalised line list plus a run record.
+ * Turn the vendor exports into one normalised line list plus a run record.
+ *
+ * Takes `files`, one entry per uploaded file with every sheet it holds, and
+ * picks the Amazon and Preferred exports out by their columns; either export
+ * on its own is enough to run. The older `amazonTable` / `preferredTable`
+ * form still works and is treated as one file holding one unnamed sheet.
  *
  * Nothing is dropped: a line outside the year or with an unusual order status
  * is kept and listed, never filtered away, because the count of lines written
  * has to match the count read for the later checks to mean anything.
  *
  * @param {object} args
- * @param {Array<Array<unknown>>} args.amazonTable  header row + rows
+ * @param {Array<{file: string, sheets: Array<{name: string, grid: Array<Array<unknown>>}>}>} [args.files]
+ * @param {Array<Array<unknown>>} [args.amazonTable]  header row + rows
  * @param {Array<Array<unknown>>} [args.preferredTable]
  * @param {number|string} args.year
  * @param {string} [args.amazonFile]      name used in messages and run.json
@@ -990,7 +1315,8 @@ function readPreferred(table, year, name) {
  * @returns {{lines: object[], run: object, warnings: string[]}}
  */
 export function ingest({
-  amazonTable,
+  files = null,
+  amazonTable = null,
   preferredTable = null,
   year,
   amazonFile = "amazon.xlsx",
@@ -998,10 +1324,34 @@ export function ingest({
   now = null,
 } = {}) {
   const yearNum = parseInt(year, 10);
-  const amazon = readAmazon(amazonTable, yearNum, amazonFile);
-  let preferred = { rows: [], notes: { warnings: [], dates_out_of_year: [], non_closed: [] } };
-  if (preferredTable) preferred = readPreferred(preferredTable, yearNum, preferredFile);
 
+  let given = files;
+  if (!given) {
+    given = [];
+    if (amazonTable) given.push({ file: amazonFile, sheets: [{ name: "", grid: amazonTable }] });
+    if (preferredTable) {
+      given.push({ file: preferredFile, sheets: [{ name: "", grid: preferredTable }] });
+    }
+  }
+  if (!given.length) {
+    fail("No export file was given. Pass the workbook or .csv holding the order history.");
+  }
+
+  const { recognised, ignored } = classifyFiles(given);
+  const amazonExport = recognised.find((e) => e.vendor === "amazon") || null;
+  const preferredExport = recognised.find((e) => e.vendor === "preferred") || null;
+
+  const noNotes = () => ({ warnings: [], dates_out_of_year: [], non_closed: [] });
+  const amazon = amazonExport
+    ? readAmazon(amazonExport, yearNum)
+    : { rows: [], notes: noNotes() };
+  const preferred = preferredExport
+    ? readPreferred(preferredExport, yearNum)
+    : { rows: [], notes: noNotes() };
+
+  // Amazon lines always come before Preferred lines, whatever order the files
+  // or sheets arrived in, so the line file does not depend on how the exports
+  // were handed over.
   const lines = amazon.rows.concat(preferred.rows);
   if (!lines.length) {
     fail(
@@ -1012,10 +1362,11 @@ export function ingest({
 
   const dates = lines.map((r) => r.order_date).filter(Boolean).sort(cmpCodePoint);
   const warnings = amazon.notes.warnings.concat(preferred.notes.warnings);
+  const pairs = [[amazonExport, amazon.rows], [preferredExport, preferred.rows]];
   const run = {
     year: yearNum,
-    amazon_file: amazonFile,
-    preferred_file: preferredTable ? preferredFile : "",
+    amazon_file: amazonExport ? amazonExport.file : "",
+    preferred_file: preferredExport ? preferredExport.file : "",
     amazon_rows: amazon.rows.length,
     preferred_rows: preferred.rows.length,
     date_min: dates.length ? dates[0] : "",
@@ -1025,8 +1376,15 @@ export function ingest({
     warnings,
     dates_out_of_year: amazon.notes.dates_out_of_year.concat(preferred.notes.dates_out_of_year),
     non_closed: amazon.notes.non_closed.concat(preferred.notes.non_closed),
+    // Added after the first release, so everything above keeps its name and
+    // place: which sheet of which file each export came from, which vendors the
+    // run covers (one vendor alone is a valid run and says so here), and every
+    // sheet that was passed over with the reason.
+    exports: pairs.filter(([e]) => e).map(([e, rows]) => exportRecord(e, rows)),
+    vendors: pairs.filter(([e]) => e).map(([e]) => e.vendor),
+    ignored,
   };
-  return { lines, run, warnings };
+  return { lines, run, warnings, ignored, exports: run.exports };
 }
 
 // ===========================================================================

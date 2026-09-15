@@ -26,6 +26,11 @@ EXIT_NEEDS_PERSON = 2
 
 DEFAULT_TOP = 25
 
+# --amazon and --preferred came first and are still in written-down commands and in
+# PROJECT.md, so they keep working. They name a file the classifier would have found
+# anyway, which is why they are only an alias for putting the path on the line.
+_ALIAS_HELP = "the {which} export (older spelling; just list the file instead)"
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
@@ -44,6 +49,12 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _build_parser() -> argparse.ArgumentParser:
+    # Imported here, not at the top, for the same reason prices and report are:
+    # a checkout missing it still gets a working CLI for everything else. It
+    # defines its own arguments so `supplytrack propose` and
+    # `python -m supplytrack.propose` cannot come apart.
+    from . import propose as propose_mod
+
     parser = argparse.ArgumentParser(
         prog="supplytrack",
         description=(
@@ -54,8 +65,17 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     ingest = _sub(subparsers, "ingest", "Read the vendor exports into one line file.")
-    ingest.add_argument("--amazon", required=True, type=Path, help="the Amazon Business export")
-    ingest.add_argument("--preferred", type=Path, help="the Preferred order history")
+    ingest.add_argument(
+        "exports",
+        nargs="*",
+        type=Path,
+        help=(
+            "the export files: workbooks or .csv files, in any order. Every sheet is looked "
+            "at and the Amazon and Preferred exports are picked out by their columns."
+        ),
+    )
+    ingest.add_argument("--amazon", type=Path, help=_ALIAS_HELP.format(which="Amazon Business"))
+    ingest.add_argument("--preferred", type=Path, help=_ALIAS_HELP.format(which="Preferred"))
     ingest.set_defaults(handler=_cmd_ingest)
 
     review = _sub(subparsers, "review", "List what still needs a decision.")
@@ -71,6 +91,24 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     review.set_defaults(handler=_cmd_review)
+
+    propose = subparsers.add_parser(
+        "propose",
+        help="Ask a model to fill in the review queue's suggestions.",
+        description=propose_mod.DESCRIPTION,
+    )
+    # Its own parser rather than _sub: propose writes a queue file, not the
+    # workbook, so --out-dir would be an argument that does nothing. The
+    # arguments come from propose.py so the two ways in cannot drift.
+    propose.add_argument("--year", required=True, type=int, help="the reporting year, e.g. 2025")
+    propose.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help="where the item master and yearly files live (default: SUPPLYTRACK_DATA or ./data)",
+    )
+    propose_mod.add_arguments(propose, common=False)
+    propose.set_defaults(handler=_cmd_propose)
 
     rank = _sub(subparsers, "rank", "Rank items by how many units were bought.")
     _add_top(rank)
@@ -102,8 +140,17 @@ def _build_parser() -> argparse.ArgumentParser:
     validate.set_defaults(handler=_cmd_validate)
 
     run = _sub(subparsers, "run", "Run every stage, stopping where a person is needed.")
-    run.add_argument("--amazon", required=True, type=Path, help="the Amazon Business export")
-    run.add_argument("--preferred", type=Path, help="the Preferred order history")
+    run.add_argument(
+        "exports",
+        nargs="*",
+        type=Path,
+        help=(
+            "the export files: workbooks or .csv files, in any order. Every sheet is looked "
+            "at and the Amazon and Preferred exports are picked out by their columns."
+        ),
+    )
+    run.add_argument("--amazon", type=Path, help=_ALIAS_HELP.format(which="Amazon Business"))
+    run.add_argument("--preferred", type=Path, help=_ALIAS_HELP.format(which="Preferred"))
     _add_top(run)
     run.set_defaults(handler=_cmd_run)
 
@@ -132,6 +179,32 @@ def _add_top(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--top", type=int, default=DEFAULT_TOP, help=f"how many items to price and report (default {DEFAULT_TOP})"
     )
+
+
+def _export_sources(args) -> list[Path]:
+    """Every export path given, positional or through the older flags, in that order.
+
+    One list feeds one classifier, so `run` and `ingest` cannot disagree about which
+    file is which. An empty list is not rejected here: `ingest` already says what to
+    do about it, in the words the rest of the pipeline uses.
+    """
+    return list(args.exports) + [p for p in (args.amazon, args.preferred) if p is not None]
+
+
+def _report_exports(result) -> None:
+    """What was read, what was skipped, and whether a vendor is missing."""
+    for export in result.exports:
+        where = f"{export['file']} sheet {export['sheet']!r}" if export["sheet"] else export["file"]
+        label = "Amazon" if export["vendor"] == "amazon" else "Preferred"
+        print(f"Read {export['rows']} {label} line(s) from {where}")
+    for skipped in result.ignored:
+        where = (
+            f"{skipped['file']} sheet {skipped['sheet']!r}" if skipped["sheet"] else skipped["file"]
+        )
+        print(f"Skipped {where}: {skipped['reason']}")
+    if len(result.vendors) == 1:
+        other = "Preferred" if result.vendors[0] == "amazon" else "Amazon"
+        print(f"Only one vendor was found, so this run has no {other} orders in it.")
 
 
 def _data_dir(args) -> Path:
@@ -163,10 +236,10 @@ def _cmd_ingest(args) -> int:
     from .ingest import ingest
 
     data_dir = _data_dir(args)
-    result = ingest(data_dir, args.year, args.amazon, args.preferred)
-    print(f"Read {result.amazon_rows} Amazon line(s) from {result.amazon_file}")
-    if result.preferred_file:
-        print(f"Read {result.preferred_rows} Preferred line(s) from {result.preferred_file}")
+    # Positional paths and the two named flags mean the same thing; the flags
+    # stay so the commands written down elsewhere keep working.
+    result = ingest(data_dir, args.year, *_export_sources(args))
+    _report_exports(result)
     span = f"{result.date_min} to {result.date_max}" if result.date_min else "no dates"
     print(f"Wrote {result.rows_written} line(s) covering {span} to {result.lines_path}")
     for warning in result.warnings:
@@ -215,6 +288,13 @@ def _cmd_review(args) -> int:
 
     print("Nothing to review: every item in this year's orders has a confirmed pack size.")
     return EXIT_OK
+
+
+def _cmd_propose(args) -> int:
+    """The optional AI pass over the review queue. Writes a file, never the master."""
+    from . import propose
+
+    return propose.run_from_args(args)
 
 
 def _cmd_rank(args) -> int:
@@ -310,7 +390,8 @@ def _cmd_run(args) -> int:
     data_dir = _data_dir(args)
     out_dir = _out_dir(args)
 
-    result = ingest(data_dir, args.year, args.amazon, args.preferred)
+    result = ingest(data_dir, args.year, *_export_sources(args))
+    _report_exports(result)
     print(f"Ingested {result.rows_written} line(s) for {args.year}")
     for warning in result.warnings:
         print(f"WARN {warning}")

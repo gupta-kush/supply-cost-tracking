@@ -11,6 +11,25 @@
       "title": "Sharpie Permanent Markers, Fine Point, Assorted, 12 Count"
     }
   ],
+  "exports": [
+    {
+      "date_max": "2025-10-30",
+      "date_min": "2024-12-28",
+      "file": "amazon_2025_sample.xlsx",
+      "rows": 12,
+      "sheet": "Order History",
+      "vendor": "amazon"
+    },
+    {
+      "date_max": "2025-11-06",
+      "date_min": "2025-02-04",
+      "file": "preferred_2025_sample.xlsx",
+      "rows": 5,
+      "sheet": "Orders",
+      "vendor": "preferred"
+    }
+  ],
+  "ignored": [],
   "ingested_at": "<TIMESTAMP>",
   "non_closed": [
     {
@@ -23,6 +42,10 @@
   "preferred_file": "preferred_2025_sample.xlsx",
   "preferred_rows": 5,
   "rows_written": 17,
+  "vendors": [
+    "amazon",
+    "preferred"
+  ],
   "warnings": [
     "amazon_2025_sample.xlsx: 1 line(s) are dated outside 2025: 111-0000009-0000009 on 2024-12-28",
     "amazon_2025_sample.xlsx: 1 line(s) have a status other than Closed: 111-0000008-0000008 is Cancelled"

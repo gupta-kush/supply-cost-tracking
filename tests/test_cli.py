@@ -28,7 +28,9 @@ def test_every_subcommand_is_listed(capsys):
     with pytest.raises(SystemExit):
         main(["--help"])
     out = capsys.readouterr().out
-    for command in ("ingest", "review", "rank", "prices", "report", "validate", "run"):
+    for command in (
+        "ingest", "review", "propose", "rank", "prices", "report", "validate", "run"
+    ):
         assert command in out
 
 
@@ -259,3 +261,180 @@ def test_a_settled_year_prints_no_queue_breakdown(reviewed, capsys):
     assert "Nothing to review" in out
     assert "blocks the build" not in out  # no zero rows for reasons with nothing in them
     assert "does not block" not in out
+
+
+# ------------------------------------------------------------------ propose
+
+
+def test_propose_takes_the_same_arguments_as_the_module(capsys):
+    """One definition, two ways in: `supplytrack propose` and `python -m`.
+
+    Both parsers are built by `propose.add_arguments`, so this is really a
+    check that the subcommand was wired to it rather than given a hand-copied
+    second list that can drift.
+    """
+    from supplytrack.cli import _build_parser
+    from supplytrack.propose import add_arguments
+
+    import argparse
+
+    module_parser = argparse.ArgumentParser()
+    add_arguments(module_parser)
+    module_flags = {a.dest for a in module_parser._actions if a.dest != "help"}
+
+    sub = _build_parser()._subparsers._group_actions[0].choices["propose"]
+    cli_flags = {a.dest for a in sub._actions if a.dest != "help"}
+
+    assert module_flags == cli_flags
+    assert {"year", "data_dir", "provider", "model", "in_path", "out_path",
+            "only_blocking", "dry_run", "batch_size"} <= cli_flags
+
+
+def test_propose_dry_runs_without_a_key_or_a_network(ingested, capsys, monkeypatch):
+    """A dry run prints the batches and stops. It must not need a key."""
+    from supplytrack import propose
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setattr(propose, "_import_keyring", lambda: None)
+    monkeypatch.setattr(
+        propose,
+        "urllib_transport",
+        lambda request, timeout=180.0: pytest.fail("a dry run sent a request"),
+    )
+
+    build_queue_first = run(["review", "--year", str(YEAR), "--data-dir", str(ingested)])
+    assert build_queue_first == EXIT_NEEDS_PERSON
+    capsys.readouterr()
+
+    code = run(
+        ["propose", "--year", str(YEAR), "--data-dir", str(ingested),
+         "--batch-size", "10", "--dry-run"]
+    )
+    out = capsys.readouterr().out
+    assert code == EXIT_OK
+    assert "batch 1: 10 row(s)" in out
+    assert "Nothing was sent." in out
+    assert not (ingested / str(YEAR) / "review_queue_proposed.csv").exists()
+
+
+def test_propose_says_what_to_do_when_there_is_no_key(ingested, capsys, monkeypatch):
+    from supplytrack import propose
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setattr(propose, "_import_keyring", lambda: None)
+    run(["review", "--year", str(YEAR), "--data-dir", str(ingested)])
+    capsys.readouterr()
+
+    code = run(["propose", "--year", str(YEAR), "--data-dir", str(ingested)])
+    out = capsys.readouterr().out
+    assert code == EXIT_FAIL
+    assert "ANTHROPIC_API_KEY" in out
+    assert "keyring set supplytrack anthropic" in out
+
+
+def test_propose_writes_the_proposed_queue(ingested, capsys, monkeypatch):
+    from supplytrack import propose
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    run(["review", "--year", str(YEAR), "--data-dir", str(ingested)])
+    capsys.readouterr()
+
+    queue = read_csv(ingested / str(YEAR) / "review_queue.csv")
+    reply = {
+        "content": [
+            {
+                "type": "tool_use",
+                "name": "record_proposals",
+                "input": {
+                    "proposals": [
+                        {
+                            "key": row["key"],
+                            "include": "y",
+                            "include_reason": "office supply",
+                            "units_per_pack": 12,
+                            "upp_reason": "pack of 12",
+                            "unit_label": "EA",
+                            "canonical_name": row["raw_title"],
+                            "canonical_reason": "the title, tidied",
+                            "confidence": "high",
+                        }
+                        for row in queue
+                    ]
+                },
+            }
+        ]
+    }
+    monkeypatch.setattr(propose, "urllib_transport", lambda request, timeout=180.0: reply)
+
+    code = run(["propose", "--year", str(YEAR), "--data-dir", str(ingested)])
+    out = capsys.readouterr().out
+    assert code == EXIT_OK
+    written = ingested / str(YEAR) / "review_queue_proposed.csv"
+    assert written.exists()
+    rows = read_csv(written)
+    assert len(rows) == len(queue)
+    assert {r["proposed_by"] for r in rows} == {"anthropic:claude-sonnet-5"}
+    assert rows[0]["include_reason"].startswith("AI: ")
+    assert "--proposed" in out
+
+
+# ---------------------------------------------------------------------- run
+
+
+def test_run_takes_the_export_files_as_plain_paths(
+    data_dir, amazon_export, preferred_export, capsys
+):
+    """`run` reads files the same way `ingest` does: list them, in any order."""
+    code = run(
+        ["run", "--year", str(YEAR), "--data-dir", str(data_dir),
+         str(preferred_export), str(amazon_export)]
+    )
+    out = capsys.readouterr().out
+    # It stops at the review queue, which is the first place a person is needed.
+    assert code == EXIT_NEEDS_PERSON
+    assert "Read 12 Amazon line(s)" in out
+    assert "Read 5 Preferred line(s)" in out
+    assert "Ingested 17 line(s)" in out
+    assert "need a decision" in out
+    assert (data_dir / str(YEAR) / "lines.csv").exists()
+
+
+def test_run_still_accepts_the_older_amazon_and_preferred_flags(
+    data_dir, amazon_export, preferred_export, capsys
+):
+    """The written-down commands keep working: the flags append to the same list."""
+    code = run(
+        ["run", "--year", str(YEAR), "--data-dir", str(data_dir),
+         "--amazon", str(amazon_export), "--preferred", str(preferred_export)]
+    )
+    out = capsys.readouterr().out
+    assert code == EXIT_NEEDS_PERSON
+    assert "Ingested 17 line(s)" in out
+    assert (data_dir / str(YEAR) / "lines.csv").exists()
+
+
+def test_run_and_ingest_read_the_same_files_the_same_way(
+    tmp_path, amazon_export, preferred_export, capsys
+):
+    """Positional and flag spellings, and both commands, land on one classifier."""
+    from conftest import read_csv
+
+    a_dir = tmp_path / "by-ingest"
+    b_dir = tmp_path / "by-run"
+    a_dir.mkdir()
+    b_dir.mkdir()
+
+    run(["ingest", "--year", str(YEAR), "--data-dir", str(a_dir),
+         "--amazon", str(amazon_export), "--preferred", str(preferred_export)])
+    run(["run", "--year", str(YEAR), "--data-dir", str(b_dir),
+         str(amazon_export), str(preferred_export)])
+    capsys.readouterr()
+
+    assert read_csv(a_dir / str(YEAR) / "lines.csv") == read_csv(b_dir / str(YEAR) / "lines.csv")
+
+
+def test_run_without_any_export_says_what_is_missing(data_dir, capsys):
+    code = run(["run", "--year", str(YEAR), "--data-dir", str(data_dir)])
+    out = capsys.readouterr().out
+    assert code == EXIT_FAIL
+    assert "No export file was given" in out

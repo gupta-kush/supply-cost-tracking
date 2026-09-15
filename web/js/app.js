@@ -46,14 +46,20 @@ const STATUS_OPTIONS = [
   ["discontinued", "discontinued"],
 ];
 
+/** How a vendor is named on screen. pipeline.js uses the lower-case keys. */
+const VENDOR_NAMES = { amazon: "Amazon", preferred: "Preferred" };
+
 const XLSX_MIME =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 /* ───────────────────────────── state ───────────────────────────── */
 
 const state = {
-  files: { amazon: null, preferred: null, master: null, prices: null },
-  tables: { amazon: null, preferred: null },
+  files: { exports: [], master: null, prices: null },
+  // One entry per uploaded export file: {file, sheets:[{name, grid}]}. A .csv is one
+  // unnamed sheet. pipeline.js decides which sheets are exports; the page never guesses.
+  exportFiles: [],
+  classified: null,           // {recognised:[...], ignored:[...]} from pipeline.classifyFiles
   uploadedPrices: null,       // rows from the prices.csv the user loaded, untouched
   master: null,               // whatever pipeline.js hands back as a master
   year: null,
@@ -73,6 +79,10 @@ const state = {
   findings: [],
   reviewFilter: "",
   reviewHits: new Set(),      // keys/names a finding sent us back to look at
+  // The optional AI pass over the queue. The key is deliberately not in here:
+  // it lives in the password box and nowhere else, so nothing that dumps or
+  // logs state can ever carry it.
+  ai: { scope: "blocking", busy: false, lastRun: null },
   sort: { col: "rank", dir: "asc" },
   busy: false,
   // What the last write did, and what it moved. Both are plain state so the strips survive a
@@ -80,7 +90,7 @@ const state = {
   lastChange: null,            // {title, written, proposed, notReady:[...]}
   topMoved: null,              // {reason, entered:[...], left:[...]}
   rankCounts: null,            // {totalLines, includedLines, excludedLines} straight from rank()
-  fileStats: {},               // kind -> {rows, dateMin, dateMax} read off the export itself
+  fileStats: [],               // per recognised export: {vendor, file, sheet, rows, dateMin, dateMax}
 };
 
 /** Modules that were expected but are missing or shaped differently. Reported to the user. */
@@ -201,6 +211,16 @@ function emptyMaster() {
  */
 const pipe = {};
 let reportModule = null;
+let suggestModule = null;   // suggest.js, the provider seam. Optional: no module, no panel.
+// The proposal prompt, fetched once so the panel can count requests before a key is typed.
+// Never the key: that lives in the password box and nowhere else.
+let aiPrompt = null;
+// False until loadLogicModules has run. Without it the first paint, which happens before
+// the imports, cannot tell "not loaded yet" from "failed to load".
+let modulesSettled = false;
+// The loadLogicModules() call itself, kept so a handler that somehow runs before the button
+// is enabled can await the real answer instead of calling into an adapter that is not there yet.
+let modulesReadyPromise = null;
 
 function bind(mod, target, key, ...names) {
   for (const n of names) {
@@ -226,9 +246,17 @@ async function loadLogicModules() {
   } catch (err) {
     adapterNotes.push(`report.js did not load: ${err && err.message}`);
   }
+  try {
+    suggestModule = await import("./suggest.js");
+  } catch (err) {
+    // Not fatal, and not worth an alert: the AI pass is optional and the panel
+    // says so itself when the module is not there.
+    adapterNotes.push(`suggest.js did not load: ${err && err.message}`);
+  }
 
   if (pipeline) {
     bind(pipeline, pipe, "ingest", "ingest");
+    bind(pipeline, pipe, "classifyFiles", "classifyFiles");
     bind(pipeline, pipe, "buildQueue", "buildQueue", "build_queue", "review");
     bind(pipeline, pipe, "applyQueue", "applyQueue", "apply_queue");
     bind(pipeline, pipe, "rank", "rank");
@@ -247,7 +275,7 @@ async function loadLogicModules() {
     pipe.checkPrices = pipeline.checkPrices || null;
   }
 
-  const ready = ["ingest", "buildQueue", "applyQueue", "rank", "validateAll"]
+  const ready = ["ingest", "classifyFiles", "buildQueue", "applyQueue", "rank", "validateAll"]
     .every((fn) => typeof pipe[fn] === "function");
   if (!ready) {
     alertUser(
@@ -260,6 +288,7 @@ async function loadLogicModules() {
   if (!reportModule) {
     adapterNotes.push("report workbook cannot be built");
   }
+  modulesSettled = true;
   return ready;
 }
 
@@ -284,23 +313,21 @@ function readAsArrayBuffer(file) {
 }
 
 /**
- * One export file as {headers, rows, grid}.
+ * One uploaded export file as {file, sheets:[{name, grid}]}.
  *
- * `grid` is the raw table with its header row still on the front, because that is what
- * pipeline.ingest takes: it runs its own normaliseTable so that the page and the CLI read a
- * file the same way. `headers` and `rows` are the split form, used here only to find the
- * order-date column for year detection and to count rows on screen.
+ * Nothing is normalised here and no sheet is picked: a grid is the rows exactly as they sit
+ * in the file, header row and all, which is what pipeline.js scans. A .csv is a single table
+ * with no sheet to name. Reading it this way is what lets the working workbook be dropped in
+ * whole, with the finished table and the scratch sheets still in it.
  */
-async function readTableFile(file) {
+async function readExportFile(file) {
   if (/\.csv$/i.test(file.name)) {
     const grid = csvlib.parse(await readAsText(file));
     if (!grid.length) throw new Error(`${file.name} is empty.`);
-    const headers = grid[0].map((h) => xlsxio.normHeader(h));
-    const rows = grid.slice(1).filter((r) => r.some((c) => String(c ?? "").trim() !== ""));
-    return { headers, rows, grid };
+    return { file: file.name, sheets: [{ name: "", grid }] };
   }
-  const table = await xlsxio.readTable(await readAsArrayBuffer(file));
-  return { ...table, grid: [table.headers, ...table.rows] };
+  const sheets = await xlsxio.readSheets(await readAsArrayBuffer(file));
+  return { file: file.name, sheets };
 }
 
 /* ───────────────────────────── year detection ───────────────────────────── */
@@ -340,26 +367,26 @@ function isoDate(value) {
 }
 
 /**
- * Rows and first/last order date for one export, for the strip on step 1.
+ * Rows and first/last order date for one recognised export, for the strip on step 1.
  *
- * Read off the file as it arrived, before anything is filtered, which is the point: it is the
- * number to compare against what the ingest kept. If the file has no order date column the
+ * Read off the sheet as it arrived, before anything is filtered, which is the point: it is the
+ * number to compare against what the ingest kept. If the sheet has no order date column the
  * range is left out rather than guessed at.
  */
-function fileStatsFor(table) {
-  if (!table) return null;
-  const rows = table.rows.length;
-  const idx = table.headers.findIndex((h) => String(h).includes("order date"));
-  if (idx < 0) return { rows, dateMin: null, dateMax: null };
+function exportStatsFor(found) {
+  const rows = found.body.length;
+  const base = { vendor: found.vendor, file: found.file, sheet: found.sheet, rows };
+  const idx = found.headers.findIndex((h) => String(h).includes("order date"));
+  if (idx < 0) return { ...base, dateMin: null, dateMax: null };
   let min = null;
   let max = null;
-  for (const row of table.rows) {
+  for (const row of found.body) {
     const d = isoDate(row[idx]);
     if (!d) continue;
     if (min === null || d < min) min = d;
     if (max === null || d > max) max = d;
   }
-  return { rows, dateMin: min, dateMax: max };
+  return { ...base, dateMin: min, dateMax: max };
 }
 
 /** The item names currently inside the top N, used to report what a change moved. */
@@ -384,14 +411,13 @@ function movement(before, after, reason) {
   return entered.length || left.length ? { reason, entered, left } : null;
 }
 
-/** The year most of the order dates fall in, across whichever tables were loaded. */
+/** The year most of the order dates fall in, across every recognised export. */
 function detectYear() {
   const tally = new Map();
-  for (const table of [state.tables.amazon, state.tables.preferred]) {
-    if (!table) continue;
-    const idx = table.headers.findIndex((h) => String(h).includes("order date"));
+  for (const found of (state.classified && state.classified.recognised) || []) {
+    const idx = found.headers.findIndex((h) => String(h).includes("order date"));
     if (idx < 0) continue;
-    for (const row of table.rows) {
+    for (const row of found.body) {
       const y = yearOf(row[idx]);
       if (y) tally.set(y, (tally.get(y) || 0) + 1);
     }
@@ -410,20 +436,14 @@ function detectYear() {
  * never disagree with each other - they all come out of the same pass.
  */
 async function recompute({ reingest = false, movementReason = null } = {}) {
-  if (!pipe.ingest || !state.tables.amazon || !state.year) return;
+  if (!pipe.ingest || !state.exportFiles.length || !state.year) return;
   state.busy = true;
   // Taken before anything is recalculated. A confirm can push an item into or out of the top N,
   // and the only way to see that in a table that just repaints is to compare the two lists.
   const topBefore = topNames();
   try {
     if (reingest || !state.lines) {
-      const res = await pipe.ingest({
-        amazonTable: state.tables.amazon.grid,
-        preferredTable: state.tables.preferred ? state.tables.preferred.grid : null,
-        year: state.year,
-        amazonFile: state.files.amazon ? state.files.amazon.name : "amazon.xlsx",
-        preferredFile: state.files.preferred ? state.files.preferred.name : "preferred.xlsx",
-      });
+      const res = await pipe.ingest({ files: state.exportFiles, year: state.year });
       state.lines = res.lines ?? res.rows ?? [];
       state.run = res.run ?? {};
       state.ingestWarnings = res.warnings ?? [];
@@ -664,12 +684,28 @@ function fact(label, value, sub) {
 
 function renderLoad() {
   const f = state.files;
-  $("#btn-read").disabled = !f.amazon || state.busy;
-  $("#load-state").textContent = state.lines
-    ? `${plural(state.lines.length, "order line")} read`
-    : (f.amazon ? "Ready to read" : "Nothing loaded yet");
+  $("#btn-read").disabled = !f.exports.length || state.busy || !modulesSettled;
+  $("#load-state").textContent = !modulesSettled
+    ? "Still loading, one moment."
+    : state.lines
+      ? `${plural(state.lines.length, "order line")} read`
+      : (f.exports.length ? "Ready to read" : "Nothing loaded yet");
 
-  for (const kind of ["amazon", "preferred", "master", "prices"]) {
+  const exportsNote = $("#note-exports");
+  const exportsZone = document.querySelector('.dropzone[data-for="file-exports"]');
+  if (exportsNote && exportsZone) {
+    if (f.exports.length) {
+      exportsNote.textContent = f.exports
+        .map((file) => `${file.name} (${Math.round(file.size / 1024)} KB)`)
+        .join(", ");
+      exportsZone.classList.add("is-loaded");
+    } else {
+      exportsNote.textContent = "Drop the files here or choose them";
+      exportsZone.classList.remove("is-loaded");
+    }
+  }
+
+  for (const kind of ["master", "prices"]) {
     const note = $(`#note-${kind}`);
     const zone = document.querySelector(`.dropzone[data-for="file-${kind}"]`);
     if (!note || !zone) continue;
@@ -686,16 +722,20 @@ function renderLoad() {
 
   const run = state.run || {};
 
-  // What went in, one chip per file: rows as they sit in the export, and the dates those rows
-  // actually cover, which is how a wrong year or a half export is spotted before it is ranked.
+  // What went in, one chip per export that was recognised: where it came from, the rows as
+  // they sit in the sheet, and the dates those rows actually cover, which is how a wrong year
+  // or a half export is spotted before it is ranked.
   const inputs = [];
-  for (const [kind, label] of [["amazon", "Amazon export"], ["preferred", "Preferred export"]]) {
-    const stats = state.fileStats[kind];
-    if (!stats) continue;
+  for (const stats of state.fileStats) {
     const range = stats.dateMin && stats.dateMax
       ? (stats.dateMin === stats.dateMax ? stats.dateMin : `${stats.dateMin} to ${stats.dateMax}`)
-      : "no order dates in this file";
-    inputs.push(fact(label, `${plural(stats.rows, "row")} read`, range));
+      : "no order dates in this sheet";
+    const where = stats.sheet ? `${stats.file}, sheet ${stats.sheet}` : stats.file;
+    inputs.push(fact(
+      `${VENDOR_NAMES[stats.vendor] || stats.vendor} export`,
+      `${plural(stats.rows, "row")} read`,
+      `${where}. ${range}`
+    ));
   }
   if (state.files.master) {
     inputs.push(fact("Item master", plural(masterRows(state.master).length, "item"), "loaded from file"));
@@ -713,10 +753,30 @@ function renderLoad() {
     fact("Item master", plural(masterRows(state.master).length, "item"), "known pack sizes"),
   ];
 
+  // Every sheet and file that was passed over, with the reason, so nothing goes missing
+  // quietly: a wrong report or a sheet with a column removed says so here.
+  const skipped = (state.run && state.run.ignored) || [];
+  const skippedList = skipped.length
+    ? `<ul class="caption caption-plain mb-3">` +
+      skipped.map((item) => {
+        const where = item.sheet ? `${item.file}, sheet ${item.sheet}` : item.file;
+        return `<li>Not used: ${esc(where)}. ${esc(item.reason)}</li>`;
+      }).join("") +
+      `</ul>`
+    : "";
+
+  const oneVendor = state.run && (state.run.vendors || []).length === 1
+    ? `<p class="caption caption-plain mb-3">Only the ` +
+      `${esc(VENDOR_NAMES[state.run.vendors[0]] || state.run.vendors[0])} export was found, ` +
+      `so this run covers that vendor alone.</p>`
+    : "";
+
   const warnings = state.ingestWarnings || [];
   box.innerHTML =
     `<h3 class="caption mb-2">Files read</h3>` +
     `<div class="summary-strip mb-3">${inputs.join("")}</div>` +
+    skippedList +
+    oneVendor +
     `<h3 class="caption mb-2">What the tool kept</h3>` +
     `<div class="summary-strip mb-3">${kept.join("")}</div>` +
     (warnings.length
@@ -730,10 +790,13 @@ function renderLoad() {
 
 /* ── review ── */
 
-const REVIEW_HEAD = `
+/** The head is rebuilt from this template on every review render, so "checked" has to be
+ *  passed in rather than left on the markup - otherwise a rebuild silently unchecks it. */
+function reviewHead(checked) {
+  return `
 <tr>
   <th scope="col" class="w-inc"><input type="checkbox" class="form-check-input" id="select-all"
-      aria-label="Select every row shown"></th>
+      aria-label="Select every row shown"${checked ? " checked" : ""}></th>
   <th scope="col" class="w-title">Item</th>
   <th scope="col" class="w-inc">Include</th>
   <th scope="col">Suggested</th>
@@ -745,6 +808,13 @@ const REVIEW_HEAD = `
   <th scope="col" class="w-note">Note</th>
   <th scope="col">Decision</th>
 </tr>`;
+}
+
+/** Whether every currently visible row is selected - what the "select all shown" checkbox
+ *  in the head should show, both on render and after a single row is ticked or unticked. */
+function allVisibleSelected(rows) {
+  return rows.length > 0 && rows.every((row) => state.selected.has(row.key));
+}
 
 function visibleQueueRows() {
   const needle = state.reviewFilter.trim().toLowerCase();
@@ -862,9 +932,10 @@ function renderReview() {
   renderQueueBreakdown();
   renderLastChange();
   renderSelectionImpact();
+  renderAiPanel();
 
   const rows = sortedQueueRows(visibleQueueRows());
-  table.tHead.innerHTML = REVIEW_HEAD;
+  table.tHead.innerHTML = reviewHead(allVisibleSelected(rows));
 
   if (!rows.length) {
     table.tBodies[0].innerHTML =
@@ -999,6 +1070,258 @@ function renderSelectionImpact() {
       ? `${plural(notReady.length, "row")} will stay in the queue: ` +
         notReady.slice(0, 3).map(whatIsMissing).join(". ") + "."
       : "");
+}
+
+/* -- the AI pass over the queue (optional, collapsed by default) -- */
+
+/**
+ * The panel is a second source of *suggestions*, not a second way to write.
+ *
+ * Everything it returns lands in the same suggestion columns the regular expressions fill,
+ * with each reason prefixed "AI:" so the table shows which answers came from a model.
+ * Confirm selected and Accept suggestions for now are unchanged, and are still the only
+ * things that write to the item master.
+ *
+ * The key is read from the password box at the moment of the click and handed to suggest.js,
+ * which keeps it in a closure. It is never put in state, never written to storage, never
+ * logged, and gone on reload.
+ */
+
+function aiVendor() {
+  return $("#ai-provider")?.value || "anthropic";
+}
+
+/** The rows the chosen scope would send, with the Preferred pack code attached. */
+function aiRowsToSend() {
+  if (!suggestModule) return [];
+  const rows = state.ai.scope === "all"
+    ? state.queueRows
+    : suggestModule.blockingRows(state.queueRows);
+  // The queue file has no pack_desc column, so the command line cannot send one.
+  // The page has the lines in memory, so it can.
+  return suggestModule.attachPackDesc(rows, state.lines || []);
+}
+
+function aiExistingNames() {
+  const names = new Set();
+  for (const m of masterRows(state.master)) if (m.canonical_name) names.add(m.canonical_name);
+  return Array.from(names);
+}
+
+/** Fill the model select for the chosen provider, keeping the current choice if it still fits. */
+function fillModelOptions() {
+  const select = $("#ai-model");
+  if (!select || !suggestModule) return;
+  const vendor = aiVendor();
+  const wanted = select.value;
+  const options = new Map();
+  options.set(suggestModule.DEFAULT_MODELS[vendor], "default");
+  if (!options.has(suggestModule.CHEAP_MODELS[vendor])) {
+    options.set(suggestModule.CHEAP_MODELS[vendor], "cheaper");
+  }
+  // renderReview repaints on every filter keystroke and every use-this click, and this
+  // function runs with it. Rewriting the list under an open dropdown would shut it, so
+  // the list is only rebuilt when it would actually be different.
+  const ids = Array.from(options.keys()).join("|");
+  if (select.dataset.forVendor === vendor && select.dataset.ids === ids) return;
+  select.dataset.forVendor = vendor;
+  select.dataset.ids = ids;
+  select.innerHTML = Array.from(options.entries())
+    .map(([id, label]) => `<option value="${esc(id)}">${esc(id)} (${esc(label)})</option>`)
+    .join("");
+  if (options.has(wanted)) select.value = wanted;
+}
+
+function renderAiPanel() {
+  const panel = $("#ai-panel");
+  if (!panel) return;
+  const button = $("#btn-ai-propose");
+  const preflight = $("#ai-preflight");
+  const fields = $("#ai-fields");
+  const stateLine = $("#ai-state");
+
+  if (!suggestModule) {
+    preflight.innerHTML = "";
+    fields.textContent = modulesSettled
+      ? "The suggestion module did not load, so this panel cannot run. Everything else on " +
+        "the page works as usual."
+      : "";
+    button.disabled = true;
+    button.textContent = "Propose";
+    stateLine.textContent = "";
+    renderAiResult();
+    return;
+  }
+
+  const scopeSelect = $("#ai-scope");
+  if (scopeSelect) scopeSelect.value = state.ai.scope;
+  fillModelOptions();
+
+  const rows = aiRowsToSend();
+  const names = aiExistingNames();
+  button.textContent = rows.length ? `Propose for ${plural(rows.length, "row")}` : "Propose";
+  button.disabled = state.ai.busy || !rows.length;
+
+  let estimate = null;
+  if (aiPrompt && rows.length) {
+    try {
+      estimate = suggestModule.estimateRequests({
+        rows,
+        existingNames: names,
+        prompt: aiPrompt,
+        vendor: aiVendor(),
+        model: $("#ai-model")?.value,
+      });
+    } catch {
+      estimate = null;
+    }
+  }
+
+  preflight.innerHTML = [
+    fact("Rows to send", plural(rows.length, "row"),
+      state.ai.scope === "all" ? "every row in the queue" : "the ones that block the build"),
+    fact("Names shared", plural(names.length, "canonical name"),
+      "so an item you already have can be merged onto"),
+    estimate
+      ? fact("Requests", plural(estimate.batches, "request"),
+          `about ${Math.max(1, Math.round(estimate.bytes / 1024))} KB sent`)
+      : fact("Requests", "counted on the first run",
+          "the prompt is fetched when you press Propose"),
+  ].join("");
+
+  fields.textContent =
+    "Each row sends only these fields: " + suggestModule.SENT_FIELDS.join(", ") +
+    ". The account user, email and payment columns from the export are not included: they are " +
+    "dropped when the files are read and never reach this page.";
+
+  if (!state.ai.busy) {
+    // A queue with nothing blocking left is the common case by the end of a session, and a
+    // disabled button with no explanation reads as a fault. Say which switch to flick.
+    stateLine.textContent =
+      !rows.length && state.queueRows.length && state.ai.scope === "blocking"
+        ? "No blocking rows left. Choose all queued rows to work the unconfirmed ones."
+        : "";
+  }
+  renderAiResult();
+}
+
+function renderAiResult() {
+  const box = $("#ai-result");
+  if (!box) return;
+  const run = state.ai.lastRun;
+  if (!run) { box.innerHTML = ""; return; }
+
+  if (run.error) {
+    // suggest.js phrases a rejected request as "...refused the request (401). ...", so this is
+    // the provider's own status code, not a guess at one. The line below is added after it,
+    // never in place of it.
+    const corsNote = /\(401\)/.test(run.error)
+      ? `<div class="mt-1">For Anthropic keys, a 401 that mentions CORS means the ` +
+        `organisation's Console setting that allows browser requests is off. The key's owner ` +
+        `needs to turn it on.</div>`
+      : "";
+    box.innerHTML =
+      `<div class="change-note"><span class="caption">The model did not answer</span>` +
+      `${esc(run.error)}` +
+      corsNote +
+      `<div class="mt-1">Nothing was changed. Your key is still in the box; it is not saved ` +
+      `anywhere, and reloading the page forgets it.</div></div>`;
+    return;
+  }
+
+  const breakdown = ["high", "medium", "low", "none"]
+    .filter((level) => run.counts[level])
+    .map((level) => `${run.counts[level]} ${level}`)
+    .join(", ");
+  box.innerHTML =
+    `<div class="change-note"><span class="caption">Suggestions from ${esc(run.provider)}</span>` +
+    `${esc(plural(run.filled, "row"))} filled in` +
+    (breakdown ? `, confidence ${esc(breakdown)}` : "") + `. ` +
+    (run.counts.none
+      ? `${esc(plural(run.counts.none, "row"))} came back without an answer and are unchanged. `
+      : "") +
+    `Nothing has been written yet: read the suggested columns, then use Confirm selected or ` +
+    `Accept suggestions for now as usual.</div>`;
+}
+
+async function onAiPropose() {
+  if (!suggestModule || state.ai.busy) return;
+  const rows = aiRowsToSend();
+  if (!rows.length) return;
+  const key = $("#ai-key")?.value || "";
+  const vendor = aiVendor();
+  const model = $("#ai-model")?.value || undefined;
+
+  state.ai.busy = true;
+  state.ai.lastRun = null;
+  $("#btn-ai-propose").disabled = true;
+  $("#ai-state").textContent = "Asking the model. This can take a minute.";
+  say(`Asking ${vendor} about ${plural(rows.length, "row")}.`);
+
+  try {
+    const provider = suggestModule.makeApiProvider({ vendor, apiKey: key, model });
+    const proposed = await provider.propose(rows, aiExistingNames());
+    // Kept so the next preflight can count requests without fetching again.
+    aiPrompt = aiPrompt || (await suggestModule.loadPrompt());
+
+    // Merged field by field onto the row already in the queue, so anything the pipeline put
+    // on it that is not a queue column survives.
+    const byKey = new Map(state.queueRows.map((row) => [row.key, row]));
+    const counts = { high: 0, medium: 0, low: 0, none: 0 };
+    let filled = 0;
+    for (const row of proposed) {
+      const level = String(row.confidence || "none");
+      counts[level] = (counts[level] || 0) + 1;
+      if (level !== "none") filled += 1;
+      const existing = byKey.get(row.key);
+      if (existing) Object.assign(existing, row);
+    }
+    state.ai.lastRun = { provider: provider.name, filled, counts, error: null };
+    alertUser(
+      "ok",
+      "Suggestions filled in.",
+      `${plural(filled, "row")} from ${provider.name}. Nothing is written until you confirm or accept.`
+    );
+  } catch (err) {
+    // explain() never carries the request, and the request is the only thing that holds the key.
+    state.ai.lastRun = { provider: vendor, filled: 0, counts: {}, error: explain(err) };
+    alertUser("error", "The model did not answer.", explain(err));
+  } finally {
+    state.ai.busy = false;
+    $("#ai-state").textContent = "";
+    renderReview();
+  }
+}
+
+function wireAi() {
+  const provider = $("#ai-provider");
+  const button = $("#btn-ai-propose");
+  if (!provider || !button) return;
+
+  provider.addEventListener("change", () => { fillModelOptions(); renderAiPanel(); });
+  $("#ai-model")?.addEventListener("change", renderAiPanel);
+  $("#ai-scope")?.addEventListener("change", (e) => {
+    state.ai.scope = e.target.value === "all" ? "all" : "blocking";
+    renderAiPanel();
+  });
+  button.addEventListener("click", onAiPropose);
+}
+
+/**
+ * Fetch the prompt once, after the modules are in.
+ *
+ * It is a static file next to the page, so it can be read before anybody types a key, and
+ * having it early is what lets the panel show the request count up front. suggest.js
+ * resolves it relative to its own module URL, so this holds wherever the page is served
+ * from. A failure is not worth a message: the panel already says the count comes on the
+ * first run.
+ */
+function primeAiPrompt() {
+  if (!suggestModule || aiPrompt) return;
+  suggestModule.loadPrompt().then(
+    (doc) => { aiPrompt = doc; renderAiPanel(); },
+    () => {}
+  );
 }
 
 function fillNameList() {
@@ -1409,14 +1732,24 @@ async function onReadFiles() {
   state.lastChange = null;
   state.topMoved = null;
   try {
+    // Second guard against the picker-to-click race: the button stays disabled until the
+    // modules resolve, but wait for the real promise too rather than trust that alone.
+    const ready = await (modulesReadyPromise || Promise.resolve(false));
+    if (!ready) {
+      alertUser(
+        "error",
+        "Those files could not be read.",
+        "The calculation modules did not load, so no file can be processed yet."
+      );
+      return;
+    }
     say("Reading the files");
-    if (state.files.amazon) state.tables.amazon = await readTableFile(state.files.amazon);
-    if (state.files.preferred) state.tables.preferred = await readTableFile(state.files.preferred);
-    else state.tables.preferred = null;
-    state.fileStats = {
-      amazon: fileStatsFor(state.tables.amazon),
-      preferred: fileStatsFor(state.tables.preferred),
-    };
+    state.exportFiles = [];
+    for (const file of state.files.exports) state.exportFiles.push(await readExportFile(file));
+    // pipeline.js is the one place that decides what a sheet is, so the page and the command
+    // line agree about every file. It throws with the reason when nothing is an export.
+    state.classified = pipe.classifyFiles(state.exportFiles);
+    state.fileStats = state.classified.recognised.map(exportStatsFor);
 
     if (state.files.master) {
       const text = await readAsText(state.files.master);
@@ -1601,21 +1934,25 @@ function downloadRun() {
 }
 
 function resetAll() {
-  for (const kind of ["amazon", "preferred", "master", "prices"]) {
+  for (const kind of ["exports", "master", "prices"]) {
     const input = $(`#file-${kind}`);
     if (input) input.value = "";
   }
   Object.assign(state, {
-    files: { amazon: null, preferred: null, master: null, prices: null },
-    tables: { amazon: null, preferred: null },
+    files: { exports: [], master: null, prices: null },
+    exportFiles: [], classified: null,
     uploadedPrices: null, master: null, lines: null, run: null, ingestWarnings: [],
     queueRows: [], counts: { blocking: 0, unconfirmed: 0 }, edits: {},
     selected: new Set(), ranked: [], excluded: [], priceRows: [], retiredRows: [],
     priceEdits: {}, findings: [], reviewFilter: "", reviewHits: new Set(),
-    lastChange: null, topMoved: null, rankCounts: null, fileStats: {},
+    lastChange: null, topMoved: null, rankCounts: null, fileStats: [],
+    ai: { scope: "blocking", busy: false, lastRun: null },
   });
   $("#alerts").innerHTML = "";
   $("#review-filter").value = "";
+  // "Cleared. Nothing was kept." has to be true of the key as well.
+  const keyBox = $("#ai-key");
+  if (keyBox) keyBox.value = "";
   $("#year").value = "";
   render();
   say("Cleared. Nothing was kept.");
@@ -1623,10 +1960,17 @@ function resetAll() {
 
 /* ───────────────────────────── wiring ───────────────────────────── */
 
+/** The order-exports zone holds a list; the other two hold one file each. */
+function takeFiles(input, fileList) {
+  const files = Array.from(fileList || []);
+  if (input.multiple) state.files[input.dataset.kind] = files;
+  else state.files[input.dataset.kind] = files[0] || null;
+}
+
 function wireFileInputs() {
   for (const input of $$('input[type="file"]')) {
     input.addEventListener("change", () => {
-      state.files[input.dataset.kind] = input.files[0] || null;
+      takeFiles(input, input.files);
       renderLoad();
     });
   }
@@ -1638,12 +1982,12 @@ function wireFileInputs() {
     zone.addEventListener("drop", (e) => {
       stop(e);
       zone.classList.remove("is-over");
-      const file = e.dataTransfer?.files?.[0];
-      if (!file) return;
+      const dropped = Array.from(e.dataTransfer?.files || []);
+      if (!dropped.length) return;
       const dt = new DataTransfer();
-      dt.items.add(file);
+      for (const file of input.multiple ? dropped : dropped.slice(0, 1)) dt.items.add(file);
       input.files = dt.files;
-      state.files[input.dataset.kind] = file;
+      takeFiles(input, dt.files);
       renderLoad();
     });
   }
@@ -1676,6 +2020,10 @@ function wireReview() {
       else state.selected.delete(t.dataset.select);
       $("#btn-confirm").disabled = state.selected.size === 0;
       $("#btn-accept").disabled = state.selected.size === 0;
+      // Not a full renderReview() here - that would blow away focus and any cell someone is
+      // mid-edit on - so the head checkbox is kept honest directly instead.
+      const selectAll = $("#select-all");
+      if (selectAll) selectAll.checked = allVisibleSelected(visibleQueueRows());
       renderSelectionImpact();
       return;
     }
@@ -1822,7 +2170,7 @@ function wireSettings() {
     const v = Number($("#year").value);
     if (!(v >= 2000 && v <= 2100)) { $("#year").value = state.year ? String(state.year) : ""; return; }
     state.year = v;
-    if (state.tables.amazon) await recompute({ reingest: true });
+    if (state.exportFiles.length) await recompute({ reingest: true });
   });
 
   $("#btn-read").addEventListener("click", onReadFiles);
@@ -1840,14 +2188,17 @@ async function boot() {
   wireTheme();
   wireFileInputs();
   wireReview();
+  wireAi();
   wireRank();
   wirePrices();
   wireDownloads();
   wireSettings();
   render();
 
-  const ready = await loadLogicModules();
+  modulesReadyPromise = loadLogicModules();
+  const ready = await modulesReadyPromise;
   if (ready && adapterNotes.length) console.info("supplytrack adapter notes:", adapterNotes);
+  primeAiPrompt();
   render();
 }
 

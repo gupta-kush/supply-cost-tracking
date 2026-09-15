@@ -241,6 +241,18 @@ def _write_inputs(inputs_dir: Path) -> dict[str, bytes]:
 
 # ------------------------------------------------------------ fixture tables
 
+# The workbooks sheet recognition has to cope with: the working workbook as the
+# office manager keeps it, the same after Amazon changed the columns, and three
+# files that must be refused with a message that says why.
+RECOGNITION_FIXTURES = {
+    "working": "working_workbook_2025_sample.xlsx",
+    "filtered": "working_workbook_filtered_2025_sample.xlsx",
+    "variant": "working_workbook_variant_2025_sample.xlsx",
+    "refunds": "amazon_refunds_sample.xlsx",
+    "two_amazon": "two_amazon_sheets_sample.xlsx",
+    "missing_column": "amazon_missing_column_sample.xlsx",
+}
+
 
 def _sheet_rows(path: Path) -> list[list]:
     """Every cell of the first sheet, exactly as openpyxl hands it over.
@@ -269,19 +281,56 @@ def _sheet_rows(path: Path) -> list[list]:
         wb.close()
 
 
+def _all_sheets(path: Path) -> list[dict]:
+    """Every sheet of a workbook as ``{name, grid}``, dates ISO-ified.
+
+    The same conversion ``_sheet_rows`` makes, for the same reason: a datetime
+    has no JSON form, and ISO 8601 is a shape the port's ``coerceDate`` and its
+    header scan both already handle.
+    """
+    wb = load_workbook_safe(path, data_only=True)
+    try:
+        return [
+            {
+                "name": name,
+                "grid": [
+                    [v.isoformat() if isinstance(v, (dt.datetime, dt.date)) else v for v in row]
+                    for row in wb[name].iter_rows(values_only=True)
+                ],
+            }
+            for name in wb.sheetnames
+        ]
+    finally:
+        wb.close()
+
+
+def _workbook_entry(path: Path) -> dict:
+    return {"file": path.name, "sheets": _all_sheets(path)}
+
+
 def _fixture_tables() -> dict:
-    """The two fixture exports as plain tables, so a Node test can run ingest.
+    """The fixture exports as plain tables, so a Node test can run ingest.
 
     The fixtures are ``.xlsx`` and reading a workbook is the browser's job, not
     the parity suite's - depending on ExcelJS there would mean the suite no
     longer runs on Node alone. Dumping the sheets here lets the port's ``ingest``
     be checked against ``expected/lines.csv`` with no spreadsheet reader at all.
+
+    ``amazon`` and ``preferred`` are the first sheet of each standalone export
+    and are what the end-to-end vector runs on. ``files`` is the same pair in
+    the shape the page hands over, one entry per file with every sheet named,
+    and ``workbooks`` adds the awkward files sheet recognition has to cope with.
     """
     return {
         "amazon": _sheet_rows(AMAZON_EXPORT),
         "preferred": _sheet_rows(PREFERRED_EXPORT),
         "amazon_file": AMAZON_EXPORT.name,
         "preferred_file": PREFERRED_EXPORT.name,
+        "files": [_workbook_entry(AMAZON_EXPORT), _workbook_entry(PREFERRED_EXPORT)],
+        "workbooks": {
+            name: _workbook_entry(FIXTURES_DIR / filename)
+            for name, filename in RECOGNITION_FIXTURES.items()
+        },
     }
 
 

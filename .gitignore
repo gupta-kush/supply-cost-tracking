@@ -25,3 +25,7 @@ out/
 # any __pycache__/*.pyc created when these directories' scripts are imported.
 tests/fixtures/__pycache__/
 tests/golden/__pycache__/
+
+# Local credentials. Never committed; the tools read keys from the environment or Windows Credential Manager.
+secrets.json
+.env

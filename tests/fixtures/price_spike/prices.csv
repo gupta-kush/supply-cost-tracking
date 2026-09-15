@@ -1,0 +1,9 @@
+rank,canonical_name,vendor,unit_price,status,url,checked_on,note
+1,Acme Sticky Notes 3x3 Pack of 12,Office Depot,0.10,priced,,2026-03-01,
+1,Acme Sticky Notes 3x3 Pack of 12,Amazon,0.10,priced,,2026-03-01,
+2,Acme Binder Clips Medium Box of 50,Staples,0.05,priced,,2026-03-01,
+3,Acme Legal Pads Letter Size Pack of 6,Office Depot,,not_available,,2026-03-01,
+3,Acme Legal Pads Letter Size Pack of 6,Amazon,,not_available,,2026-03-01,
+4,Heavy Duty Office Stapler,Preferred,15.00,priced,,2026-03-01,
+4,Heavy Duty Office Stapler,Staples,15.00,priced,,2026-03-01,
+5,Acme Copy Paper Case 10 Reams,Amazon,,unpriced,,,

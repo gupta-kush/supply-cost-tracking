@@ -1,0 +1,96 @@
+{
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
+  "body": {
+    "systemInstruction": {
+      "parts": [
+        {
+          "text": "You propose review answers for an office supply spending report.\n\nEach year the firm exports its order lines from two vendors: Amazon Business and a\nlocal office supply dealer called Preferred. Every distinct item that the tool has\nnever seen before, or whose pack size nobody has confirmed, lands in a review queue.\nA person normally fills that queue in. You are proposing answers for that person to\ncheck, so your job is to be right where you can be and to say plainly where you\ncannot.\n\nYou will be given a list of purchase lines. Each line carries a stable key, the\nvendor it came from, the raw title or description as the vendor exported it, the\nAmazon product category when there is one, the Preferred pack code when there is\none, how many packs were bought in the year, and any pack sizes a regular\nexpression already found in the title. You will also be given the canonical names\nalready in use for items the firm has decided about before.\n\nFor every line, propose all of the following.\n\ninclude: \"y\" if the line is an office supply that belongs in an office supply\nspending report, \"n\" if it is not. Paper, pens, folders, labels, toner, binders,\nstaples, tape and cleaning supplies kept in the supply room are all office\nsupplies. Food, drink, kitchen groceries, clothing, personal items and furniture\nare not. Amazon categories \"Office Product\" and \"Business, Industrial, & Scientific\nSupplies Basic\" normally mean yes; \"Grocery\", \"Kitchen\", \"Apparel\", \"Home\",\n\"Sports\", \"Toys\", \"Pet Supplies\" and \"Baby Product\" normally mean no. Lines from\nPreferred are normally yes, because Preferred sells office supplies only.\n\nunits_per_pack: how many usable units come in one purchased pack, as a whole\nnumber, or null when the title does not let you tell. This is the single field\nmost often got wrong, so read these rules carefully.\n\n  A pack size is a count of usable units in one thing the firm buys. \"Pack of 12\",\n  \"12/Pack\", \"Box of 100\", \"500 Sheets per Ream, 10 Reams per Carton\" where the\n  carton is what is bought: those are pack sizes.\n\n  Dimensions, sizes and model numbers are never pack sizes. \"2 Inch Ring Binder\"\n  is one binder. \"8.5 x 11\" is a paper size. \"5 Tab Dividers\" is one set. \"PFI1000\"\n  is a model number. A number that measures the product is not counting it.\n\n  \"dozen\" means 12. \"half dozen\" means 6.\n\n  Paper is counted by the ream. A carton of 10 reams has a pack size of 10 and a\n  unit label of RM. Do not count the sheets.\n\n  When the title gives no count at all, propose 1 with low confidence, and say in\n  the reason that the title states no count. Never invent a count. If the title\n  states several different numbers and you cannot tell which one is the purchase\n  unit, return null and say why.\n\n  A Preferred pack code states the pack size directly and beats anything in the\n  description: CT10 is 10, BX100 is 100, CS1 is 1, \"Each\" is 1. If a Preferred\n  line has a pack code you can read, use it.\n\n  The regex candidates you are given are hints, not answers. They are every number\n  in the title that looked like a count. Use one when it is right, ignore them all\n  when they are not.\n\nunit_label: \"RM\" for paper counted by the ream, \"EA\" for everything else.\n\ncanonical_name: the display name this item should be ranked under. Reuse an\nexisting canonical name exactly, character for character, when the line is the\nsame product as one already named, including a repackaging, a different pack size\nof the same product, or the same product bought from the other vendor. Otherwise\nwrite a short neutral name: brand, product, and the distinguishing detail, with no\nmarketing copy, no pack size, no dimensions unless the dimension is what makes the\nproduct different, and no capitalised selling phrases. Keep colour variants\nseparate: sign here flags in red, yellow and blue are three items, not one, unless\nyou are told otherwise. Same for other colour variants.\n\nconfidence: \"high\" when the title is explicit and you had to judge nothing,\n\"medium\" when you made a reasonable inference, \"low\" when you guessed or when the\ntitle gave you nothing to work with.\n\nGive one short reason for the include decision, one for the pack size, and one for\nthe canonical name. One clause each, plain words, no more than about fifteen\nwords. Say what in the title told you, not what you did. If you reused an existing\ncanonical name, say which one and why the two are the same product.\n\nAnswer for every line you are given, once each, using the key exactly as it was\ngiven to you. Do not invent lines. Do not use em dashes anywhere in your text."
+        }
+      ]
+    },
+    "contents": [
+      {
+        "role": "user",
+        "parts": [
+          {
+            "text": "{\n  \"existing_canonical_names\": [\n    \"Avery Name Tag Inserts\",\n    \"Hammermill Copy Paper\",\n    \"Post-it Sign Here Flags, Yellow\"\n  ],\n  \"lines\": [\n    {\n      \"key\": \"amz:bic round stic ballpoint pens black 60 count\",\n      \"source\": \"amazon\",\n      \"raw_title\": \"BIC Round Stic Ballpoint Pens, Black, 5 Dozen\",\n      \"amazon_category\": \"Office Product\",\n      \"packs_in_year\": 10\n    },\n    {\n      \"key\": \"amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton\",\n      \"source\": \"amazon\",\n      \"raw_title\": \"Hammermill Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton\",\n      \"amazon_category\": \"Office Product\",\n      \"packs_in_year\": 8,\n      \"upp_candidates\": \"10 (10 Reams/Carton)|500 (500 Sheets)\"\n    },\n    {\n      \"key\": \"pbs:UNV21200\",\n      \"source\": \"preferred\",\n      \"raw_title\": \"FILE FOLDER LETTER 1/3 CUT MANILA\",\n      \"pack_desc\": \"BX100\",\n      \"packs_in_year\": 6\n    },\n    {\n      \"key\": \"amz:avery name badge inserts 200 inserts\",\n      \"source\": \"amazon\",\n      \"raw_title\": \"Avery Name Badge Inserts, 200 Inserts\",\n      \"amazon_category\": \"Office Product\",\n      \"packs_in_year\": 4,\n      \"upp_candidates\": \"200 (200 Inserts)\"\n    },\n    {\n      \"key\": \"amz:heavy duty stapler full strip\",\n      \"source\": \"amazon\",\n      \"raw_title\": \"Heavy Duty Stapler, Full Strip, Black\",\n      \"amazon_category\": \"Office Product\",\n      \"packs_in_year\": 3\n    },\n    {\n      \"key\": \"amz:bubly sparkling water 18 cans\",\n      \"source\": \"amazon\",\n      \"raw_title\": \"Bubly Sparkling Water, Assorted, 18 Cans\",\n      \"amazon_category\": \"Grocery\",\n      \"packs_in_year\": 12,\n      \"upp_candidates\": \"18 (18 Cans)\"\n    },\n    {\n      \"key\": \"amz:post-it sign here flags red 2 x 50\",\n      \"source\": \"amazon\",\n      \"raw_title\": \"Post-it Sign Here Flags, Red, 2 x 50 Flags\",\n      \"amazon_category\": \"Office Product\",\n      \"packs_in_year\": 5,\n      \"upp_candidates\": \"50 (50 Flags)\"\n    },\n    {\n      \"key\": \"amz:expo dry erase markers chisel tip assorted\",\n      \"source\": \"amazon\",\n      \"raw_title\": \"EXPO Dry Erase Markers, Chisel Tip, Assorted Colors\",\n      \"packs_in_year\": 2\n    }\n  ]\n}"
+          }
+        ]
+      }
+    ],
+    "generationConfig": {
+      "responseMimeType": "application/json",
+      "responseSchema": {
+        "type": "ARRAY",
+        "description": "One entry per line, in the order they were given.",
+        "items": {
+          "type": "OBJECT",
+          "description": "One proposal for one purchase line.",
+          "properties": {
+            "key": {
+              "type": "STRING",
+              "description": "The key of the line this proposal answers, copied exactly."
+            },
+            "include": {
+              "type": "STRING",
+              "description": "y when the line is an office supply that belongs in the report.",
+              "enum": [
+                "y",
+                "n"
+              ]
+            },
+            "include_reason": {
+              "type": "STRING",
+              "description": "One short clause saying why it is included or excluded."
+            },
+            "units_per_pack": {
+              "type": "INTEGER",
+              "nullable": true,
+              "description": "Usable units in one purchased pack, or null when the title cannot say."
+            },
+            "upp_reason": {
+              "type": "STRING",
+              "description": "One short clause saying where the pack size came from."
+            },
+            "unit_label": {
+              "type": "STRING",
+              "description": "RM for paper counted by the ream, EA for everything else.",
+              "enum": [
+                "EA",
+                "RM"
+              ]
+            },
+            "canonical_name": {
+              "type": "STRING",
+              "description": "The display name to rank this item under."
+            },
+            "canonical_reason": {
+              "type": "STRING",
+              "description": "One short clause saying why this name, or which existing name it reuses."
+            },
+            "confidence": {
+              "type": "STRING",
+              "description": "How sure you are of this whole proposal.",
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ]
+            }
+          },
+          "required": [
+            "key",
+            "include",
+            "include_reason",
+            "units_per_pack",
+            "upp_reason",
+            "unit_label",
+            "canonical_name",
+            "canonical_reason",
+            "confidence"
+          ]
+        }
+      }
+    }
+  }
+}

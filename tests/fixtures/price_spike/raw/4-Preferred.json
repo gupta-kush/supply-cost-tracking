@@ -1,0 +1,37 @@
+{
+  "id": "msg_fixture_4_pbs",
+  "role": "assistant",
+  "model": "claude-sonnet-5",
+  "stop_reason": "end_turn",
+  "content": [
+    {"type": "text", "text": "Searching for the Preferred listing."},
+    {
+      "type": "server_tool_use",
+      "id": "srvtoolu_6",
+      "name": "web_search",
+      "input": {"query": "Heavy Duty Office Stapler Preferred Business Systems"}
+    },
+    {
+      "type": "web_search_tool_result",
+      "tool_use_id": "srvtoolu_6",
+      "content": [
+        {
+          "type": "web_search_result",
+          "url": "https://www.preferredbiz.example/catalog/fixture-item",
+          "title": "Acme Mini Pencil Sharpener",
+          "encrypted_content": "fixture-not-real",
+          "page_age": "January 2026"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "text": "{\"price\": 8.00, \"currency\": \"USD\", \"url\": \"https://www.preferredbiz.example/catalog/fixture-item\", \"product_title_found\": \"Mini Pencil Sharpener\", \"pack_size_found\": 1, \"confidence\": \"low\", \"note\": \"Closest catalog match found, not certain this is the same item.\"}"
+    }
+  ],
+  "usage": {
+    "input_tokens": 1450,
+    "output_tokens": 115,
+    "server_tool_use": {"web_search_requests": 3}
+  }
+}

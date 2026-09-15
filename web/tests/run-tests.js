@@ -20,6 +20,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GOLDEN = path.resolve(HERE, "../../tests/golden");
 const YEAR = 2025;
 const TOP = 25;
+const NOW = "2026-01-01T00:00:00+00:00";
 
 // ---------------------------------------------------------------- harness
 
@@ -660,12 +661,17 @@ function testIngest() {
 
   const amazonTable = tables.amazon || tables.amazonTable || tables.amazon_table;
   const preferredTable = tables.preferred || tables.preferredTable || tables.preferred_table || null;
+  // The per-file dump carries the sheet names, which run.json now records. The
+  // older two-table form is still accepted and is what the fallback exercises.
+  const files = tables.files || [
+    { file: tables.amazon_file || "amazon_2025_sample.xlsx",
+      sheets: [{ name: "", grid: amazonTable }] },
+    { file: tables.preferred_file || "preferred_2025_sample.xlsx",
+      sheets: [{ name: "", grid: preferredTable }] },
+  ];
   const result = P.ingest({
-    amazonTable,
-    preferredTable,
+    files,
     year: YEAR,
-    amazonFile: tables.amazon_file || "amazon_2025_sample.xlsx",
-    preferredFile: tables.preferred_file || "preferred_2025_sample.xlsx",
     now: "2026-01-01T00:00:00+00:00",
   });
   assertCsvEqual("ingest -> lines.csv", P.linesToCsv(result.lines), read("expected", "lines.csv"));
@@ -694,12 +700,214 @@ function testIngest() {
   }
 }
 
+// ------------------------------------------------- sheet recognition parity
+//
+// Same fixtures as the Python suite (tests/fixtures/*.xlsx, dumped sheet by
+// sheet into inputs/fixture_tables.json), same cases, same messages. The point
+// is that the page accepts the working workbook exactly as it is kept, and
+// refuses the rest for a reason somebody can act on.
+
+function workbooks() {
+  const tables = findFixtureTables();
+  return (tables && tables.workbooks) || null;
+}
+
+function caught(fn) {
+  try {
+    fn();
+  } catch (err) {
+    return String((err && err.message) || err);
+  }
+  return null;
+}
+
+function testRecognition() {
+  const books = workbooks();
+  if (!books) {
+    return skip(
+      "sheet recognition",
+      "no inputs/fixture_tables.json workbooks dump; run scripts/make_golden.py"
+    );
+  }
+
+  assertDeep("only the 7 Amazon columns the pipeline reads are required", P.AMAZON_REQUIRED_COLUMNS, [
+    "Order Date", "Order ID", "Order Status", "Amazon-Internal Product Category",
+    "Title", "Item Quantity", "Purchase PPU",
+  ]);
+  assertDeep("only the 5 Preferred columns the pipeline reads are required",
+    P.PREFERRED_REQUIRED_COLUMNS, ["Code", "Description", "Pack", "Quan", "Order Date"]);
+  const personal = ["Account User", "Account User Email", "Payment Identifier",
+    "Payment Instrument Type"];
+  assertTrue(
+    "no personal-data column is required",
+    personal.every(
+      (h) => !P.AMAZON_REQUIRED_COLUMNS.includes(h) && !P.PREFERRED_REQUIRED_COLUMNS.includes(h)
+    ),
+    "a personal-data column reached a required list"
+  );
+
+  // The working workbook: finished table first, scratch sheets, then the two
+  // exports, with the Preferred headers sitting below a title line.
+  const working = P.classifyFiles([books.working]);
+  assertDeep(
+    "both exports are found inside the working workbook",
+    working.recognised.map((e) => [e.vendor, e.sheet]),
+    [["preferred", "PBS Orders"], ["amazon", "orders_from_20250101_to_2025123"]]
+  );
+  assertDeep(
+    "the sheets that are not exports are listed with a reason",
+    working.ignored.map((s) => s.sheet),
+    ["Sheet1", "Sheet2", "Sheet3"]
+  );
+  assertTrue(
+    "every ignored sheet says why",
+    working.ignored.every((s) => Boolean(s.reason)),
+    "an ignored sheet had no reason"
+  );
+  const preferredSheet = working.recognised.find((e) => e.vendor === "preferred");
+  assertEqual("a header row below row 1 is still found", preferredSheet.body.length, 5);
+
+  // Same lines out of the workbook as out of the two standalone files.
+  const expectedLines = read("expected", "lines.csv");
+  const fromWorkbook = P.ingest({ files: [books.working], year: YEAR, now: NOW });
+  assertCsvEqual(
+    "the working workbook reads the same as two separate files",
+    P.linesToCsv(fromWorkbook.lines),
+    expectedLines
+  );
+  assertDeep(
+    "run.json records the file and sheet of every export",
+    fromWorkbook.run.exports.map((e) => [e.vendor, e.sheet, e.rows]),
+    [["amazon", "orders_from_20250101_to_2025123", 12], ["preferred", "PBS Orders", 5]]
+  );
+  assertDeep("run.json records which vendors the run covers",
+    fromWorkbook.run.vendors, ["amazon", "preferred"]);
+
+  // Extra columns, and every column reordered.
+  const fromVariant = P.ingest({ files: [books.variant], year: YEAR, now: NOW });
+  assertCsvEqual(
+    "extra and reordered columns are accepted",
+    P.linesToCsv(fromVariant.lines),
+    expectedLines
+  );
+
+  // A missing required column is named, and so is the sheet it is missing from.
+  const missing = caught(() => P.ingest({ files: [books.missing_column], year: YEAR, now: NOW }));
+  assertTrue("a missing required column names the column",
+    missing != null && missing.includes("Purchase PPU"), `message was: ${missing}`);
+  assertTrue("a missing required column names the sheet",
+    missing != null && missing.includes("sheet 'Orders'"), `message was: ${missing}`);
+  assertTrue("columns the pipeline never reads are not mentioned",
+    missing != null && !missing.includes("Brand Code"), `message was: ${missing}`);
+
+  // The wrong Amazon report is named rather than reported as missing columns.
+  const refunds = caught(() => P.ingest({ files: [books.refunds], year: YEAR, now: NOW }));
+  assertTrue(
+    "a sibling Amazon report is rejected by name",
+    refunds != null &&
+      refunds.includes("this is the Amazon Refunds report. Export the Orders report instead."),
+    `message was: ${refunds}`
+  );
+
+  // Beside a good export, that same sheet is only skipped.
+  const beside = P.ingest({ files: [books.working, books.refunds], year: YEAR, now: NOW });
+  assertEqual("a sibling report beside a good export is only skipped",
+    beside.run.rows_written, 17);
+  assertTrue(
+    "the skipped sibling sheet says which report it is",
+    beside.run.ignored.some((s) => s.sheet === "Refunds" && s.reason.includes("Refunds")),
+    "the Refunds sheet was not listed with its reason"
+  );
+
+  // Her own filtered copy of the export, sitting beside the raw one.
+  const filtered = P.ingest({ files: [books.filtered], year: YEAR, now: NOW });
+  assertDeep(
+    "a filtered copy is a view of the export, not a rival",
+    filtered.run.exports.filter((e) => e.vendor === "amazon").map((e) => [e.sheet, e.rows]),
+    [["orders_from_20250101_to_2025123", 12]]
+  );
+  assertTrue(
+    "the filtered sheet is listed as a view of the sheet that was read",
+    filtered.run.ignored.some(
+      (sh) =>
+        sh.sheet === "AMZ Office Supply Orders ONLY" &&
+        sh.reason.includes("filtered view") &&
+        sh.reason.includes("orders_from_20250101_to_2025123")
+    ),
+    "the filtered sheet was not listed as a view"
+  );
+  assertCsvEqual(
+    "the filtered workbook reads the same as two separate files",
+    P.linesToCsv(filtered.lines),
+    expectedLines
+  );
+
+  // Two of the same export: there is no honest way to pick one.
+  const twoAmazon = caught(() => P.ingest({ files: [books.two_amazon], year: YEAR, now: NOW }));
+  assertTrue(
+    "two Amazon sheets are refused and named",
+    twoAmazon != null &&
+      twoAmazon.includes("orders 2025") &&
+      twoAmazon.includes("orders 2025 (copy)"),
+    `message was: ${twoAmazon}`
+  );
+
+  // A .csv is one table with no sheet name, classified the same way.
+  const amazonSheet = books.working.sheets.find((sh) => sh.name.startsWith("orders_from"));
+  const asCsv = P.classifyFiles([
+    { file: "amazon-orders.csv", sheets: [{ name: "", grid: amazonSheet.grid }] },
+  ]);
+  assertDeep(
+    "a .csv is classified the same way",
+    asCsv.recognised.map((e) => [e.vendor, e.file, e.sheet]),
+    [["amazon", "amazon-orders.csv", ""]]
+  );
+
+  // The Preferred export on its own is a valid run, and run.json says so.
+  const preferredOnly = P.ingest({
+    files: [{ file: "preferred.xlsx", sheets: [{ name: "Orders", grid: findFixtureTables().preferred }] }],
+    year: YEAR,
+    now: NOW,
+  });
+  assertDeep("the Preferred export alone is enough to run", preferredOnly.run.vendors, ["preferred"]);
+  assertEqual("a Preferred-only run counts only its own lines",
+    preferredOnly.run.rows_written, 5);
+  assertEqual("a Preferred-only run leaves the Amazon file name empty",
+    preferredOnly.run.amazon_file, "");
+
+  // Nothing recognisable: the sheets are listed, and so are the columns wanted.
+  const nothing = caught(() =>
+    P.ingest({
+      files: [{
+        file: "final_report.xlsx",
+        sheets: [{ name: "Summary", grid: [["Ranking", "Description", "Total"], [1, "Copy paper", 42]] }],
+      }],
+      year: YEAR,
+      now: NOW,
+    })
+  );
+  assertTrue(
+    "a workbook with nothing recognisable lists its sheets and the columns looked for",
+    nothing != null &&
+      nothing.includes("Summary") &&
+      nothing.includes("Purchase PPU") &&
+      nothing.includes("Quan"),
+    `message was: ${nothing}`
+  );
+
+  // No file at all.
+  const none = caught(() => P.ingest({ files: [], year: YEAR, now: NOW }));
+  assertTrue("giving no file at all says so",
+    none != null && none.includes("No export file"), `message was: ${none}`);
+}
+
 // ------------------------------------------------------------------ main
 
 testCsv();
 testPureHelpers();
 testUnitVectors();
 testIngest();
+testRecognition();
 testEndToEnd();
 testSecondRun();
 testConvenienceNames();

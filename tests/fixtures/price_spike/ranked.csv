@@ -1,0 +1,6 @@
+rank,canonical_name,eaches,packs,units_per_pack,unit_label,keys,sources,last_paid_per_each,upp_source
+1,Acme Sticky Notes 3x3 Pack of 12,120,10,12,EA,amz:acme sticky notes 3x3 pack of 12,amazon,0.09,master
+2,Acme Binder Clips Medium Box of 50,500,10,50,EA,amz:acme binder clips medium box of 50,amazon,0.04,master
+3,Acme Legal Pads Letter Size Pack of 6,60,10,6,EA,amz:acme legal pads letter size pack of 6,amazon,0.5,master
+4,Heavy Duty Office Stapler,5,5,1,EA,pbs:acme-stapler,preferred,14.0,master
+5,Acme Copy Paper Case 10 Reams,50,5,10,RM,amz:acme copy paper case 10 reams,amazon,4.2,master

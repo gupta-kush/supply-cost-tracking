@@ -465,6 +465,32 @@ body {
   font-size: 0.75rem;
 }
 
+/* ─────────────────────────── the AI panel ─────────────────────────── */
+
+/* A native disclosure, closed by default: the page works with it never opened, which is
+   how the optional step should read. Same border and tint as .change-note so it sits in
+   the same family as the other boxes inside a step. */
+.ai-panel {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-tertiary-bg);
+}
+
+.ai-panel > summary {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
+}
+
+.ai-panel[open] > summary {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.ai-panel-body {
+  padding: 0.75rem;
+}
+
 /* ─────────────────────────── a11y ─────────────────────────── */
 
 :focus-visible {

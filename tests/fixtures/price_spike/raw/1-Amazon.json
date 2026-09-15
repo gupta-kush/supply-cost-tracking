@@ -1,0 +1,37 @@
+{
+  "id": "msg_fixture_1_amz",
+  "role": "assistant",
+  "model": "claude-sonnet-5",
+  "stop_reason": "end_turn",
+  "content": [
+    {"type": "text", "text": "Searching Amazon."},
+    {
+      "type": "server_tool_use",
+      "id": "srvtoolu_2",
+      "name": "web_search",
+      "input": {"query": "Acme Sticky Notes 3x3 Pack of 12 amazon.com"}
+    },
+    {
+      "type": "web_search_tool_result",
+      "tool_use_id": "srvtoolu_2",
+      "content": [
+        {
+          "type": "web_search_result",
+          "url": "https://www.amazon.com/dp/FIXTUREASIN1",
+          "title": "Acme Sticky Notes 3x3, Pack of 12",
+          "encrypted_content": "fixture-not-real",
+          "page_age": "March 3, 2026"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "text": "```json\n{\"price\": 1.35, \"currency\": \"USD\", \"url\": \"https://www.amazon.com/dp/FIXTUREASIN1\", \"product_title_found\": \"Acme Sticky Notes 3x3, Pack of 12\", \"pack_size_found\": 12, \"confidence\": \"medium\", \"note\": \"Listed price today, no visible discount.\"}\n```"
+    }
+  ],
+  "usage": {
+    "input_tokens": 1600,
+    "output_tokens": 130,
+    "server_tool_use": {"web_search_requests": 2}
+  }
+}

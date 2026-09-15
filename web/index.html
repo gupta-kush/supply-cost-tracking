@@ -54,19 +54,21 @@
       </p>
       <div class="row g-3">
         <div class="col-12 col-xl-6">
-          <div class="dropzone" data-for="file-amazon">
-            <label class="form-label fw-semibold" for="file-amazon">Amazon Business export <span class="text-danger">*</span></label>
-            <div class="caption caption-plain mb-2">Order history for the year. .xlsx or .csv</div>
-            <input class="form-control" type="file" id="file-amazon" accept=".xlsx,.csv" data-kind="amazon">
-            <div class="file-note caption caption-plain mt-2" id="note-amazon">Drop a file here or choose one</div>
-          </div>
-        </div>
-        <div class="col-12 col-xl-6">
-          <div class="dropzone" data-for="file-preferred">
-            <label class="form-label fw-semibold" for="file-preferred">Preferred export</label>
-            <div class="caption caption-plain mb-2">Pettus / Preferred order history. .xlsx</div>
-            <input class="form-control" type="file" id="file-preferred" accept=".xlsx" data-kind="preferred">
-            <div class="file-note caption caption-plain mt-2" id="note-preferred">Optional, but the report is Amazon only without it</div>
+          <div class="dropzone" data-for="file-exports">
+            <label class="form-label fw-semibold" for="file-exports">Order exports <span class="text-danger">*</span></label>
+            <div class="caption caption-plain mb-2">
+              The Amazon and Preferred order history for the year. .xlsx or .csv, one file or several.
+            </div>
+            <input class="form-control" type="file" id="file-exports" accept=".xlsx,.csv" data-kind="exports" multiple>
+            <div class="file-note caption caption-plain mt-2" id="note-exports">Drop the files here or choose them</div>
+            <div class="caption caption-plain mt-2">
+              Works with: your working workbook as you keep it, with the exports on their own
+              sheets; the .csv straight from Amazon Business; or each export saved as its own file.
+              Every sheet is looked at and the exports are found by their columns.
+            </div>
+            <div class="caption caption-plain mt-1">
+              Not the FINAL workbook: it holds only the finished table, not the order lines.
+            </div>
           </div>
         </div>
         <div class="col-12 col-xl-6">
@@ -145,6 +147,56 @@
           <p class="caption caption-plain mb-0" id="review-impact"></p>
         </div>
       </div>
+      <details class="ai-panel mb-3" id="ai-panel">
+        <summary>Advanced: AI suggestions</summary>
+        <div class="ai-panel-body">
+          <p class="caption caption-plain">
+            Asks a model to fill in the suggestion columns for rows the regular expressions
+            could not read, such as "5 Dozen" or a carton counted in reams. It fills
+            suggestions only. You still confirm or accept them below, exactly as you would
+            the tool's own.
+          </p>
+          <div class="row g-2 align-items-end">
+            <div class="col-6 col-lg-3">
+              <label class="form-label" for="ai-provider">Provider</label>
+              <select class="form-select" id="ai-provider">
+                <option value="anthropic">Anthropic</option>
+                <option value="gemini">Gemini</option>
+              </select>
+            </div>
+            <div class="col-6 col-lg-3">
+              <label class="form-label" for="ai-model">Model</label>
+              <select class="form-select" id="ai-model"></select>
+            </div>
+            <div class="col-12 col-lg-3">
+              <label class="form-label" for="ai-scope">Rows to send</label>
+              <select class="form-select" id="ai-scope">
+                <option value="blocking">Blocking rows only</option>
+                <option value="all">All queued rows</option>
+              </select>
+            </div>
+            <div class="col-12 col-lg-3">
+              <label class="form-label" for="ai-key">API key</label>
+              <input type="password" class="form-control" id="ai-key" autocomplete="off"
+                     spellcheck="false" placeholder="Paste your own key">
+            </div>
+            <div class="col-12">
+              <p class="caption caption-plain mb-0" id="ai-key-note">
+                Kept in memory for this visit only. Use your own key; nothing is stored or sent
+                anywhere except the provider you chose.
+              </p>
+            </div>
+          </div>
+          <div id="ai-preflight" class="summary-strip mt-3"></div>
+          <p class="caption caption-plain mt-2 mb-2" id="ai-fields"></p>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button type="button" class="btn btn-outline-primary" id="btn-ai-propose">Propose</button>
+            <span class="caption" id="ai-state"></span>
+          </div>
+          <div id="ai-result" class="mt-3"></div>
+        </div>
+      </details>
+
       <div class="table-wrap">
         <table class="table table-sm table-hover align-middle app-table" id="review-table">
           <caption class="visually-hidden">Review queue. Blocking rows first, grouped by reason.</caption>

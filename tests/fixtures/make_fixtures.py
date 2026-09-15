@@ -283,11 +283,219 @@ def write_preferred(path: Path) -> Path:
     return path
 
 
+# ---------------------------------------------------------------------------
+# The working workbook, and the awkward workbooks that must be refused
+# ---------------------------------------------------------------------------
+#
+# The office manager keeps one workbook a year: the finished table on the first
+# sheet, a scratch sheet or two, and the raw vendor exports pasted in at the
+# back. Sheet recognition is by header row, not by position, so these fixtures
+# carry exactly that shape. The Amazon and Preferred rows are the same rows as
+# the two standalone exports above, so ingesting the workbook must produce the
+# same line file as ingesting the two files.
+
+# The finished table, as it is sent to leadership. No export columns at all.
+FINISHED_HEADERS = ["Ranking", "Description", "Pack/Size", "Quantity", "Office Depot", "Amazon"]
+FINISHED_ROWS = [
+    [1, "Copy Paper 8.5 x 11", "10 RM", 30, 8.99, 9.49],
+    [2, "Ballpoint Pens Black", "60 EA", 600, 0.12, 0.10],
+]
+
+# A scratch sheet: a pivot somebody left behind. Nothing here is a header the
+# tool looks for, which is the point.
+SCRATCH_HEADERS = ["Individual count", "Sum of Item Quantity", "Notes"]
+SCRATCH_ROWS = [
+    ["Copy Paper 8.5 x 11", 30, "merged with the Preferred code"],
+    ["Ballpoint Pens Black", 600, ""],
+]
+
+# Columns added to the Amazon sheet in the variant workbook, to prove extras are
+# ignored. Amazon lets an account admin add and reorder columns at will.
+AMAZON_EXTRA_HEADERS = ["Seller Name", "Tax Exemption Applied", "ASIN"]
+
+
+def _amazon_sheet(ws, headers: list[str] | None = None, lead_rows: int = 0) -> None:
+    """Write the Amazon export rows onto a sheet, optionally below some filler."""
+    headers = AMAZON_HEADERS if headers is None else headers
+    for _ in range(lead_rows):
+        ws.append([])
+    ws.append(headers)
+    for row in AMAZON_ROWS:
+        ws.append(_amazon_row(row))
+
+
+def _preferred_sheet(ws, lead: list[list] | None = None) -> None:
+    for row in lead or []:
+        ws.append(row)
+    ws.append(PREFERRED_HEADERS)
+    for row in PREFERRED_ROWS:
+        ws.append(list(row))
+
+
+def write_working_workbook(path: Path) -> Path:
+    """Five sheets, the way the workbook actually arrives: exports at the back.
+
+    The Preferred sheet has a title line and a blank row above its headers, so
+    the header scan has to look past row 1 to find it. The Amazon sheet is last
+    and its headers are on row 1, exactly as a paste from the raw export leaves
+    them.
+    """
+    wb = Workbook()
+    finished = wb.active
+    finished.title = "Sheet1"
+    finished.append(FINISHED_HEADERS)
+    for row in FINISHED_ROWS:
+        finished.append(row)
+
+    notes = wb.create_sheet("Sheet2")
+    notes.append(["Checked with the vendors March 2026"])
+
+    scratch = wb.create_sheet("Sheet3")
+    scratch.append(SCRATCH_HEADERS)
+    for row in SCRATCH_ROWS:
+        scratch.append(row)
+
+    _preferred_sheet(wb.create_sheet("PBS Orders"), lead=[["Preferred order history"], []])
+    _amazon_sheet(wb.create_sheet("orders_from_20250101_to_2025123"))
+    wb.save(path)
+    return path
+
+
+def write_working_workbook_filtered(path: Path) -> Path:
+    """The working workbook with the office manager's own filtered copy in it.
+
+    The real file keeps an "office supplies only" sheet beside the raw export.
+    Both carry the export's columns, so both are recognised, and reading either
+    twice would double the lines. Every row of the filtered sheet is also in the
+    raw one, which is how the full export is told from a view of it.
+    """
+    wb = Workbook()
+    finished = wb.active
+    finished.title = "Sheet1"
+    finished.append(FINISHED_HEADERS)
+    for row in FINISHED_ROWS:
+        finished.append(row)
+
+    scratch = wb.create_sheet("Sheet3")
+    scratch.append(SCRATCH_HEADERS)
+    for row in SCRATCH_ROWS:
+        scratch.append(row)
+
+    only = wb.create_sheet("AMZ Office Supply Orders ONLY")
+    only.append(AMAZON_HEADERS)
+    for row in AMAZON_ROWS:
+        if row[3] == OFFICE:  # the category column: her filter, kept simple
+            only.append(_amazon_row(row))
+
+    _preferred_sheet(wb.create_sheet("PBS Orders"))
+    _amazon_sheet(wb.create_sheet("orders_from_20250101_to_2025123"))
+    wb.save(path)
+    return path
+
+
+def _reorder(headers: list[str]) -> list[str]:
+    """Same columns, different order: the export is a user-chosen projection."""
+    return list(reversed(headers))
+
+
+def write_working_workbook_variant(path: Path) -> Path:
+    """The same workbook after Amazon added columns and somebody reordered them.
+
+    Extra columns must be ignored and the order must not matter, so this file
+    has to ingest to exactly the same lines as the plain one.
+    """
+    wb = Workbook()
+    amazon = wb.active
+    amazon.title = "Orders export"
+    headers = _reorder(AMAZON_HEADERS + AMAZON_EXTRA_HEADERS)
+    extras = {"Seller Name": "Example Seller", "Tax Exemption Applied": "No", "ASIN": "B00EXAMPLE"}
+    amazon.append(headers)
+    for row in AMAZON_ROWS:
+        values = dict(zip(AMAZON_HEADERS, _amazon_row(row)))
+        values.update(extras)
+        amazon.append([values[h] for h in headers])
+
+    preferred = wb.create_sheet("Preferred")
+    pref_headers = _reorder(PREFERRED_HEADERS) + ["Sales Rep"]
+    preferred.append(pref_headers)
+    for row in PREFERRED_ROWS:
+        values = dict(zip(PREFERRED_HEADERS, row))
+        values["Sales Rep"] = "Example Rep"
+        preferred.append([values[h] for h in pref_headers])
+    wb.save(path)
+    return path
+
+
+# Shaped like the Amazon Refunds report: it carries Order Date, Order ID and
+# Title like the Orders report, but the refund columns give it away. Invented
+# from the documented column names, not from a real refunds file.
+REFUNDS_HEADERS = [
+    "Order Date",
+    "Order ID",
+    "Title",
+    "Item Quantity",
+    "Refund Date",
+    "Refund Reason",
+    "Refund Status",
+    "Refund Amount",
+]
+REFUNDS_ROWS = [
+    [dt.datetime(2025, 3, 2), "111-0000004-0000004", "BIC Round Stic Ballpoint Pens", 1,
+     dt.datetime(2025, 3, 9), "Ordered by mistake", "Completed", 6.24],
+]
+
+
+def write_refunds(path: Path) -> Path:
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Refunds"
+    ws.append(REFUNDS_HEADERS)
+    for row in REFUNDS_ROWS:
+        ws.append(row)
+    wb.save(path)
+    return path
+
+
+def write_two_amazon_sheets(path: Path) -> Path:
+    """Two Amazon exports in one workbook: there is no honest way to pick one."""
+    wb = Workbook()
+    first = wb.active
+    first.title = "orders 2025"
+    _amazon_sheet(first)
+    _amazon_sheet(wb.create_sheet("orders 2025 (copy)"))
+    wb.save(path)
+    return path
+
+
+def write_amazon_missing_column(path: Path) -> Path:
+    """Everything except Purchase PPU, which the pipeline needs and must name."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Orders"
+    drop = AMAZON_HEADERS.index("Purchase PPU")
+    headers = [h for i, h in enumerate(AMAZON_HEADERS) if i != drop]
+    ws.append(headers)
+    for row in AMAZON_ROWS:
+        values = _amazon_row(row)
+        ws.append([v for i, v in enumerate(values) if i != drop])
+    wb.save(path)
+    return path
+
+
 def main() -> int:
     amazon = write_amazon(HERE / "amazon_2025_sample.xlsx")
     preferred = write_preferred(HERE / "preferred_2025_sample.xlsx")
     print(f"wrote {amazon} ({len(AMAZON_ROWS)} lines)")
     print(f"wrote {preferred} ({len(PREFERRED_ROWS)} lines)")
+    for path in (
+        write_working_workbook(HERE / "working_workbook_2025_sample.xlsx"),
+        write_working_workbook_filtered(HERE / "working_workbook_filtered_2025_sample.xlsx"),
+        write_working_workbook_variant(HERE / "working_workbook_variant_2025_sample.xlsx"),
+        write_refunds(HERE / "amazon_refunds_sample.xlsx"),
+        write_two_amazon_sheets(HERE / "two_amazon_sheets_sample.xlsx"),
+        write_amazon_missing_column(HERE / "amazon_missing_column_sample.xlsx"),
+    ):
+        print(f"wrote {path}")
     return 0
 
 

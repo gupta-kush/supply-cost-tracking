@@ -1,0 +1,29 @@
+{
+  "id": "msg_fixture_3_od",
+  "role": "assistant",
+  "model": "claude-sonnet-5",
+  "stop_reason": "end_turn",
+  "content": [
+    {"type": "text", "text": "Searching Office Depot."},
+    {
+      "type": "server_tool_use",
+      "id": "srvtoolu_4",
+      "name": "web_search",
+      "input": {"query": "Acme Legal Pads Letter Size Pack of 6 officedepot.com"}
+    },
+    {
+      "type": "web_search_tool_result",
+      "tool_use_id": "srvtoolu_4",
+      "content": []
+    },
+    {
+      "type": "text",
+      "text": "{\"price\": null, \"currency\": null, \"url\": null, \"product_title_found\": null, \"pack_size_found\": null, \"confidence\": \"medium\", \"note\": \"No matching product found on officedepot.com.\"}"
+    }
+  ],
+  "usage": {
+    "input_tokens": 1300,
+    "output_tokens": 90,
+    "server_tool_use": {"web_search_requests": 2}
+  }
+}

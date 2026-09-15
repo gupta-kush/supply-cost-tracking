@@ -5,7 +5,11 @@ name: Deploy web app to GitHub Pages
 on:
   push:
     branches: [main, master]
-    paths: ["web/**", ".github/workflows/pages.yml"]
+    paths:
+      - "web/**"
+      - "tests/fixtures/propose/**"
+      - "supplytrack/prompts/**"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -29,6 +33,7 @@ jobs:
         run: |
           node web/tests/run-tests.js
           node web/tests/report-tests.js
+          node web/tests/suggest-tests.js
   deploy:
     needs: test
     runs-on: ubuntu-latest

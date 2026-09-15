@@ -764,37 +764,37 @@
         "A13": {
           "f": null,
           "t": "s",
-          "v": "ranked_at"
+          "v": "exports"
         },
         "A14": {
           "f": null,
           "t": "s",
-          "v": "ranked_items"
+          "v": "vendors"
         },
         "A15": {
           "f": null,
           "t": "s",
-          "v": "included_lines"
+          "v": "ignored"
         },
         "A16": {
           "f": null,
           "t": "s",
-          "v": "excluded_lines"
+          "v": "ranked_at"
         },
         "A17": {
           "f": null,
           "t": "s",
-          "v": "item master rows"
+          "v": "ranked_items"
         },
         "A18": {
           "f": null,
           "t": "s",
-          "v": "items with upp_source != master"
+          "v": "included_lines"
         },
         "A19": {
           "f": null,
           "t": "s",
-          "v": "top_n"
+          "v": "excluded_lines"
         },
         "A2": {
           "f": null,
@@ -804,9 +804,24 @@
         "A20": {
           "f": null,
           "t": "s",
-          "v": "unpriced cells"
+          "v": "item master rows"
         },
         "A21": {
+          "f": null,
+          "t": "s",
+          "v": "items with upp_source != master"
+        },
+        "A22": {
+          "f": null,
+          "t": "s",
+          "v": "top_n"
+        },
+        "A23": {
+          "f": null,
+          "t": "s",
+          "v": "unpriced cells"
+        },
+        "A24": {
           "f": null,
           "t": "s",
           "v": "report built at"
@@ -869,24 +884,24 @@
         "B13": {
           "f": null,
           "t": "s",
-          "v": "<TIMESTAMP>"
+          "v": "{'vendor': 'amazon', 'file': 'amazon_2025_sample.xlsx', 'sheet': 'Order History', 'rows': 12, 'date_min': '2024-12-28', 'date_max': '2025-10-30'}; {'vendor': 'preferred', 'file': 'preferred_2025_sample.xlsx', 'sheet': 'Orders', 'rows': 5, 'date_min': '2025-02-04', 'date_max': '2025-11-06'}"
         },
         "B14": {
+          "f": null,
+          "t": "s",
+          "v": "amazon; preferred"
+        },
+        "B16": {
+          "f": null,
+          "t": "s",
+          "v": "<TIMESTAMP>"
+        },
+        "B17": {
           "f": null,
           "t": "n",
           "v": 12
         },
-        "B15": {
-          "f": null,
-          "t": "n",
-          "v": 15
-        },
-        "B16": {
-          "f": null,
-          "t": "n",
-          "v": 2
-        },
-        "B17": {
+        "B18": {
           "f": null,
           "t": "n",
           "v": 15
@@ -894,7 +909,7 @@
         "B19": {
           "f": null,
           "t": "n",
-          "v": 25
+          "v": 2
         },
         "B2": {
           "f": null,
@@ -904,9 +919,19 @@
         "B20": {
           "f": null,
           "t": "n",
+          "v": 15
+        },
+        "B22": {
+          "f": null,
+          "t": "n",
+          "v": 25
+        },
+        "B23": {
+          "f": null,
+          "t": "n",
           "v": 1
         },
-        "B21": {
+        "B24": {
           "f": null,
           "t": "s",
           "v": "<TIMESTAMP>"

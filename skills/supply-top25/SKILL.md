@@ -26,8 +26,12 @@ and are never moved elsewhere.
 A year's run is one command, re-run until it finishes:
 
 ```
-supplytrack run --year 2025 --amazon inbox/amazon-2025.xlsx --preferred inbox/preferred-2025.xlsx
+supplytrack run --year 2025 inbox/amazon-2025.xlsx inbox/preferred-2025.xlsx
 ```
+
+List the export files in any order; every sheet is looked at and each export is recognised by
+its columns. The older `--amazon` and `--preferred` spelling still works and means the same
+thing.
 
 Exit codes matter:
 
@@ -108,6 +112,49 @@ Apply only after an explicit yes:
 
 After applying, re-run `supplytrack review --year 2025` (no `--apply`) to see whether anything
 still blocks, or re-issue the `run` command from section 1 to continue the pipeline.
+
+### Letting a model propose the answers first (the offline path)
+
+Doing all of section 2 by hand is fine for ten rows and slow for a hundred: the 2025 run had 84
+pack sizes nobody had confirmed. `propose` does that first pass from the command line, outside
+the browser page, and writes its answers into a copy of the queue for a person to read:
+
+```
+supplytrack propose --year 2025 --provider anthropic
+```
+
+(`python -m supplytrack.propose` with the same arguments does the same thing, for a checkout
+that is not installed.)
+
+It reads `data/2025/review_queue.csv` and writes `data/2025/review_queue_proposed.csv`. Same
+columns, with `include`, `units_per_pack`, `unit_label` and `canonical_name` filled in and every
+reason rewritten with an `AI:` prefix, so it is plain on the page which answers came from a model.
+Two columns are added: `confidence` (`high`, `medium`, `low`, or `none` for a row the model said
+nothing about) and `proposed_by`, such as `anthropic:claude-sonnet-5`.
+
+Worth knowing:
+
+- `--dry-run` prints the batches it would send, with row counts and byte sizes, and stops. It
+  needs no key. Run it first on a queue you have not sent before.
+- `--only-blocking` works only the rows that stop the build (unknown key, pack size missing) and
+  leaves the unconfirmed ones for later.
+- `--provider gemini`, `--model`, `--batch-size`, `--in` and `--out` are there when the defaults
+  do not fit. The default batch size is 25, set in `supplytrack/prompts/proposal.json`.
+- The key is looked up in one order: the environment variable (`ANTHROPIC_API_KEY` or
+  `GEMINI_API_KEY`), then Windows Credential Manager if the `keyring` package is installed
+  (`keyring set supplytrack anthropic`). If neither has one it says so and stops. The key is
+  never written to any file the tool produces.
+- Only the product fields leave the machine: key, source, raw title, Amazon category, Preferred
+  pack code, packs bought in the year, the regex candidates, and the list of canonical names
+  already in use. Nothing else in the queue is sent, and the export's account user, email and
+  payment columns are dropped at ingest so they cannot be.
+
+A proposal is not a decision. Read the file, correct what is wrong, then apply it exactly as in
+section 2: without `--proposed` once a person has confirmed the values, with `--proposed` when
+nobody has checked them, which keeps every one of those rows in the queue and on the report's
+Sources sheet until somebody does. The rules that do not bend still do not bend: a pack size is
+never invented, and a row the model could not answer comes back blank with `confidence` of
+`none` rather than filled with a guess.
 
 ## 3. The prices step
 

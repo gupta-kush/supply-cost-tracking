@@ -103,6 +103,31 @@ function flattenCellValue(value) {
 }
 
 /**
+ * Every sheet of a workbook as {name, grid}, with nothing normalised.
+ *
+ * Ports supplytrack.xlsx.sheet_grids: the caller decides which row is the
+ * header, so blank and short rows are left exactly where they are and row
+ * positions are preserved. This is what sheet recognition scans, and it is the
+ * only way a workbook holding the finished table, a scratch sheet and the two
+ * raw exports can be handed over as one file.
+ */
+export async function readSheets(arrayBufferOrBuffer) {
+  const ExcelJS = await loadExcelJS();
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(arrayBufferOrBuffer);
+  return workbook.worksheets.map((worksheet) => {
+    const grid = [];
+    worksheet.eachRow({ includeEmpty: true }, (row) => {
+      const values = row.values; // 1-indexed: values[0] is always empty.
+      const cells = [];
+      for (let i = 1; i < values.length; i++) cells.push(flattenCellValue(values[i]));
+      grid.push(cells);
+    });
+    return { name: worksheet.name, grid };
+  });
+}
+
+/**
  * Read a workbook's first sheet (or `sheetName`) as {headers, rows}.
  * `headers` are normalised (see normHeader); `rows` are arrays of raw cell
  * values aligned to the header row's width — short rows are padded with

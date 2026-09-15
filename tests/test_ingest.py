@@ -7,10 +7,13 @@ from pathlib import Path
 import pytest
 from openpyxl import Workbook
 
-from conftest import YEAR, read_csv, read_header
+from conftest import FIXTURES, YEAR, read_csv, read_header
 from supplytrack.errors import SupplytrackError
 from supplytrack.ingest import (
+    AMAZON_REQUIRED,
     LINES_COLUMNS,
+    PREFERRED_REQUIRED,
+    classify_exports,
     amazon_key,
     ingest,
     load_lines,
@@ -107,7 +110,7 @@ def test_a_missing_column_is_named_rather_than_crashing(tmp_path, data_dir):
         ingest(data_dir, YEAR, path, None)
     message = str(excinfo.value)
     assert "wrong_export.xlsx" in message
-    assert "order id" in message  # the missing columns are listed by name
+    assert "Order ID" in message  # the missing columns are listed by name
 
 
 def test_keys_are_stable_across_spelling_and_spacing():
@@ -146,3 +149,223 @@ def test_a_csv_export_reads_the_same_as_the_xlsx(tmp_path, data_dir, amazon_expo
     assert from_csv.amazon_rows == 12
     keys = {row["key"] for row in read_csv(Path(data_dir) / str(YEAR) / "lines.csv")}
     assert amazon_key("EXPO Low-Odor Dry Erase Markers, Chisel Tip, Assorted, 48/Pack") in keys
+
+
+# --------------------------------------------------------------- recognition
+#
+# The office manager keeps one workbook: the finished table first, scratch
+# sheets in the middle, the raw exports pasted in at the back. Everything below
+# is about that file being an acceptable input exactly as she keeps it.
+
+WORKING = FIXTURES / "working_workbook_2025_sample.xlsx"
+FILTERED = FIXTURES / "working_workbook_filtered_2025_sample.xlsx"
+VARIANT = FIXTURES / "working_workbook_variant_2025_sample.xlsx"
+REFUNDS = FIXTURES / "amazon_refunds_sample.xlsx"
+TWO_AMAZON = FIXTURES / "two_amazon_sheets_sample.xlsx"
+MISSING_COLUMN = FIXTURES / "amazon_missing_column_sample.xlsx"
+
+
+def test_only_the_columns_the_pipeline_reads_are_required():
+    """Twelve columns, no more. The rest of the export is never demanded."""
+    assert AMAZON_REQUIRED == [
+        "Order Date",
+        "Order ID",
+        "Order Status",
+        "Amazon-Internal Product Category",
+        "Title",
+        "Item Quantity",
+        "Purchase PPU",
+    ]
+    assert PREFERRED_REQUIRED == ["Code", "Description", "Pack", "Quan", "Order Date"]
+
+
+def test_personal_data_columns_are_not_required():
+    """None of these may ever decide whether a file is readable."""
+    personal = {
+        "Account User",
+        "Account User Email",
+        "Payment Identifier",
+        "Payment Instrument Type",
+    }
+    assert personal.isdisjoint(AMAZON_REQUIRED)
+    assert personal.isdisjoint(PREFERRED_REQUIRED)
+
+
+def test_both_exports_are_found_inside_the_working_workbook():
+    recognised, ignored = classify_exports([WORKING])
+    assert [(e.vendor, e.sheet) for e in recognised] == [
+        ("preferred", "PBS Orders"),
+        ("amazon", "orders_from_20250101_to_2025123"),
+    ]
+    assert [s.sheet for s in ignored] == ["Sheet1", "Sheet2", "Sheet3"]
+    assert all(s.reason for s in ignored)
+
+
+def test_a_header_row_below_row_one_is_still_found():
+    """The Preferred sheet has a title line and a blank row above its headers."""
+    recognised, _ = classify_exports([WORKING])
+    preferred = [e for e in recognised if e.vendor == "preferred"][0]
+    assert "code" in preferred.headers
+    assert len(preferred.body) == 5
+
+
+def test_the_working_workbook_reads_the_same_as_two_separate_files(
+    tmp_path, amazon_export, preferred_export
+):
+    """One workbook or two files: the line file must not be able to tell."""
+    split_dir = tmp_path / "split"
+    split_dir.mkdir()
+    ingest(split_dir, YEAR, amazon_export, preferred_export)
+    one_dir = tmp_path / "one"
+    one_dir.mkdir()
+    ingest(one_dir, YEAR, WORKING)
+    assert (one_dir / str(YEAR) / "lines.csv").read_bytes() == (
+        split_dir / str(YEAR) / "lines.csv"
+    ).read_bytes()
+
+
+def test_extra_and_reordered_columns_are_accepted(tmp_path, amazon_export, preferred_export):
+    """Amazon lets an admin add and rearrange columns; that must not matter."""
+    split_dir = tmp_path / "split"
+    split_dir.mkdir()
+    ingest(split_dir, YEAR, amazon_export, preferred_export)
+    variant_dir = tmp_path / "variant"
+    variant_dir.mkdir()
+    ingest(variant_dir, YEAR, VARIANT)
+    assert (variant_dir / str(YEAR) / "lines.csv").read_bytes() == (
+        split_dir / str(YEAR) / "lines.csv"
+    ).read_bytes()
+
+
+def test_run_json_records_the_file_and_sheet_of_every_export(data_dir):
+    ingest(data_dir, YEAR, WORKING)
+    run = json.loads((data_dir / str(YEAR) / "run.json").read_text(encoding="utf-8"))
+    assert run["vendors"] == ["amazon", "preferred"]
+    found = {e["vendor"]: e for e in run["exports"]}
+    assert found["amazon"]["file"] == WORKING.name
+    assert found["amazon"]["sheet"] == "orders_from_20250101_to_2025123"
+    assert found["amazon"]["rows"] == 12
+    assert found["preferred"]["sheet"] == "PBS Orders"
+    assert found["preferred"]["rows"] == 5
+    assert [s["sheet"] for s in run["ignored"]] == ["Sheet1", "Sheet2", "Sheet3"]
+    # The keys the first release wrote are untouched.
+    assert run["amazon_file"] == WORKING.name
+    assert run["rows_written"] == 17
+
+
+def test_a_missing_required_column_names_the_column_and_the_sheet(data_dir):
+    with pytest.raises(SupplytrackError) as excinfo:
+        ingest(data_dir, YEAR, MISSING_COLUMN)
+    message = str(excinfo.value)
+    assert "Purchase PPU" in message
+    assert "Orders" in message
+    assert MISSING_COLUMN.name in message
+    # Columns the pipeline never reads are not mentioned.
+    assert "Brand Code" not in message
+
+
+def test_a_sibling_amazon_report_is_rejected_by_name(data_dir):
+    with pytest.raises(SupplytrackError) as excinfo:
+        ingest(data_dir, YEAR, REFUNDS)
+    message = str(excinfo.value)
+    assert "the Amazon Refunds report" in message
+    assert "Export the Orders report instead." in message
+
+
+def test_a_sibling_report_beside_a_good_export_is_only_skipped(data_dir):
+    """A Refunds sheet is a sheet to pass over, not a reason to stop."""
+    result = ingest(data_dir, YEAR, WORKING, REFUNDS)
+    assert result.rows_written == 17
+    reasons = {s["sheet"]: s["reason"] for s in result.ignored}
+    assert "Refunds" in reasons["Refunds"]
+
+
+def test_two_amazon_sheets_are_refused_and_named(data_dir):
+    with pytest.raises(SupplytrackError) as excinfo:
+        ingest(data_dir, YEAR, TWO_AMAZON)
+    message = str(excinfo.value)
+    assert "orders 2025" in message
+    assert "orders 2025 (copy)" in message
+
+
+def test_a_workbook_with_nothing_recognisable_lists_what_was_looked_for(tmp_path, data_dir):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Summary"
+    ws.append(["Ranking", "Description", "Total"])
+    ws.append([1, "Copy paper", 42])
+    path = tmp_path / "final_report.xlsx"
+    wb.save(path)
+
+    with pytest.raises(SupplytrackError) as excinfo:
+        ingest(data_dir, YEAR, path)
+    message = str(excinfo.value)
+    assert "Summary" in message
+    assert "Purchase PPU" in message  # the columns the tool looks for
+    assert "Quan" in message
+
+
+def test_a_csv_is_classified_the_same_way(tmp_path, data_dir, amazon_export):
+    import csv as _csv
+
+    from supplytrack.xlsx import read_table
+
+    headers, rows = read_table(amazon_export)
+    csv_path = tmp_path / "amazon-orders.csv"
+    with csv_path.open("w", encoding="utf-8", newline="") as fh:
+        writer = _csv.writer(fh)
+        writer.writerow(headers)
+        for row in rows:
+            writer.writerow(["" if c is None else c for c in row])
+
+    recognised, ignored = classify_exports([csv_path])
+    assert [(e.vendor, e.file, e.sheet) for e in recognised] == [
+        ("amazon", "amazon-orders.csv", "")
+    ]
+    assert ignored == []
+
+
+def test_the_preferred_export_alone_is_enough_to_run(data_dir, preferred_export):
+    result = ingest(data_dir, YEAR, preferred_export)
+    assert result.vendors == ["preferred"]
+    assert result.amazon_rows == 0
+    assert result.amazon_file == ""
+    assert result.rows_written == 5
+    run = json.loads((data_dir / str(YEAR) / "run.json").read_text(encoding="utf-8"))
+    assert run["vendors"] == ["preferred"]
+
+
+def test_giving_no_file_at_all_says_so(data_dir):
+    with pytest.raises(SupplytrackError) as excinfo:
+        ingest(data_dir, YEAR)
+    assert "No export file" in str(excinfo.value)
+
+
+def test_a_filtered_copy_of_an_export_is_a_view_of_it_not_a_rival(data_dir):
+    """Her "office supplies only" sheet sits beside the raw export in the file.
+
+    Both carry the Amazon columns. Reading either one twice would double every
+    line, so the sheet that holds every row of the other is the export and the
+    other is listed as a view of it.
+    """
+    result = ingest(data_dir, YEAR, FILTERED)
+    amazon = [e for e in result.exports if e["vendor"] == "amazon"]
+    assert [e["sheet"] for e in amazon] == ["orders_from_20250101_to_2025123"]
+    assert amazon[0]["rows"] == 12
+    reasons = {s["sheet"]: s["reason"] for s in result.ignored}
+    assert "filtered view" in reasons["AMZ Office Supply Orders ONLY"]
+    assert "orders_from_20250101_to_2025123" in reasons["AMZ Office Supply Orders ONLY"]
+
+
+def test_the_filtered_workbook_reads_the_same_as_two_separate_files(
+    tmp_path, amazon_export, preferred_export
+):
+    split_dir = tmp_path / "split"
+    split_dir.mkdir()
+    ingest(split_dir, YEAR, amazon_export, preferred_export)
+    filtered_dir = tmp_path / "filtered"
+    filtered_dir.mkdir()
+    ingest(filtered_dir, YEAR, FILTERED)
+    assert (filtered_dir / str(YEAR) / "lines.csv").read_bytes() == (
+        split_dir / str(YEAR) / "lines.csv"
+    ).read_bytes()

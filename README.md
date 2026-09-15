@@ -8,9 +8,11 @@ schemas and the module interfaces in its appendices are what the pieces agree on
 
 ## What it does
 
-Two exports go in - the Amazon Business order history and the Preferred order history -
-and the leadership workbook comes out. In between, every judgement call is recorded in a
-file that carries forward:
+Two exports go in - the Amazon Business order history and the Preferred order history, as one
+file, several files, or sheets inside a bigger workbook, in any combination - and the leadership
+workbook comes out. Sheets are found by their header row, not by file name or position, so the
+working workbook can be handed over as it is; see "Reading the exports" below. In between, every
+judgement call is recorded in a file that carries forward:
 
 - **is this an office supply?** Amazon sells the firm paper and it sells the firm sparkling
   water, and only one of those belongs in the report.
@@ -28,16 +30,37 @@ proposing answers for the review queue, which a person confirms.
 ## Commands
 
 ```
-supplytrack ingest   --year 2025 --amazon <file> [--preferred <file>]
+supplytrack ingest   --year 2025 <export-file>... [--amazon <file>] [--preferred <file>]
 supplytrack review   --year 2025 [--apply <decisions.csv>]
+supplytrack propose  --year 2025 [--provider anthropic|gemini] [--dry-run]
 supplytrack rank     --year 2025 [--top 25]
 supplytrack prices   --year 2025 [--template | --update]
 supplytrack report   --year 2025 [--top 25]
 supplytrack validate --year 2025
-supplytrack run      --year 2025 --amazon <file> --preferred <file>
+supplytrack run      --year 2025 <export-file>... [--amazon <file>] [--preferred <file>]
 ```
 
-`run` chains the lot and stops wherever a person is needed.
+`run` chains the lot and stops wherever a person is needed. It takes the same export files as
+`ingest`, positionally; `--amazon` / `--preferred` are the older spelling and still work on both.
+
+### Reading the exports
+
+`ingest` looks at every sheet of every file it is given and picks out the Amazon and Preferred
+exports by their header row, wherever they sit: sheet name, position and file count are never
+checked. This means:
+
+- The office manager's working workbook - the finished table, a scratch sheet, and the raw exports pasted in
+  at the back - can be handed over whole, as `supplytrack ingest --year 2025 working.xlsx`.
+- Either export works alone; `ingest` says so when only one vendor was found.
+- Only 12 columns are required in total (7 from Amazon's Orders report, 5 from Preferred), by
+  name; extra columns, a different order, and a different total count are all fine. Full detail
+  and the exact column names: `docs/spec.md` section 2.
+- A sibling Amazon report (Refunds, Returns, Reconciliation, Shipments) is named and skipped
+  rather than reported as a pile of missing columns. The finished FINAL workbook, which holds no
+  raw order lines, is refused with a message naming every sheet looked at and the columns needed.
+- If the working workbook carries both the raw export and the office manager's own filtered "office
+  supplies only" copy of it, the fuller sheet is read and the other is listed as a filtered view
+  of it, not read twice.
 
 ### The review queue
 
@@ -71,7 +94,7 @@ Exit codes are part of the interface:
 A typical first run for a year:
 
 ```
-supplytrack ingest --year 2025 --amazon amazon.xlsx --preferred preferred.xlsx
+supplytrack ingest --year 2025 amazon.xlsx preferred.xlsx     # or one workbook holding both
 supplytrack review --year 2025                      # writes the queue, exits 2 if anything blocks
 #   ... fill in include, units_per_pack and canonical_name ...
 supplytrack review --year 2025 --apply data/2025/review_queue.csv
@@ -82,6 +105,29 @@ supplytrack prices --year 2025 --template           # writes the price sheet, ex
 supplytrack prices --year 2025                      # checks the filled sheet
 supplytrack report --year 2025
 ```
+
+### Letting a model propose the queue first
+
+`supplytrack propose --year 2025 --provider anthropic` reads `review_queue.csv` and writes
+`review_queue_proposed.csv`: the same columns, plus `confidence` and `proposed_by`, every reason
+prefixed `AI: `. It needs an API key (an explicit `--api-key`, then `ANTHROPIC_API_KEY` /
+`GEMINI_API_KEY`, then Windows Credential Manager through the optional `keyring` package -
+`pip install keyring` then `keyring set supplytrack anthropic`). `--dry-run` shows the batches it
+would send, needs no key. Only the allow-listed fields (`key, source, raw_title,
+amazon_category, pack_desc, packs_in_year, upp_candidates`, plus the canonical names already in
+use) ever leave the machine; nothing else in the queue is sent. `python -m supplytrack.propose`
+still works with the same flags, for a checkout that only has the module; both build their
+arguments from the same function so the two cannot drift apart. Apply the result exactly like a
+hand-filled queue - `--apply ... --proposed` if nobody has checked it yet. Full detail, including
+how to read the proposals: `docs/spec.md` section 4.2, `src/skills/supply-top25/SKILL.md`
+section 2.
+
+The same pass is also on the page: step 2 (Review) has an "Advanced: AI suggestions" disclosure,
+closed by default, with a provider, a model, a scope (blocking rows only or every queued row) and
+a password-type key field kept in memory for the visit only. It sends the same allow-listed
+fields and shows them before the click; answers still only reach the master through Confirm
+selected or Accept suggestions for now. Not something to hand to the office manager: it is for the owner's
+own key. See `docs/webapp-spec.md` section 9.
 
 ### The price sheet
 
@@ -146,3 +192,12 @@ python scripts/build_wheel.py            # wheel; refuses a dirty tree
 
 Test fixtures are invented data and must stay that way. Nothing from `../inbox/` may be
 copied into `tests/`, committed, or pasted into a prompt.
+
+`scripts/price_spike.py` is a separate, standalone research script (not part of the
+`supplytrack` package, no install needed) that scores a web-search model's vendor price lookups
+against a set of hand-checked prices. See `docs/HANDOFF.md` for the live commands and where its
+output lands.
+
+The browser port in `web/` has its own test suites, including one for the AI-proposal provider
+seam (`web/tests/suggest-tests.js`, alongside `web/tests/run-tests.js` and
+`web/tests/report-tests.js`); see `web/README.md`.

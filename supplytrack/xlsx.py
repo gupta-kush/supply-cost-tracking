@@ -72,6 +72,13 @@ def norm_header(h: str) -> str:
     return re.sub(r"\s+", " ", str(h or "").strip()).casefold()
 
 
+# How far down a sheet the header row is looked for. A sheet somebody pasted
+# an export into often carries a title line or a blank row above the headers,
+# so row 1 cannot be assumed; ten rows is far enough to cover that and short
+# enough that a sheet of data never looks like a header by accident.
+MAX_HEADER_SCAN = 10
+
+
 def read_table(path: Path, sheet: str | None = None) -> tuple[list[str], list[list]]:
     """Read a .xlsx or .csv table as (normalised headers, rows).
 
@@ -81,27 +88,23 @@ def read_table(path: Path, sheet: str | None = None) -> tuple[list[str], list[li
     to the header width.
     """
     path = Path(path)
-    if not path.exists():
-        raise SupplytrackError(f"File not found: {path}")
-
-    suffix = path.suffix.casefold()
-    if suffix == ".csv":
-        rows = _read_csv(path)
-    elif suffix in (".xlsx", ".xlsm"):
-        rows = _read_xlsx(path, sheet)
-    else:
-        raise SupplytrackError(
-            f"{path.name} has an extension this tool does not read. "
-            "Export the order history as .xlsx or .csv."
-        )
-
+    rows = _raw_grid(path, sheet)
     if not rows:
         raise SupplytrackError(f"{path.name} is empty - there is no header row to read.")
+    return normalise_grid(rows, 0)
 
-    headers = [norm_header(c) for c in rows[0]]
+
+def normalise_grid(rows: list[list], header_row: int = 0) -> tuple[list[str], list[list]]:
+    """Split a raw grid into (normalised headers, body) at ``header_row``.
+
+    Rows above the header row are dropped, blank rows are dropped and short
+    rows are padded to the header width. Shared by :func:`read_table` and the
+    sheet scanner so a file read either way comes out the same.
+    """
+    headers = [norm_header(c) for c in rows[header_row]]
     width = len(headers)
     body: list[list] = []
-    for row in rows[1:]:
+    for row in rows[header_row + 1 :]:
         if not any(str(c).strip() for c in row if c is not None):
             continue
         row = list(row)
@@ -109,6 +112,53 @@ def read_table(path: Path, sheet: str | None = None) -> tuple[list[str], list[li
             row += [None] * (width - len(row))
         body.append(row)
     return headers, body
+
+
+def sheet_grids(path: Path) -> list[tuple[str, list[list]]]:
+    """Every sheet of a workbook, or the one table of a .csv, as raw grids.
+
+    Returns ``(sheet name, rows)`` pairs with nothing normalised: the caller
+    decides which row is the header. A .csv is a single table and comes back
+    with an empty sheet name, because it has no sheet to name.
+    """
+    path = Path(path)
+    suffix = path.suffix.casefold()
+    if suffix == ".csv":
+        return [("", _read_csv(path))]
+    if suffix not in (".xlsx", ".xlsm"):
+        raise SupplytrackError(
+            f"{path.name} has an extension this tool does not read. "
+            "Export the order history as .xlsx or .csv."
+        )
+    if not path.exists():
+        raise SupplytrackError(f"File not found: {path}")
+    wb = load_workbook_safe(path, data_only=True)
+    try:
+        return [
+            (name, [list(row) for row in wb[name].iter_rows(values_only=True)])
+            for name in wb.sheetnames
+        ]
+    finally:
+        wb.close()
+
+
+def scan_headers(grid: list[list], limit: int = MAX_HEADER_SCAN) -> list[list[str]]:
+    """The first ``limit`` rows of a grid, each normalised as a header row."""
+    return [[norm_header(c) for c in row] for row in grid[:limit]]
+
+
+def _raw_grid(path: Path, sheet: str | None) -> list[list]:
+    if not path.exists():
+        raise SupplytrackError(f"File not found: {path}")
+    suffix = path.suffix.casefold()
+    if suffix == ".csv":
+        return _read_csv(path)
+    if suffix in (".xlsx", ".xlsm"):
+        return _read_xlsx(path, sheet)
+    raise SupplytrackError(
+        f"{path.name} has an extension this tool does not read. "
+        "Export the order history as .xlsx or .csv."
+    )
 
 
 def _read_csv(path: Path) -> list[list]:
@@ -132,22 +182,34 @@ def _read_xlsx(path: Path, sheet: str | None) -> list[list]:
         wb.close()
 
 
-def header_index(headers: list[str], path: Path, required: list[str]) -> dict[str, int]:
-    """Map each required header to its column index, or say which are missing.
+def header_index(
+    headers: list[str],
+    where: str,
+    required: list[str],
+    optional: list[str] | None = None,
+) -> dict[str, int]:
+    """Map the columns this tool reads to their indexes, or say which are missing.
 
-    ``required`` is given already normalised. One error listing every missing
-    column beats failing on the first one: the usual cause is the wrong export
-    having been downloaded, and the full list makes that obvious at a glance.
+    ``required`` and ``optional`` are given already normalised. Required
+    columns must all be there; optional ones are mapped when present and left
+    out when not, so an export that dropped a column the tool only copies
+    through still reads. One error listing every missing column beats failing
+    on the first one: the usual cause is the wrong export having been
+    downloaded, and the full list makes that obvious at a glance.
     """
     index = {h: i for i, h in enumerate(headers) if h}
     missing = [h for h in required if h not in index]
     if missing:
         raise SupplytrackError(
-            f"{Path(path).name} is missing {len(missing)} expected column(s): "
+            f"{where} is missing {len(missing)} required column(s): "
             + ", ".join(missing)
             + ". Check that this is the full order-history export and not a filtered view."
         )
-    return {h: index[h] for h in required}
+    mapped = {h: index[h] for h in required}
+    for h in optional or []:
+        if h in index:
+            mapped[h] = index[h]
+    return mapped
 
 
 def cell(row: list, index: dict[str, int], header: str) -> Any:

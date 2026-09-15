@@ -1,0 +1,29 @@
+{
+  "id": "msg_fixture_4_stp",
+  "role": "assistant",
+  "model": "claude-sonnet-5",
+  "stop_reason": "end_turn",
+  "content": [
+    {"type": "text", "text": "Searching Staples."},
+    {
+      "type": "server_tool_use",
+      "id": "srvtoolu_7",
+      "name": "web_search",
+      "input": {"query": "Heavy Duty Office Stapler staples.com"}
+    },
+    {
+      "type": "web_search_tool_result",
+      "tool_use_id": "srvtoolu_7",
+      "content": []
+    },
+    {
+      "type": "text",
+      "text": "{\"price\": null, \"currency\": null, \"url\": null, \"product_title_found\": null, \"pack_size_found\": null, \"confidence\": \"medium\", \"note\": \"No exact match found on staples.com.\"}"
+    }
+  ],
+  "usage": {
+    "input_tokens": 1200,
+    "output_tokens": 85,
+    "server_tool_use": {"web_search_requests": 2}
+  }
+}

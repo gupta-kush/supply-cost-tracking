@@ -1,0 +1,106 @@
+{
+  "id": "msg_fixture",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-5",
+  "stop_reason": "tool_use",
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_fixture",
+      "name": "record_proposals",
+      "input": {
+        "proposals": [
+          {
+            "key": "amz:bic round stic ballpoint pens black 60 count",
+            "include": "y",
+            "include_reason": "ballpoint pens are an office supply",
+            "units_per_pack": 60,
+            "upp_reason": "5 dozen is 5 times 12",
+            "unit_label": "EA",
+            "canonical_name": "BIC Round Stic Ballpoint Pens, Black",
+            "canonical_reason": "brand and product without the pack size",
+            "confidence": "high"
+          },
+          {
+            "key": "amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton",
+            "include": "y",
+            "include_reason": "copy paper is an office supply",
+            "units_per_pack": 10,
+            "upp_reason": "the carton holds 10 reams and paper counts by the ream",
+            "unit_label": "RM",
+            "canonical_name": "Hammermill Copy Paper",
+            "canonical_reason": "same product as the existing Hammermill Copy Paper",
+            "confidence": "high"
+          },
+          {
+            "key": "pbs:UNV21200",
+            "include": "y",
+            "include_reason": "file folders are an office supply",
+            "units_per_pack": 100,
+            "upp_reason": "the Preferred pack code BX100 means 100 per box",
+            "unit_label": "EA",
+            "canonical_name": "Manila File Folders, Letter, 1/3 Cut",
+            "canonical_reason": "plain name for the folder described by the code",
+            "confidence": "high"
+          },
+          {
+            "key": "amz:avery name badge inserts 200 inserts",
+            "include": "y",
+            "include_reason": "name badge inserts are an office supply",
+            "units_per_pack": null,
+            "upp_reason": "cannot tell whether 200 is the pack or the sheet count",
+            "unit_label": "EA",
+            "canonical_name": "Avery Name Tag Inserts",
+            "canonical_reason": "same insert product as the existing Avery Name Tag Inserts",
+            "confidence": "medium"
+          },
+          {
+            "key": "amz:heavy duty stapler full strip",
+            "include": "y",
+            "include_reason": "a stapler is an office supply",
+            "units_per_pack": 1,
+            "upp_reason": "the title states no count, so one stapler per pack",
+            "unit_label": "EA",
+            "canonical_name": "Heavy Duty Stapler, Full Strip",
+            "canonical_reason": "brand free name, colour is not a separate product here",
+            "confidence": "low"
+          },
+          {
+            "key": "amz:bubly sparkling water 18 cans",
+            "include": "n",
+            "include_reason": "sparkling water is a grocery item, not an office supply",
+            "units_per_pack": 18,
+            "upp_reason": "the title says 18 cans",
+            "unit_label": "EA",
+            "canonical_name": "Bubly Sparkling Water",
+            "canonical_reason": "plain name without the pack size",
+            "confidence": "high"
+          },
+          {
+            "key": "amz:post-it sign here flags red 2 x 50",
+            "include": "y",
+            "include_reason": "flags are an office supply",
+            "units_per_pack": 0,
+            "upp_reason": "two dispensers of 50 flags, unclear which is the purchase unit",
+            "unit_label": "EA",
+            "canonical_name": "Post-it Sign Here Flags, Red",
+            "canonical_reason": "colour variants stay separate from the yellow flags",
+            "confidence": "certain"
+          },
+          {
+            "key": "amz:this key was never in the batch",
+            "include": "y",
+            "include_reason": "invented row that must be dropped",
+            "units_per_pack": 99,
+            "upp_reason": "invented",
+            "unit_label": "EA",
+            "canonical_name": "Invented Item",
+            "canonical_reason": "invented",
+            "confidence": "high"
+          }
+        ]
+      }
+    }
+  ]
+}

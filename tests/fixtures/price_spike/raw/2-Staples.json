@@ -1,0 +1,37 @@
+{
+  "id": "msg_fixture_2_stp",
+  "role": "assistant",
+  "model": "claude-sonnet-5",
+  "stop_reason": "end_turn",
+  "content": [
+    {"type": "text", "text": "Searching Staples."},
+    {
+      "type": "server_tool_use",
+      "id": "srvtoolu_3",
+      "name": "web_search",
+      "input": {"query": "Acme Binder Clips Medium Box of 50 staples.com"}
+    },
+    {
+      "type": "web_search_tool_result",
+      "tool_use_id": "srvtoolu_3",
+      "content": [
+        {
+          "type": "web_search_result",
+          "url": "https://www.staples.com/product/fixture-binder-clips",
+          "title": "Acme Binder Clips Medium, Box of 50",
+          "encrypted_content": "fixture-not-real",
+          "page_age": "February 2026"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "text": "{\"price\": 10.00, \"currency\": \"USD\", \"url\": \"https://www.staples.com/product/fixture-binder-clips\", \"product_title_found\": \"Acme Binder Clips Medium, Box of 50\", \"pack_size_found\": 50, \"confidence\": \"medium\", \"note\": \"This looks like a case price, not a single box - worth checking.\"}"
+    }
+  ],
+  "usage": {
+    "input_tokens": 1500,
+    "output_tokens": 140,
+    "server_tool_use": {"web_search_requests": 1}
+  }
+}
