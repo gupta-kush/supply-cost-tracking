@@ -135,6 +135,33 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_top(report)
     report.set_defaults(handler=_cmd_report)
 
+    import_report = subparsers.add_parser(
+        "import-report",
+        help="Pull the item master and prices back out of a report workbook.",
+        description=(
+            "Read the Item master, Prices and Prices retired sheets of a report workbook "
+            "this tool built and write them back as data/item_master.csv, "
+            "data/<year>/prices.csv and data/<year>/prices_retired.csv. This is what makes "
+            "last year's report the only file needed to start this year."
+        ),
+    )
+    # Its own parser rather than _sub: this writes data files, never the
+    # workbook, so --out-dir would be an argument that does nothing.
+    import_report.add_argument(
+        "--year", required=True, type=int, help="the reporting year the prices belong to"
+    )
+    import_report.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help="where the item master and yearly files live (default: SUPPLYTRACK_DATA or ./data)",
+    )
+    import_report.add_argument("report", type=Path, help="the report workbook to read")
+    import_report.add_argument(
+        "--force", action="store_true", help="replace files that are already there"
+    )
+    import_report.set_defaults(handler=_cmd_import_report)
+
     validate = _sub(subparsers, "validate", "Run every check against the current files.")
     _add_top(validate)
     validate.set_defaults(handler=_cmd_validate)
@@ -365,6 +392,19 @@ def _cmd_report(args) -> int:
     return EXIT_OK
 
 
+def _cmd_import_report(args) -> int:
+    """Turn last year's report workbook back into the files the pipeline reads."""
+    from . import report
+
+    data_dir = _data_dir(args)
+    written, missing = report.import_report(data_dir, args.year, args.report, force=args.force)
+    for path, rows, label in written:
+        print(f"Wrote {rows} row(s) from {label} to {path}")
+    for label in missing:
+        print(f"{Path(args.report).name} has no {label} sheet, so nothing was written for it.")
+    return EXIT_OK
+
+
 def _cmd_validate(args) -> int:
     from .validate import run_all
 
@@ -389,6 +429,20 @@ def _cmd_run(args) -> int:
 
     data_dir = _data_dir(args)
     out_dir = _out_dir(args)
+
+    # Before anything is read as an export: if one of the files is last year's
+    # report workbook and the data folder has no item master or prices of its
+    # own, take them from it. Only ever fills a gap, so a run alongside work in
+    # progress leaves that work alone.
+    from . import report as report_mod
+
+    carried = report_mod.carry_forward(data_dir, args.year, _export_sources(args))
+    for path, rows, label, where in carried:
+        print(f"Took the {label} ({rows} row(s)) from {where}; the data folder had none.")
+        print(f"Wrote {path}")
+    carried_prices = any(
+        label == report_mod.CARRY_LABELS["prices"] for _, _, label, _ in carried
+    )
 
     result = ingest(data_dir, args.year, *_export_sources(args))
     _report_exports(result)
@@ -426,6 +480,25 @@ def _cmd_run(args) -> int:
         print(f"No prices yet for {args.year}. Wrote a blank price sheet: {path}")
         print("Fill in unit_price and status for each vendor, then run this again.")
         return EXIT_NEEDS_PERSON
+
+    if carried_prices:
+        # The price sheet came out of the report workbook, so it is keyed to the
+        # ranking of the year that workbook was built for. Re-cut it against
+        # this year's ranking rather than failing every cell the new top N asks
+        # for: a price somebody typed is kept, an item new to the top N arrives
+        # unpriced, and an item that dropped out moves to prices_retired.csv.
+        update = prices.update_prices(data_dir, args.year, args.top)
+        print(
+            f"Re-cut the carried price sheet for this year's top {args.top}: "
+            f"kept {update.kept}, added {update.added}, retired {update.retired}."
+        )
+        if update.retired:
+            print(f"Retired rows moved to {data_dir / str(args.year) / 'prices_retired.csv'}")
+        if update.added:
+            print(
+                "Fill in unit_price and status for the newly added row(s), then run this again."
+            )
+            return EXIT_NEEDS_PERSON
 
     findings = check_prices(data_dir, args.year, args.top)
     if _print_findings(findings):

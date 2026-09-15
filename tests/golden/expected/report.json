@@ -3,7 +3,10 @@
     "Top 25",
     "All items",
     "Excluded",
-    "Sources"
+    "Sources",
+    "Item master",
+    "Prices",
+    "Prices retired"
   ],
   "sheets": {
     "All items": {
@@ -739,6 +742,2704 @@
       "freeze_panes": "A2",
       "merged_cells": []
     },
+    "Item master": {
+      "cells": {
+        "A1": {
+          "f": null,
+          "t": "s",
+          "v": "key"
+        },
+        "A10": {
+          "f": null,
+          "t": "s",
+          "v": "amz:post-it notes 3 x 3 inches canary yellow 12 pads"
+        },
+        "A11": {
+          "f": null,
+          "t": "s",
+          "v": "amz:scotch magic tape 3/4 x 1000 inches 6 rolls"
+        },
+        "A12": {
+          "f": null,
+          "t": "s",
+          "v": "amz:sharpie permanent markers fine point assorted 12 count"
+        },
+        "A13": {
+          "f": null,
+          "t": "s",
+          "v": "pbs:PBS9001"
+        },
+        "A14": {
+          "f": null,
+          "t": "s",
+          "v": "pbs:SAN30001"
+        },
+        "A15": {
+          "f": null,
+          "t": "s",
+          "v": "pbs:UNV21200"
+        },
+        "A16": {
+          "f": null,
+          "t": "s",
+          "v": "pbs:UNV35668"
+        },
+        "A2": {
+          "f": null,
+          "t": "s",
+          "v": "amz:avery name badge inserts 400 printable name tag inserts 3 x 4 in white"
+        },
+        "A3": {
+          "f": null,
+          "t": "s",
+          "v": "amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches"
+        },
+        "A4": {
+          "f": null,
+          "t": "s",
+          "v": "amz:bic round stic ballpoint pens medium point black 60-count"
+        },
+        "A5": {
+          "f": null,
+          "t": "s",
+          "v": "amz:bubly sparkling water variety pack 18 count"
+        },
+        "A6": {
+          "f": null,
+          "t": "s",
+          "v": "amz:cable zip ties 8 inch black (bulk 1000 pack)"
+        },
+        "A7": {
+          "f": null,
+          "t": "s",
+          "v": "amz:expo low-odor dry erase markers chisel tip assorted 48/pack"
+        },
+        "A8": {
+          "f": null,
+          "t": "s",
+          "v": "amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton"
+        },
+        "A9": {
+          "f": null,
+          "t": "s",
+          "v": "amz:kleenex professional facial tissue display pack of 6"
+        },
+        "B1": {
+          "f": null,
+          "t": "s",
+          "v": "source"
+        },
+        "B10": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B11": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B12": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B13": {
+          "f": null,
+          "t": "s",
+          "v": "preferred"
+        },
+        "B14": {
+          "f": null,
+          "t": "s",
+          "v": "preferred"
+        },
+        "B15": {
+          "f": null,
+          "t": "s",
+          "v": "preferred"
+        },
+        "B16": {
+          "f": null,
+          "t": "s",
+          "v": "preferred"
+        },
+        "B2": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B3": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B4": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B5": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B6": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B7": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B8": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "B9": {
+          "f": null,
+          "t": "s",
+          "v": "amazon"
+        },
+        "C1": {
+          "f": null,
+          "t": "s",
+          "v": "raw_title"
+        },
+        "C10": {
+          "f": null,
+          "t": "s",
+          "v": "Post-it Notes, 3 x 3 Inches, Canary Yellow, 12 Pads"
+        },
+        "C11": {
+          "f": null,
+          "t": "s",
+          "v": "Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls"
+        },
+        "C12": {
+          "f": null,
+          "t": "s",
+          "v": "Sharpie Permanent Markers, Fine Point, Assorted, 12 Count"
+        },
+        "C13": {
+          "f": null,
+          "t": "s",
+          "v": "Letterhead Printed 2 Colour"
+        },
+        "C14": {
+          "f": null,
+          "t": "s",
+          "v": "Permanent Marker Fine Point Black"
+        },
+        "C15": {
+          "f": null,
+          "t": "s",
+          "v": "Copy Paper 8.5 x 11 20lb White"
+        },
+        "C16": {
+          "f": null,
+          "t": "s",
+          "v": "Binder Clips Medium Black"
+        },
+        "C2": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Badge Inserts, 400 Printable Name Tag Inserts, 3 x 4 in, White"
+        },
+        "C3": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Printable Name Tags, 400 Printable Name Tag Inserts, 3 x 4 Inches"
+        },
+        "C4": {
+          "f": null,
+          "t": "s",
+          "v": "BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count"
+        },
+        "C5": {
+          "f": null,
+          "t": "s",
+          "v": "Bubly Sparkling Water, Variety Pack, 18 Count"
+        },
+        "C6": {
+          "f": null,
+          "t": "s",
+          "v": "Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)"
+        },
+        "C7": {
+          "f": null,
+          "t": "s",
+          "v": "EXPO Low-Odor Dry Erase Markers, Chisel Tip, Assorted, 48/Pack"
+        },
+        "C8": {
+          "f": null,
+          "t": "s",
+          "v": "Hammermill Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton"
+        },
+        "C9": {
+          "f": null,
+          "t": "s",
+          "v": "Kleenex Professional Facial Tissue, Display Pack of 6"
+        },
+        "D1": {
+          "f": null,
+          "t": "s",
+          "v": "include"
+        },
+        "D10": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D11": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D12": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D13": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D14": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D15": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D16": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D2": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D3": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D4": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D5": {
+          "f": null,
+          "t": "s",
+          "v": "n"
+        },
+        "D6": {
+          "f": null,
+          "t": "s",
+          "v": "n"
+        },
+        "D7": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D8": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "D9": {
+          "f": null,
+          "t": "s",
+          "v": "y"
+        },
+        "E1": {
+          "f": null,
+          "t": "s",
+          "v": "canonical_name"
+        },
+        "E10": {
+          "f": null,
+          "t": "s",
+          "v": "Post-it Notes 3x3 Yellow"
+        },
+        "E11": {
+          "f": null,
+          "t": "s",
+          "v": "Scotch Magic Tape 3/4in"
+        },
+        "E12": {
+          "f": null,
+          "t": "s",
+          "v": "Sharpie Permanent Markers Assorted"
+        },
+        "E13": {
+          "f": null,
+          "t": "s",
+          "v": "Letterhead Printed 2 Colour"
+        },
+        "E14": {
+          "f": null,
+          "t": "s",
+          "v": "Permanent Marker Fine Point Black"
+        },
+        "E15": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred Copy Paper 8.5x11 White"
+        },
+        "E16": {
+          "f": null,
+          "t": "s",
+          "v": "Binder Clips Medium Black"
+        },
+        "E2": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Tag Inserts"
+        },
+        "E3": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Tag Inserts"
+        },
+        "E4": {
+          "f": null,
+          "t": "s",
+          "v": "BIC Ballpoint Pens Black Medium"
+        },
+        "E5": {
+          "f": null,
+          "t": "s",
+          "v": "Bubly Sparkling Water"
+        },
+        "E6": {
+          "f": null,
+          "t": "s",
+          "v": "Cable Zip Ties"
+        },
+        "E7": {
+          "f": null,
+          "t": "s",
+          "v": "EXPO Dry Erase Markers Assorted"
+        },
+        "E8": {
+          "f": null,
+          "t": "s",
+          "v": "Hammermill Copy Paper 8.5x11"
+        },
+        "E9": {
+          "f": null,
+          "t": "s",
+          "v": "Kleenex Professional Facial Tissue"
+        },
+        "F1": {
+          "f": null,
+          "t": "s",
+          "v": "units_per_pack"
+        },
+        "F10": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "F11": {
+          "f": null,
+          "t": "n",
+          "v": 6
+        },
+        "F12": {
+          "f": null,
+          "t": "n",
+          "v": 24
+        },
+        "F13": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "F14": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "F15": {
+          "f": null,
+          "t": "n",
+          "v": 10
+        },
+        "F16": {
+          "f": null,
+          "t": "n",
+          "v": 100
+        },
+        "F2": {
+          "f": null,
+          "t": "n",
+          "v": 200
+        },
+        "F3": {
+          "f": null,
+          "t": "n",
+          "v": 400
+        },
+        "F4": {
+          "f": null,
+          "t": "n",
+          "v": 60
+        },
+        "F5": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "F6": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "F7": {
+          "f": null,
+          "t": "n",
+          "v": 48
+        },
+        "F8": {
+          "f": null,
+          "t": "n",
+          "v": 10
+        },
+        "F9": {
+          "f": null,
+          "t": "n",
+          "v": 6
+        },
+        "G1": {
+          "f": null,
+          "t": "s",
+          "v": "unit_label"
+        },
+        "G10": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G11": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G12": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G13": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G14": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G15": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G16": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G2": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G3": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G4": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G5": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G6": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G7": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "G8": {
+          "f": null,
+          "t": "s",
+          "v": "RM"
+        },
+        "G9": {
+          "f": null,
+          "t": "s",
+          "v": "EA"
+        },
+        "H1": {
+          "f": null,
+          "t": "s",
+          "v": "upp_source"
+        },
+        "H10": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H11": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H12": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H13": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H14": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H15": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H16": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H2": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H3": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H4": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H7": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H8": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "H9": {
+          "f": null,
+          "t": "s",
+          "v": "master"
+        },
+        "I1": {
+          "f": null,
+          "t": "s",
+          "v": "amazon_category"
+        },
+        "I10": {
+          "f": null,
+          "t": "s",
+          "v": "Office Product"
+        },
+        "I11": {
+          "f": null,
+          "t": "s",
+          "v": "Office Product"
+        },
+        "I12": {
+          "f": null,
+          "t": "s",
+          "v": "Office Product"
+        },
+        "I2": {
+          "f": null,
+          "t": "s",
+          "v": "Office Product"
+        },
+        "I3": {
+          "f": null,
+          "t": "s",
+          "v": "Office Product"
+        },
+        "I4": {
+          "f": null,
+          "t": "s",
+          "v": "Office Product"
+        },
+        "I5": {
+          "f": null,
+          "t": "s",
+          "v": "Grocery"
+        },
+        "I6": {
+          "f": null,
+          "t": "s",
+          "v": "Tools & Home Improvement"
+        },
+        "I7": {
+          "f": null,
+          "t": "s",
+          "v": "Office Product"
+        },
+        "I8": {
+          "f": null,
+          "t": "s",
+          "v": "Office Product"
+        },
+        "I9": {
+          "f": null,
+          "t": "s",
+          "v": "Business, Industrial, & Scientific Supplies Basic"
+        },
+        "J1": {
+          "f": null,
+          "t": "s",
+          "v": "first_seen"
+        },
+        "J10": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J11": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J12": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J13": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J14": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J15": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J16": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J2": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J3": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J4": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J5": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J6": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J7": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J8": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "J9": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K1": {
+          "f": null,
+          "t": "s",
+          "v": "last_seen"
+        },
+        "K10": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K11": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K12": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K13": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K14": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K15": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K16": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K2": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K3": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K4": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K5": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K6": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K7": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K8": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "K9": {
+          "f": null,
+          "t": "s",
+          "v": "2025"
+        },
+        "L1": {
+          "f": null,
+          "t": "s",
+          "v": "note"
+        },
+        "L12": {
+          "f": null,
+          "t": "s",
+          "v": "title says 12 Count; box actually holds two dozen; confirmed against invoice"
+        },
+        "L2": {
+          "f": null,
+          "t": "s",
+          "v": "listing states 400 but this SKU ships a half case (200); merged with the other Name Tag listing"
+        },
+        "L5": {
+          "f": null,
+          "t": "s",
+          "v": "excluded: Grocery item is not an office supply"
+        },
+        "L6": {
+          "f": null,
+          "t": "s",
+          "v": "excluded by the office manager in 2025"
+        },
+        "L8": {
+          "f": null,
+          "t": "s",
+          "v": "purchase unit is the carton: 10 reams per carton"
+        }
+      },
+      "column_widths": {
+        "A": 34.0,
+        "B": 11.0,
+        "C": 46.0,
+        "D": 9.0,
+        "E": 34.0,
+        "F": 15.0,
+        "G": 11.0,
+        "H": 14.0,
+        "I": 24.0,
+        "J": 12.0,
+        "K": 12.0,
+        "L": 36.0
+      },
+      "conditional_formatting": [],
+      "fills": {},
+      "freeze_panes": "A2",
+      "merged_cells": []
+    },
+    "Prices": {
+      "cells": {
+        "A1": {
+          "f": null,
+          "t": "s",
+          "v": "rank"
+        },
+        "A10": {
+          "f": null,
+          "t": "n",
+          "v": 3
+        },
+        "A11": {
+          "f": null,
+          "t": "n",
+          "v": 3
+        },
+        "A12": {
+          "f": null,
+          "t": "n",
+          "v": 3
+        },
+        "A13": {
+          "f": null,
+          "t": "n",
+          "v": 3
+        },
+        "A14": {
+          "f": null,
+          "t": "n",
+          "v": 4
+        },
+        "A15": {
+          "f": null,
+          "t": "n",
+          "v": 4
+        },
+        "A16": {
+          "f": null,
+          "t": "n",
+          "v": 4
+        },
+        "A17": {
+          "f": null,
+          "t": "n",
+          "v": 4
+        },
+        "A18": {
+          "f": null,
+          "t": "n",
+          "v": 5
+        },
+        "A19": {
+          "f": null,
+          "t": "n",
+          "v": 5
+        },
+        "A2": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "A20": {
+          "f": null,
+          "t": "n",
+          "v": 5
+        },
+        "A21": {
+          "f": null,
+          "t": "n",
+          "v": 5
+        },
+        "A22": {
+          "f": null,
+          "t": "n",
+          "v": 6
+        },
+        "A23": {
+          "f": null,
+          "t": "n",
+          "v": 6
+        },
+        "A24": {
+          "f": null,
+          "t": "n",
+          "v": 6
+        },
+        "A25": {
+          "f": null,
+          "t": "n",
+          "v": 6
+        },
+        "A26": {
+          "f": null,
+          "t": "n",
+          "v": 7
+        },
+        "A27": {
+          "f": null,
+          "t": "n",
+          "v": 7
+        },
+        "A28": {
+          "f": null,
+          "t": "n",
+          "v": 7
+        },
+        "A29": {
+          "f": null,
+          "t": "n",
+          "v": 7
+        },
+        "A3": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "A30": {
+          "f": null,
+          "t": "n",
+          "v": 8
+        },
+        "A31": {
+          "f": null,
+          "t": "n",
+          "v": 8
+        },
+        "A32": {
+          "f": null,
+          "t": "n",
+          "v": 8
+        },
+        "A33": {
+          "f": null,
+          "t": "n",
+          "v": 8
+        },
+        "A34": {
+          "f": null,
+          "t": "n",
+          "v": 9
+        },
+        "A35": {
+          "f": null,
+          "t": "n",
+          "v": 9
+        },
+        "A36": {
+          "f": null,
+          "t": "n",
+          "v": 9
+        },
+        "A37": {
+          "f": null,
+          "t": "n",
+          "v": 9
+        },
+        "A38": {
+          "f": null,
+          "t": "n",
+          "v": 10
+        },
+        "A39": {
+          "f": null,
+          "t": "n",
+          "v": 10
+        },
+        "A4": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "A40": {
+          "f": null,
+          "t": "n",
+          "v": 10
+        },
+        "A41": {
+          "f": null,
+          "t": "n",
+          "v": 10
+        },
+        "A42": {
+          "f": null,
+          "t": "n",
+          "v": 11
+        },
+        "A43": {
+          "f": null,
+          "t": "n",
+          "v": 11
+        },
+        "A44": {
+          "f": null,
+          "t": "n",
+          "v": 11
+        },
+        "A45": {
+          "f": null,
+          "t": "n",
+          "v": 11
+        },
+        "A46": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "A47": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "A48": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "A49": {
+          "f": null,
+          "t": "n",
+          "v": 12
+        },
+        "A5": {
+          "f": null,
+          "t": "n",
+          "v": 1
+        },
+        "A6": {
+          "f": null,
+          "t": "n",
+          "v": 2
+        },
+        "A7": {
+          "f": null,
+          "t": "n",
+          "v": 2
+        },
+        "A8": {
+          "f": null,
+          "t": "n",
+          "v": 2
+        },
+        "A9": {
+          "f": null,
+          "t": "n",
+          "v": 2
+        },
+        "B1": {
+          "f": null,
+          "t": "s",
+          "v": "canonical_name"
+        },
+        "B10": {
+          "f": null,
+          "t": "s",
+          "v": "Binder Clips Medium Black"
+        },
+        "B11": {
+          "f": null,
+          "t": "s",
+          "v": "Binder Clips Medium Black"
+        },
+        "B12": {
+          "f": null,
+          "t": "s",
+          "v": "Binder Clips Medium Black"
+        },
+        "B13": {
+          "f": null,
+          "t": "s",
+          "v": "Binder Clips Medium Black"
+        },
+        "B14": {
+          "f": null,
+          "t": "s",
+          "v": "EXPO Dry Erase Markers Assorted"
+        },
+        "B15": {
+          "f": null,
+          "t": "s",
+          "v": "EXPO Dry Erase Markers Assorted"
+        },
+        "B16": {
+          "f": null,
+          "t": "s",
+          "v": "EXPO Dry Erase Markers Assorted"
+        },
+        "B17": {
+          "f": null,
+          "t": "s",
+          "v": "EXPO Dry Erase Markers Assorted"
+        },
+        "B18": {
+          "f": null,
+          "t": "s",
+          "v": "Post-it Notes 3x3 Yellow"
+        },
+        "B19": {
+          "f": null,
+          "t": "s",
+          "v": "Post-it Notes 3x3 Yellow"
+        },
+        "B2": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Tag Inserts"
+        },
+        "B20": {
+          "f": null,
+          "t": "s",
+          "v": "Post-it Notes 3x3 Yellow"
+        },
+        "B21": {
+          "f": null,
+          "t": "s",
+          "v": "Post-it Notes 3x3 Yellow"
+        },
+        "B22": {
+          "f": null,
+          "t": "s",
+          "v": "Sharpie Permanent Markers Assorted"
+        },
+        "B23": {
+          "f": null,
+          "t": "s",
+          "v": "Sharpie Permanent Markers Assorted"
+        },
+        "B24": {
+          "f": null,
+          "t": "s",
+          "v": "Sharpie Permanent Markers Assorted"
+        },
+        "B25": {
+          "f": null,
+          "t": "s",
+          "v": "Sharpie Permanent Markers Assorted"
+        },
+        "B26": {
+          "f": null,
+          "t": "s",
+          "v": "Hammermill Copy Paper 8.5x11"
+        },
+        "B27": {
+          "f": null,
+          "t": "s",
+          "v": "Hammermill Copy Paper 8.5x11"
+        },
+        "B28": {
+          "f": null,
+          "t": "s",
+          "v": "Hammermill Copy Paper 8.5x11"
+        },
+        "B29": {
+          "f": null,
+          "t": "s",
+          "v": "Hammermill Copy Paper 8.5x11"
+        },
+        "B3": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Tag Inserts"
+        },
+        "B30": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred Copy Paper 8.5x11 White"
+        },
+        "B31": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred Copy Paper 8.5x11 White"
+        },
+        "B32": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred Copy Paper 8.5x11 White"
+        },
+        "B33": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred Copy Paper 8.5x11 White"
+        },
+        "B34": {
+          "f": null,
+          "t": "s",
+          "v": "Kleenex Professional Facial Tissue"
+        },
+        "B35": {
+          "f": null,
+          "t": "s",
+          "v": "Kleenex Professional Facial Tissue"
+        },
+        "B36": {
+          "f": null,
+          "t": "s",
+          "v": "Kleenex Professional Facial Tissue"
+        },
+        "B37": {
+          "f": null,
+          "t": "s",
+          "v": "Kleenex Professional Facial Tissue"
+        },
+        "B38": {
+          "f": null,
+          "t": "s",
+          "v": "Permanent Marker Fine Point Black"
+        },
+        "B39": {
+          "f": null,
+          "t": "s",
+          "v": "Permanent Marker Fine Point Black"
+        },
+        "B4": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Tag Inserts"
+        },
+        "B40": {
+          "f": null,
+          "t": "s",
+          "v": "Permanent Marker Fine Point Black"
+        },
+        "B41": {
+          "f": null,
+          "t": "s",
+          "v": "Permanent Marker Fine Point Black"
+        },
+        "B42": {
+          "f": null,
+          "t": "s",
+          "v": "Scotch Magic Tape 3/4in"
+        },
+        "B43": {
+          "f": null,
+          "t": "s",
+          "v": "Scotch Magic Tape 3/4in"
+        },
+        "B44": {
+          "f": null,
+          "t": "s",
+          "v": "Scotch Magic Tape 3/4in"
+        },
+        "B45": {
+          "f": null,
+          "t": "s",
+          "v": "Scotch Magic Tape 3/4in"
+        },
+        "B46": {
+          "f": null,
+          "t": "s",
+          "v": "Letterhead Printed 2 Colour"
+        },
+        "B47": {
+          "f": null,
+          "t": "s",
+          "v": "Letterhead Printed 2 Colour"
+        },
+        "B48": {
+          "f": null,
+          "t": "s",
+          "v": "Letterhead Printed 2 Colour"
+        },
+        "B49": {
+          "f": null,
+          "t": "s",
+          "v": "Letterhead Printed 2 Colour"
+        },
+        "B5": {
+          "f": null,
+          "t": "s",
+          "v": "Avery Name Tag Inserts"
+        },
+        "B6": {
+          "f": null,
+          "t": "s",
+          "v": "BIC Ballpoint Pens Black Medium"
+        },
+        "B7": {
+          "f": null,
+          "t": "s",
+          "v": "BIC Ballpoint Pens Black Medium"
+        },
+        "B8": {
+          "f": null,
+          "t": "s",
+          "v": "BIC Ballpoint Pens Black Medium"
+        },
+        "B9": {
+          "f": null,
+          "t": "s",
+          "v": "BIC Ballpoint Pens Black Medium"
+        },
+        "C1": {
+          "f": null,
+          "t": "s",
+          "v": "vendor"
+        },
+        "C10": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C11": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C12": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C13": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C14": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C15": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C16": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C17": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C18": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C19": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C2": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C20": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C21": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C22": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C23": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C24": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C25": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C26": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C27": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C28": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C29": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C3": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C30": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C31": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C32": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C33": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C34": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C35": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C36": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C37": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C38": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C39": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C4": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C40": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C41": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C42": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C43": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C44": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C45": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C46": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C47": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C48": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C49": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C5": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "C6": {
+          "f": null,
+          "t": "s",
+          "v": "Office Depot"
+        },
+        "C7": {
+          "f": null,
+          "t": "s",
+          "v": "Preferred"
+        },
+        "C8": {
+          "f": null,
+          "t": "s",
+          "v": "Amazon"
+        },
+        "C9": {
+          "f": null,
+          "t": "s",
+          "v": "Staples"
+        },
+        "D1": {
+          "f": null,
+          "t": "s",
+          "v": "unit_price"
+        },
+        "D10": {
+          "f": null,
+          "t": "s",
+          "v": "1.05"
+        },
+        "D11": {
+          "f": null,
+          "t": "s",
+          "v": "0.95"
+        },
+        "D12": {
+          "f": null,
+          "t": "s",
+          "v": "1.00"
+        },
+        "D13": {
+          "f": null,
+          "t": "s",
+          "v": "1.10"
+        },
+        "D14": {
+          "f": null,
+          "t": "s",
+          "v": "$9.50"
+        },
+        "D15": {
+          "f": null,
+          "t": "s",
+          "v": "8.60"
+        },
+        "D16": {
+          "f": null,
+          "t": "s",
+          "v": "8.90"
+        },
+        "D17": {
+          "f": null,
+          "t": "s",
+          "v": "9.75"
+        },
+        "D18": {
+          "f": null,
+          "t": "s",
+          "v": "4.75"
+        },
+        "D19": {
+          "f": null,
+          "t": "s",
+          "v": "4.30"
+        },
+        "D2": {
+          "f": null,
+          "t": "s",
+          "v": "3.10"
+        },
+        "D20": {
+          "f": null,
+          "t": "s",
+          "v": "4.45"
+        },
+        "D22": {
+          "f": null,
+          "t": "s",
+          "v": "0.65"
+        },
+        "D23": {
+          "f": null,
+          "t": "s",
+          "v": "0.58"
+        },
+        "D24": {
+          "f": null,
+          "t": "s",
+          "v": "0.60"
+        },
+        "D25": {
+          "f": null,
+          "t": "s",
+          "v": "0.68"
+        },
+        "D26": {
+          "f": null,
+          "t": "s",
+          "v": "44.25"
+        },
+        "D27": {
+          "f": null,
+          "t": "s",
+          "v": "39.99"
+        },
+        "D28": {
+          "f": null,
+          "t": "s",
+          "v": "41.10"
+        },
+        "D29": {
+          "f": null,
+          "t": "s",
+          "v": "46.00"
+        },
+        "D3": {
+          "f": null,
+          "t": "s",
+          "v": "2.95"
+        },
+        "D30": {
+          "f": null,
+          "t": "s",
+          "v": "4.30"
+        },
+        "D31": {
+          "f": null,
+          "t": "s",
+          "v": "3.95"
+        },
+        "D33": {
+          "f": null,
+          "t": "s",
+          "v": "4.55"
+        },
+        "D34": {
+          "f": null,
+          "t": "s",
+          "v": "12.49"
+        },
+        "D35": {
+          "f": null,
+          "t": "s",
+          "v": "11.20"
+        },
+        "D36": {
+          "f": null,
+          "t": "s",
+          "v": "11.60"
+        },
+        "D37": {
+          "f": null,
+          "t": "s",
+          "v": "12.95"
+        },
+        "D38": {
+          "f": null,
+          "t": "s",
+          "v": "1.10"
+        },
+        "D39": {
+          "f": null,
+          "t": "s",
+          "v": "0.98"
+        },
+        "D4": {
+          "f": null,
+          "t": "s",
+          "v": "3.05"
+        },
+        "D40": {
+          "f": null,
+          "t": "s",
+          "v": "1.02"
+        },
+        "D41": {
+          "f": null,
+          "t": "s",
+          "v": "1.15"
+        },
+        "D42": {
+          "f": null,
+          "t": "s",
+          "v": "5.49"
+        },
+        "D43": {
+          "f": null,
+          "t": "s",
+          "v": "4.95"
+        },
+        "D44": {
+          "f": null,
+          "t": "s",
+          "v": "5.10"
+        },
+        "D45": {
+          "f": null,
+          "t": "s",
+          "v": "5.75"
+        },
+        "D46": {
+          "f": null,
+          "t": "s",
+          "v": "0.42"
+        },
+        "D47": {
+          "f": null,
+          "t": "s",
+          "v": "0.38"
+        },
+        "D48": {
+          "f": null,
+          "t": "s",
+          "v": "0.40"
+        },
+        "D5": {
+          "f": null,
+          "t": "s",
+          "v": "3.20"
+        },
+        "D6": {
+          "f": null,
+          "t": "s",
+          "v": "0.22"
+        },
+        "D7": {
+          "f": null,
+          "t": "s",
+          "v": "0.19"
+        },
+        "D8": {
+          "f": null,
+          "t": "s",
+          "v": "0.20"
+        },
+        "E1": {
+          "f": null,
+          "t": "s",
+          "v": "status"
+        },
+        "E10": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E11": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E12": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E13": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E14": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E15": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E16": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E17": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E18": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E19": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E2": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E20": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E21": {
+          "f": null,
+          "t": "s",
+          "v": "discontinued"
+        },
+        "E22": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E23": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E24": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E25": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E26": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E27": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E28": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E29": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E3": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E30": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E31": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E32": {
+          "f": null,
+          "t": "s",
+          "v": "unpriced"
+        },
+        "E33": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E34": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E35": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E36": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E37": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E38": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E39": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E4": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E40": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E41": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E42": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E43": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E44": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E45": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E46": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E47": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E48": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E49": {
+          "f": null,
+          "t": "s",
+          "v": "not_available"
+        },
+        "E5": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E6": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E7": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E8": {
+          "f": null,
+          "t": "s",
+          "v": "priced"
+        },
+        "E9": {
+          "f": null,
+          "t": "s",
+          "v": "not_available"
+        },
+        "F1": {
+          "f": null,
+          "t": "s",
+          "v": "url"
+        },
+        "F10": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/binder-od"
+        },
+        "F11": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/binder-pref"
+        },
+        "F12": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/binder-amz"
+        },
+        "F13": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/binder-stpl"
+        },
+        "F14": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/expo-od"
+        },
+        "F15": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/expo-pref"
+        },
+        "F16": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/expo-amz"
+        },
+        "F17": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/expo-stpl"
+        },
+        "F18": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/postit-od"
+        },
+        "F19": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/postit-pref"
+        },
+        "F2": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/avery-od"
+        },
+        "F20": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/postit-amz"
+        },
+        "F22": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/sharpie-od"
+        },
+        "F23": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/sharpie-pref"
+        },
+        "F24": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/sharpie-amz"
+        },
+        "F25": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/sharpie-stpl"
+        },
+        "F26": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/hammermill-od"
+        },
+        "F27": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/hammermill-pref"
+        },
+        "F28": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/hammermill-amz"
+        },
+        "F29": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/hammermill-stpl"
+        },
+        "F3": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/avery-pref"
+        },
+        "F30": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/prefpaper-od"
+        },
+        "F31": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/prefpaper-pref"
+        },
+        "F33": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/prefpaper-stpl"
+        },
+        "F34": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/kleenex-od"
+        },
+        "F35": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/kleenex-pref"
+        },
+        "F36": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/kleenex-amz"
+        },
+        "F37": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/kleenex-stpl"
+        },
+        "F38": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/marker-od"
+        },
+        "F39": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/marker-pref"
+        },
+        "F4": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/avery-amz"
+        },
+        "F40": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/marker-amz"
+        },
+        "F41": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/marker-stpl"
+        },
+        "F42": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/scotch-od"
+        },
+        "F43": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/scotch-pref"
+        },
+        "F44": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/scotch-amz"
+        },
+        "F45": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/scotch-stpl"
+        },
+        "F46": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/letterhead-od"
+        },
+        "F47": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/letterhead-pref"
+        },
+        "F48": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/letterhead-amz"
+        },
+        "F5": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/avery-stpl"
+        },
+        "F6": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/bic-od"
+        },
+        "F7": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/bic-pref"
+        },
+        "F8": {
+          "f": null,
+          "t": "s",
+          "v": "https://example.com/bic-amz"
+        },
+        "G1": {
+          "f": null,
+          "t": "s",
+          "v": "checked_on"
+        },
+        "G10": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G11": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G12": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G13": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G14": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G15": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G16": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G17": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G18": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G19": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G2": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G20": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G21": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-02"
+        },
+        "G22": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G23": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G24": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G25": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G26": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G27": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G28": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G29": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G3": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G30": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G31": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G33": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G34": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G35": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G36": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G37": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G38": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G39": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G4": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G40": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G41": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G42": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G43": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G44": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G45": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G46": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G47": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G48": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G49": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G5": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G6": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G7": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G8": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "G9": {
+          "f": null,
+          "t": "s",
+          "v": "2026-04-01"
+        },
+        "H1": {
+          "f": null,
+          "t": "s",
+          "v": "note"
+        },
+        "H16": {
+          "f": null,
+          "t": "s",
+          "v": "last paid per each: 0.8331"
+        },
+        "H20": {
+          "f": null,
+          "t": "s",
+          "v": "last paid per each: 1.2292"
+        },
+        "H24": {
+          "f": null,
+          "t": "s",
+          "v": "last paid per each: 0.4717"
+        },
+        "H28": {
+          "f": null,
+          "t": "s",
+          "v": "last paid per each: 5.499"
+        },
+        "H36": {
+          "f": null,
+          "t": "s",
+          "v": "last paid per each: 3.1"
+        },
+        "H4": {
+          "f": null,
+          "t": "s",
+          "v": "last paid per each: 0.1105"
+        },
+        "H44": {
+          "f": null,
+          "t": "s",
+          "v": "last paid per each: 2.165"
+        },
+        "H8": {
+          "f": null,
+          "t": "s",
+          "v": "last paid per each: 0.0997"
+        },
+        "H9": {
+          "f": null,
+          "t": "s",
+          "v": "discontinued line at Staples"
+        }
+      },
+      "column_widths": {
+        "A": 7.0,
+        "B": 34.0,
+        "C": 14.0,
+        "D": 12.0,
+        "E": 14.0,
+        "F": 40.0,
+        "G": 12.0,
+        "H": 36.0
+      },
+      "conditional_formatting": [],
+      "fills": {},
+      "freeze_panes": "A2",
+      "merged_cells": []
+    },
+    "Prices retired": {
+      "cells": {
+        "A1": {
+          "f": null,
+          "t": "s",
+          "v": "rank"
+        },
+        "B1": {
+          "f": null,
+          "t": "s",
+          "v": "canonical_name"
+        },
+        "C1": {
+          "f": null,
+          "t": "s",
+          "v": "vendor"
+        },
+        "D1": {
+          "f": null,
+          "t": "s",
+          "v": "unit_price"
+        },
+        "E1": {
+          "f": null,
+          "t": "s",
+          "v": "status"
+        },
+        "F1": {
+          "f": null,
+          "t": "s",
+          "v": "url"
+        },
+        "G1": {
+          "f": null,
+          "t": "s",
+          "v": "checked_on"
+        },
+        "H1": {
+          "f": null,
+          "t": "s",
+          "v": "note"
+        }
+      },
+      "column_widths": {
+        "A": 7.0,
+        "B": 34.0,
+        "C": 14.0,
+        "D": 12.0,
+        "E": 14.0,
+        "F": 40.0,
+        "G": 12.0,
+        "H": 36.0
+      },
+      "conditional_formatting": [],
+      "fills": {},
+      "freeze_panes": "A2",
+      "merged_cells": []
+    },
     "Sources": {
       "cells": {
         "A1": {
@@ -825,6 +3526,11 @@
           "f": null,
           "t": "s",
           "v": "report built at"
+        },
+        "A25": {
+          "f": null,
+          "t": "s",
+          "v": "keep this workbook"
         },
         "A3": {
           "f": null,
@@ -935,6 +3641,11 @@
           "f": null,
           "t": "s",
           "v": "<TIMESTAMP>"
+        },
+        "B25": {
+          "f": null,
+          "t": "s",
+          "v": "The Item master, Prices and Prices retired sheets are read back next year. Do not edit them by hand."
         },
         "B3": {
           "f": null,

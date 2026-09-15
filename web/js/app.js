@@ -49,18 +49,30 @@ const STATUS_OPTIONS = [
 /** How a vendor is named on screen. pipeline.js uses the lower-case keys. */
 const VENDOR_NAMES = { amazon: "Amazon", preferred: "Preferred" };
 
+// What each of the five kinds the classifier returns is called on the page.
+// The three carry kinds are the tables last year's report workbook brings
+// forward; pipeline.js is the one place that decides which is which.
+const KIND_NAMES = {
+  amazon: "Amazon export",
+  preferred: "Preferred export",
+  item_master: "Item master",
+  prices: "Prices",
+  prices_retired: "Prices retired",
+};
+
 const XLSX_MIME =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 /* ───────────────────────────── state ───────────────────────────── */
 
 const state = {
-  files: { exports: [], master: null, prices: null },
+  files: { exports: [], carry: [] },
   // One entry per uploaded export file: {file, sheets:[{name, grid}]}. A .csv is one
   // unnamed sheet. pipeline.js decides which sheets are exports; the page never guesses.
   exportFiles: [],
   classified: null,           // {recognised:[...], ignored:[...]} from pipeline.classifyFiles
-  uploadedPrices: null,       // rows from the prices.csv the user loaded, untouched
+  uploadedPrices: null,       // rows of the price table that was loaded, untouched
+  uploadedRetired: [],        // rows of the Prices retired table that was loaded
   master: null,               // whatever pipeline.js hands back as a master
   year: null,
   top: 25,
@@ -257,6 +269,10 @@ async function loadLogicModules() {
   if (pipeline) {
     bind(pipeline, pipe, "ingest", "ingest");
     bind(pipeline, pipe, "classifyFiles", "classifyFiles");
+    // Reads one of last year's three tables off a recognised sheet, as the exact
+    // text the CSV was written from. Required: without it the page cannot read a
+    // report workbook back at all.
+    bind(pipeline, pipe, "carryRows", "carryRows");
     bind(pipeline, pipe, "buildQueue", "buildQueue", "build_queue", "review");
     bind(pipeline, pipe, "applyQueue", "applyQueue", "apply_queue");
     bind(pipeline, pipe, "rank", "rank");
@@ -272,10 +288,12 @@ async function loadLogicModules() {
     pipe.pricesToCsv = pipeline.pricesToCsv || null;
     pipe.runToJson = pipeline.runToJson || null;
     pipe.asMasterMap = pipeline.asMasterMap || null;
+    pipe.masterFromRows = pipeline.masterFromRows || null;
+    pipe.sortMaster = pipeline.sortMaster || null;
     pipe.checkPrices = pipeline.checkPrices || null;
   }
 
-  const ready = ["ingest", "classifyFiles", "buildQueue", "applyQueue", "rank", "validateAll"]
+  const ready = ["ingest", "classifyFiles", "carryRows", "buildQueue", "applyQueue", "rank", "validateAll"]
     .every((fn) => typeof pipe[fn] === "function");
   if (!ready) {
     alertUser(
@@ -522,10 +540,17 @@ function rebuildPrices() {
   }
   let rows = result && (result.rows ?? result);
   if (!Array.isArray(rows)) rows = fallbackPriceRows();
-  state.retiredRows = ((result && result.retiredRows) || []).map((row) => {
-    const edit = state.priceEdits[priceKey(row)];
-    return edit ? { ...row, ...edit } : { ...row };
-  });
+  // Anything retired in an earlier year stays retired: the CLI appends to
+  // prices_retired.csv rather than rewriting it, so the page keeps the rows it
+  // was given in front of the ones this run retires.
+  state.retiredRows = (state.uploadedRetired || [])
+    .map((row) => ({ ...row }))
+    .concat(
+      ((result && result.retiredRows) || []).map((row) => {
+        const edit = state.priceEdits[priceKey(row)];
+        return edit ? { ...row, ...edit } : { ...row };
+      })
+    );
   state.priceRows = rows.map((row) => {
     const edit = state.priceEdits[priceKey(row)];
     return edit ? { ...row, ...edit } : { ...row };
@@ -684,35 +709,35 @@ function fact(label, value, sub) {
 
 function renderLoad() {
   const f = state.files;
-  $("#btn-read").disabled = !f.exports.length || state.busy || !modulesSettled;
+  // Either box is enough to try: both feed the same classifier, so a person who
+  // dropped everything on one of them gets the real answer from pipeline.js
+  // rather than a dead button with nothing to explain it.
+  const anyFile = f.exports.length + f.carry.length > 0;
+  $("#btn-read").disabled = !anyFile || state.busy || !modulesSettled;
   $("#load-state").textContent = !modulesSettled
     ? "Still loading, one moment."
     : state.lines
       ? `${plural(state.lines.length, "order line")} read`
-      : (f.exports.length ? "Ready to read" : "Nothing loaded yet");
+      : (anyFile ? "Ready to read" : "Nothing loaded yet");
 
-  const exportsNote = $("#note-exports");
-  const exportsZone = document.querySelector('.dropzone[data-for="file-exports"]');
-  if (exportsNote && exportsZone) {
-    if (f.exports.length) {
-      exportsNote.textContent = f.exports
-        .map((file) => `${file.name} (${Math.round(file.size / 1024)} KB)`)
-        .join(", ");
-      exportsZone.classList.add("is-loaded");
-    } else {
-      exportsNote.textContent = "Drop the files here or choose them";
-      exportsZone.classList.remove("is-loaded");
-    }
-  }
-
-  for (const kind of ["master", "prices"]) {
+  const ZONE_EMPTY = {
+    exports: "Drop the files here or choose them",
+    carry: "Optional. Drop the files here or choose them",
+  };
+  for (const kind of ["exports", "carry"]) {
     const note = $(`#note-${kind}`);
     const zone = document.querySelector(`.dropzone[data-for="file-${kind}"]`);
     if (!note || !zone) continue;
-    if (f[kind]) {
-      note.textContent = `${f[kind].name} (${Math.round(f[kind].size / 1024)} KB)`;
+    const chosen = f[kind] || [];
+    if (chosen.length) {
+      note.textContent = chosen
+        .map((file) => `${file.name} (${Math.round(file.size / 1024)} KB)`)
+        .join(", ");
       zone.classList.add("is-loaded");
     } else {
+      // Put the prompt back when a zone is emptied, rather than leaving the
+      // name of a file that is no longer loaded.
+      note.textContent = ZONE_EMPTY[kind];
       zone.classList.remove("is-loaded");
     }
   }
@@ -737,11 +762,16 @@ function renderLoad() {
       `${where}. ${range}`
     ));
   }
-  if (state.files.master) {
-    inputs.push(fact("Item master", plural(masterRows(state.master).length, "item"), "loaded from file"));
-  }
-  if (state.files.prices) {
-    inputs.push(fact("Prices", plural((state.uploadedPrices || []).length, "row"), "loaded from file"));
+  // Every other table the classifier recognised: the item master and the two
+  // price tables, whether they came off last year's report workbook or off the
+  // .csv files. One chip each, saying which sheet of which file it came from.
+  for (const found of (state.classified && state.classified.recognised) || []) {
+    if (!found.kind || found.vendor) continue;
+    inputs.push(fact(
+      KIND_NAMES[found.kind] || found.kind,
+      `${plural(found.body.length, "row")} read`,
+      found.sheet ? `${found.file}, sheet ${found.sheet}` : found.file
+    ));
   }
 
   // What came out. The date range here is the ingest's own, over the lines it kept.
@@ -754,8 +784,9 @@ function renderLoad() {
   ];
 
   // Every sheet and file that was passed over, with the reason, so nothing goes missing
-  // quietly: a wrong report or a sheet with a column removed says so here.
-  const skipped = (state.run && state.run.ignored) || [];
+  // quietly: a wrong report, a sheet with a column removed, or a sheet of last year's
+  // report that is finished output rather than an input, all say so here.
+  const skipped = (state.classified && state.classified.ignored) || [];
   const skippedList = skipped.length
     ? `<ul class="caption caption-plain mb-3">` +
       skipped.map((item) => {
@@ -1744,28 +1775,27 @@ async function onReadFiles() {
       return;
     }
     say("Reading the files");
+    // Both drop zones feed one list and one classifier, so a report workbook
+    // dropped on either is handled the same way and the page and the command
+    // line agree about every file. pipeline.js is the one place that decides
+    // what a sheet is; it throws with the reason when nothing is an export.
     state.exportFiles = [];
-    for (const file of state.files.exports) state.exportFiles.push(await readExportFile(file));
-    // pipeline.js is the one place that decides what a sheet is, so the page and the command
-    // line agree about every file. It throws with the reason when nothing is an export.
+    for (const file of [...state.files.exports, ...state.files.carry]) {
+      state.exportFiles.push(await readExportFile(file));
+    }
     state.classified = pipe.classifyFiles(state.exportFiles);
-    state.fileStats = state.classified.recognised.map(exportStatsFor);
+    state.fileStats = state.classified.recognised
+      .filter((found) => found.vendor)
+      .map(exportStatsFor);
 
-    if (state.files.master) {
-      const text = await readAsText(state.files.master);
-      state.master = pipe.masterFromCsv
-        ? pipe.masterFromCsv(text, state.files.master.name)
-        : rowsToMasterMap(csvlib.parseObjects(text).rows);
-    } else if (!state.master) {
-      state.master = emptyMaster();
-    }
-
-    if (state.files.prices) {
-      const text = await readAsText(state.files.prices);
-      state.uploadedPrices = pipe.pricesFromCsv
-        ? pipe.pricesFromCsv(text)
-        : csvlib.parseObjects(text).rows;
-    }
+    // Whatever the classifier found of last year's three tables. A file that
+    // was not uploaded leaves what is already in hand alone, so re-reading the
+    // exports alone does not throw away a master loaded a moment ago.
+    const carried = carriedTables();
+    if (carried.item_master) state.master = carried.item_master;
+    else if (!state.master) state.master = emptyMaster();
+    if (carried.prices) state.uploadedPrices = carried.prices;
+    if (carried.prices_retired) state.uploadedRetired = carried.prices_retired;
 
     const detected = detectYear();
     if (detected && !$("#year").value) {
@@ -1786,6 +1816,26 @@ async function onReadFiles() {
     console.error(err);
     render();
   }
+}
+
+/**
+ * The three tables of last year's data, out of whatever was just classified.
+ *
+ * A value is only set for a table that was actually found, so the caller can
+ * tell "not uploaded" from "uploaded and empty" and leave the rest alone.
+ * Returns the item master as a master map and the two price tables as rows.
+ */
+function carriedTables() {
+  const out = {};
+  for (const found of (state.classified && state.classified.recognised) || []) {
+    if (!found.kind || found.vendor || out[found.kind]) continue;
+    const rows = pipe.carryRows(found);
+    out[found.kind] =
+      found.kind === "item_master"
+        ? (pipe.masterFromRows ? pipe.masterFromRows(rows) : rowsToMasterMap(rows))
+        : rows;
+  }
+  return out;
 }
 
 /** Fallback master container when pipeline.js offers no parser of its own. */
@@ -1894,6 +1944,14 @@ async function buildAndDownloadReport() {
       prices: priceMapForReport(),
       run: state.run,
       master: masterRows(state.master).length,   // report.js wants the row count, not the master
+      // The three tables the workbook carries forward, so next year only it and
+      // the new export are needed. The master goes in the order masterToCsv
+      // writes, which is the order the file on disk is in.
+      masterRows: pipe.sortMaster
+        ? Array.from(pipe.sortMaster(state.master).values())
+        : masterRows(state.master),
+      priceRows: state.priceRows,
+      retiredRows: state.retiredRows,
       year: state.year,
       top: state.top,
       builtAt: new Date().toISOString(),
@@ -1934,14 +1992,15 @@ function downloadRun() {
 }
 
 function resetAll() {
-  for (const kind of ["exports", "master", "prices"]) {
+  for (const kind of ["exports", "carry"]) {
     const input = $(`#file-${kind}`);
     if (input) input.value = "";
   }
   Object.assign(state, {
-    files: { exports: [], master: null, prices: null },
+    files: { exports: [], carry: [] },
     exportFiles: [], classified: null,
-    uploadedPrices: null, master: null, lines: null, run: null, ingestWarnings: [],
+    uploadedPrices: null, uploadedRetired: [],
+    master: null, lines: null, run: null, ingestWarnings: [],
     queueRows: [], counts: { blocking: 0, unconfirmed: 0 }, edits: {},
     selected: new Set(), ranked: [], excluded: [], priceRows: [], retiredRows: [],
     priceEdits: {}, findings: [], reviewFilter: "", reviewHits: new Set(),
@@ -1960,7 +2019,7 @@ function resetAll() {
 
 /* ───────────────────────────── wiring ───────────────────────────── */
 
-/** The order-exports zone holds a list; the other two hold one file each. */
+/** Both zones hold a list of files; either accepts a workbook or a .csv. */
 function takeFiles(input, fileList) {
   const files = Array.from(fileList || []);
   if (input.multiple) state.files[input.dataset.kind] = files;

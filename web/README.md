@@ -9,8 +9,11 @@ Everything runs in the browser. No file leaves this computer.
 
 ## What it does, in five steps
 
-1. **Load files.** Amazon export (`.xlsx` or `.csv`), Preferred export (`.xlsx`), and last
-   year's `item_master.csv` and `prices.csv` if you have them. The year is read from the order
+1. **Load files.** Two boxes. Order exports: the working workbook as it is kept, the `.csv`
+   from Amazon Business, or each export as its own file; every sheet is scanned and the exports
+   are found by their columns. Last year's report, or the item master and prices files: the
+   report workbook carries all three tables on its own sheets, so on a returning year that one
+   file is enough. Both boxes read every file the same way. The year is read from the order
    dates and can be corrected. Top N defaults to 25. After reading, two strips show what went
    in (rows and date range per file, as they sit in the export) and what the tool kept (order
    lines, the dates they cover, and how many items the master now knows).
@@ -38,9 +41,10 @@ Everything runs in the browser. No file leaves this computer.
    and how much of it, so nothing is downloaded blind. The report button stays disabled while
    any check is failing, and says which.
 
-Nothing is stored between visits except the theme and the top-N box. Keep `item_master.csv`
-and `prices.csv`: loading them next year is what stops the tool asking the same pack size
-questions again.
+Nothing is stored between visits except the theme and the top-N box. Keep the report
+workbook: its Item master, Prices and Prices retired sheets are read back next year, which is
+what stops the tool asking the same pack size questions again. The CSV downloads are the same
+tables for the command line tool.
 
 ## Opening it
 

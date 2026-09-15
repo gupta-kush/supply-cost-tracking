@@ -147,6 +147,38 @@ export function cleanText(value) {
   return text;
 }
 
+/**
+ * A cell read back as the CSV text it was written from. Ports
+ * supplytrack.xlsx.csv_text - read that docstring for the reasoning.
+ *
+ * A blank cell is ""; a whole number is a canonical integer string (12, never
+ * 12.0); any other number drops its trailing zeros; a date is an ISO
+ * YYYY-MM-DD date; text is returned exactly as it is, with nothing stripped
+ * and no formula wrapper removed, because anything else would change the bytes.
+ */
+export function csvText(value) {
+  if (value == null) return "";
+  if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
+  if (value instanceof Date) return isoDateUTC(value);
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return String(value);
+    if (Number.isInteger(value)) return String(value);
+    const d = decParse(String(value));
+    return d ? decTrim(d) : String(value);
+  }
+  return String(value);
+}
+
+/**
+ * True when `text` is already the one spelling csvText gives that integer.
+ * Ports supplytrack.xlsx.is_canonical_int: only then is it safe to write the
+ * value to a sheet as a number, because 007 would come back as 7.
+ */
+export function isCanonicalInt(text) {
+  const s = String(text ?? "");
+  return /^(0|-?[1-9]\d*)$/.test(s);
+}
+
 // ===========================================================================
 // Decimal arithmetic
 //
@@ -627,6 +659,58 @@ const PREFERRED_OPTIONAL = PREFERRED_OPTIONAL_COLUMNS.map(normHeader);
 const SIGNATURES = [["amazon", AMAZON_REQUIRED], ["preferred", PREFERRED_REQUIRED]];
 const VENDOR_LABELS = { amazon: "Amazon", preferred: "Preferred" };
 
+// ------------------------------------------------- the report's carry sheets
+//
+// Ports supplytrack.ingest's carry-sheet block. The report workbook carries the
+// item master and the price sheet on three sheets of its own, so next year only
+// that workbook and the new export are needed. They are recognised by header
+// signature, exactly as an export is.
+
+export const ITEM_MASTER_REQUIRED_COLUMNS = ["key", "include", "units_per_pack", "canonical_name"];
+export const PRICES_REQUIRED_COLUMNS = ["rank", "canonical_name", "vendor", "unit_price", "status"];
+
+// The review queue carries all four item-master columns as well, so without
+// this the queue file would be read as the item master and pull its blank
+// include and units_per_pack values in. No item master has this column.
+export const QUEUE_MARKER = "queue_reason";
+
+// The report's own sheets, which are output and never input. Only "Top N"
+// varies, by the top the report was built with.
+export const REPORT_SHEET_NAMES = new Set(["all items", "excluded", "sources"]);
+const TOP_SHEET_RE = /^top \d+$/;
+export const REPORT_SHEET_REASON = "part of a previous report, not an input";
+
+export const CARRY_LABELS = {
+  item_master: "Item master",
+  prices: "Prices",
+  prices_retired: "Prices retired",
+};
+export const CARRY_COLUMNS = {
+  item_master: MASTER_COLUMNS,
+  prices: PRICES_HEADER,
+  prices_retired: PRICES_HEADER,
+};
+export const INTEGER_COLUMNS = new Set(["units_per_pack", "packs_in_year", "rank"]);
+
+// Modest, readable widths for the carry sheets, by column name. Anything not
+// named here gets CARRY_WIDTH_DEFAULT.
+export const CARRY_WIDTHS = {
+  key: 34, source: 11, raw_title: 46, include: 9, canonical_name: 34,
+  units_per_pack: 15, unit_label: 11, upp_source: 14, amazon_category: 24,
+  first_seen: 12, last_seen: 12, note: 36,
+  rank: 7, vendor: 14, unit_price: 12, status: 14, url: 40, checked_on: 12,
+};
+export const CARRY_WIDTH_DEFAULT = 16;
+
+const ITEM_MASTER_REQUIRED = ITEM_MASTER_REQUIRED_COLUMNS.map(normHeader);
+const PRICES_REQUIRED = PRICES_REQUIRED_COLUMNS.map(normHeader);
+const QUEUE_MARKER_NORM = normHeader(QUEUE_MARKER);
+// Prices and Prices retired share one signature; which of the two a sheet is
+// comes from its name (see carryKind), because the two files hold the same
+// columns by design.
+const CARRY_SIGNATURES = [["item_master", ITEM_MASTER_REQUIRED], ["prices", PRICES_REQUIRED]];
+export const EXPORT_KINDS = ["amazon", "preferred"];
+
 // Matching is on normalised headers; messages name the column the way it is
 // spelled in the export, because that is what somebody looking at the file sees.
 const SPELLING = new Map(
@@ -982,15 +1066,45 @@ function pickFullExport(found, required) {
   return winners.length === 1 ? winners[0] : null;
 }
 
-function matchSignature(grid) {
+/**
+ * The first row that is a header row, and which of the five kinds it is.
+ *
+ * Export signatures are tried first, so nothing about the carry sheets can
+ * change how an order export is recognised.
+ */
+function matchSignature(grid, file = "", sheet = "") {
   const scanned = scanHeaders(grid);
   for (let rowNumber = 0; rowNumber < scanned.length; rowNumber += 1) {
     const present = new Set(scanned[rowNumber].filter(Boolean));
     for (const [vendor, required] of SIGNATURES) {
-      if (required.every((h) => present.has(h))) return { vendor, headerRow: rowNumber };
+      if (required.every((h) => present.has(h))) return { kind: vendor, headerRow: rowNumber };
+    }
+    for (const [kind, required] of CARRY_SIGNATURES) {
+      if (!required.every((h) => present.has(h))) continue;
+      if (kind === "item_master" && present.has(QUEUE_MARKER_NORM)) continue;
+      return { kind: carryKind(kind, file, sheet), headerRow: rowNumber };
     }
   }
   return null;
+}
+
+/**
+ * Prices or Prices retired: the same columns, told apart by the name.
+ *
+ * The two files hold the same columns on purpose, so there is nothing in the
+ * rows to tell them apart. The sheet name says which it is in a report
+ * workbook; a .csv has no sheet name at all, so the file name is read for a
+ * dropped prices_retired.csv.
+ */
+function carryKind(kind, file, sheet) {
+  if (kind !== "prices") return kind;
+  return casefold(`${sheet} ${file}`).includes("retired") ? "prices_retired" : "prices";
+}
+
+/** True for the report's own output sheets, which are never an input. */
+function isReportSheet(sheet) {
+  const name = normHeader(sheet);
+  return REPORT_SHEET_NAMES.has(name) || TOP_SHEET_RE.test(name);
 }
 
 /** Every header-shaped value in the rows the scan looked at. */
@@ -1025,11 +1139,14 @@ function nearMiss(grid) {
 /**
  * Why one sheet was passed over, in the words the page and the CLI show.
  *
- * A sibling Amazon report is named first: it is the most specific thing that
- * can be said, and it also carries Order Date and Order ID, so the
- * missing-column wording would otherwise take over and hide the real problem.
+ * The report's own sheets are named first, by name: they hold finished output
+ * and there is nothing useful to say about their columns. A sibling Amazon
+ * report comes next, because it is the most specific thing that can be said and
+ * it also carries Order Date and Order ID, so the missing-column wording would
+ * otherwise take over and hide the real problem.
  */
-function ignoreReason(grid) {
+function ignoreReason(grid, sheet = "") {
+  if (isReportSheet(sheet)) return REPORT_SHEET_REASON;
   const sibling = siblingReport(grid);
   if (sibling) return `this is the Amazon ${sibling} report, not the Orders report`;
   const near = nearMiss(grid);
@@ -1094,7 +1211,7 @@ function failNothingRecognised(skipped) {
  *
  * @returns {{recognised: object[], ignored: object[]}}
  */
-export function classifyGrids(sources) {
+export function classifyGrids(sources, { requireExport = true } = {}) {
   const recognised = [];
   const ignored = [];
   const skipped = [];
@@ -1103,19 +1220,44 @@ export function classifyGrids(sources) {
     const grid = Array.isArray(source.grid) ? source.grid : [];
     const file = source.file == null ? "" : String(source.file);
     const sheet = source.sheet == null ? "" : String(source.sheet);
-    const match = matchSignature(grid);
+    const match = matchSignature(grid, file, sheet);
     if (!match) {
-      const entry = { file, sheet, reason: ignoreReason(grid) };
+      const entry = { file, sheet, reason: ignoreReason(grid, sheet) };
       ignored.push(entry);
       skipped.push({ sheet: entry, grid });
       continue;
     }
     const { headers, body } = normaliseGrid(grid, match.headerRow);
-    recognised.push({ vendor: match.vendor, file, sheet, headers, body });
+    const kind = match.kind;
+    recognised.push({
+      kind,
+      vendor: EXPORT_KINDS.includes(kind) ? kind : "",
+      file,
+      sheet,
+      headers,
+      body,
+    });
+  }
+
+  // A carry table is one table, not something spread over several files, so a
+  // second one is a copy rather than something to merge: the first is read and
+  // the rest are named. The strict-subset rule below is for exports only.
+  for (const kind of Object.keys(CARRY_LABELS)) {
+    const found = recognised.filter((e) => e.kind === kind);
+    for (const other of found.slice(1)) {
+      recognised.splice(recognised.indexOf(other), 1);
+      ignored.push({
+        file: other.file,
+        sheet: other.sheet,
+        reason:
+          `a second ${CARRY_LABELS[kind]} table; ` +
+          `${sheetLabel(found[0].file, found[0].sheet)} was read instead`,
+      });
+    }
   }
 
   for (const [vendor, required] of SIGNATURES) {
-    const found = recognised.filter((e) => e.vendor === vendor);
+    const found = recognised.filter((e) => e.kind === vendor);
     if (found.length < 2) continue;
     const full = pickFullExport(found, required);
     if (!full) {
@@ -1138,19 +1280,59 @@ export function classifyGrids(sources) {
     }
   }
 
-  if (!recognised.length) failNothingRecognised(skipped);
+  if (requireExport && !recognised.some((e) => EXPORT_KINDS.includes(e.kind))) {
+    if (recognised.length) {
+      fail(
+        "The only thing recognised was a previous report workbook: " +
+          recognised
+            .map((e) => `${CARRY_LABELS[e.kind]} on ${sheetLabel(e.file, e.sheet)}`)
+            .join(", ") +
+          ". That carries the item master and the prices forward but holds no order " +
+          "lines, so hand over this year's order export as well."
+      );
+    }
+    failNothingRecognised(skipped);
+  }
   return { recognised, ignored };
 }
 
 /** classifyGrids over files as the page holds them: {file, sheets:[{name, grid}]}. */
-export function classifyFiles(files) {
+export function classifyFiles(files, options = {}) {
   const sources = [];
   for (const entry of files || []) {
     for (const sheet of entry.sheets || []) {
       sources.push({ file: entry.file, sheet: sheet.name || "", grid: sheet.grid });
     }
   }
-  return classifyGrids(sources);
+  return classifyGrids(sources, options);
+}
+
+/**
+ * One carry sheet's rows as text, in the column order of the file it came from.
+ * Ports supplytrack.ingest.carry_rows.
+ *
+ * Only the columns that file has are read, so an extra column somebody added on
+ * the sheet is dropped rather than carried into a file whose shape the rest of
+ * the pipeline depends on. Every value comes back as text: csvText turns the
+ * numbers the integer columns are written as back into canonical integer
+ * strings (12, never 12.0) and a blank cell into "".
+ */
+export function carryRows(sheet) {
+  const columns = CARRY_COLUMNS[sheet.kind];
+  if (!columns) return [];
+  const index = new Map();
+  sheet.headers.forEach((h, i) => {
+    if (h && !index.has(h)) index.set(h, i);
+  });
+  return sheet.body.map((row) => {
+    const out = {};
+    for (const column of columns) {
+      if (!index.has(column)) continue;
+      const i = index.get(column);
+      out[column] = csvText(i < row.length ? row[i] : null);
+    }
+    return out;
+  });
 }
 
 function cellAt(row, index, header) {

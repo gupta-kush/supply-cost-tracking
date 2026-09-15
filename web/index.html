@@ -72,19 +72,19 @@
           </div>
         </div>
         <div class="col-12 col-xl-6">
-          <div class="dropzone" data-for="file-master">
-            <label class="form-label fw-semibold" for="file-master">Item master</label>
-            <div class="caption caption-plain mb-2">item_master.csv from the last run. Leave empty on a first ever run.</div>
-            <input class="form-control" type="file" id="file-master" accept=".csv" data-kind="master">
-            <div class="file-note caption caption-plain mt-2" id="note-master">Optional</div>
-          </div>
-        </div>
-        <div class="col-12 col-xl-6">
-          <div class="dropzone" data-for="file-prices">
-            <label class="form-label fw-semibold" for="file-prices">Prices</label>
-            <div class="caption caption-plain mb-2">prices.csv from the last run, so last year's prices carry over.</div>
-            <input class="form-control" type="file" id="file-prices" accept=".csv" data-kind="prices">
-            <div class="file-note caption caption-plain mt-2" id="note-prices">Optional</div>
+          <div class="dropzone" data-for="file-carry">
+            <label class="form-label fw-semibold" for="file-carry">Last year's report, or the item master and prices files</label>
+            <div class="caption caption-plain mb-2">
+              What the tool already knows: which items belong in the report, how many units are in a
+              pack, and last year's prices. Leave it empty on a first ever run.
+            </div>
+            <input class="form-control" type="file" id="file-carry" accept=".xlsx,.csv" data-kind="carry" multiple>
+            <div class="file-note caption caption-plain mt-2" id="note-carry">Optional. Drop the files here or choose them</div>
+            <div class="caption caption-plain mt-2">
+              Works with: last year's report workbook, which carries all three tables on sheets of
+              its own; or item_master.csv, prices.csv and prices_retired.csv as separate files.
+              Both boxes read every file the same way, so it does not matter which one you use.
+            </div>
           </div>
         </div>
       </div>
@@ -288,8 +288,9 @@
       </div>
       <p class="caption caption-plain mt-3 mb-0" id="dl-report-reason"></p>
       <p class="caption caption-plain mt-2 mb-0">
-        Keep item_master.csv and prices.csv somewhere safe. Loading them next year is what stops the
-        tool asking the same pack size questions again.
+        Keep the report workbook. Next year, upload it together with the new order export and
+        nothing else is needed: it carries the item master and the prices on sheets of its own.
+        The three CSV buttons are there if you would rather keep those files separately.
       </p>
     </div>
   </section>

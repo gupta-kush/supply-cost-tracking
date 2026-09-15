@@ -125,7 +125,11 @@ def test_build_report_writes_expected_path_and_sheet_names(tmp_path, full_data_d
     assert path.exists()
 
     wb = load_workbook(path, data_only=False)
-    assert wb.sheetnames == ["Top 25", "All items", "Excluded", "Sources"]
+    assert wb.sheetnames == [
+        "Top 25", "All items", "Excluded", "Sources",
+        # The three sheets that carry the data files forward; see test_roundtrip.py.
+        "Item master", "Prices", "Prices retired",
+    ]
 
 
 def test_top_sheet_title_headers_and_data_rows(tmp_path, full_data_dir):
@@ -314,7 +318,11 @@ def test_missing_run_json_excluded_and_master_are_handled_leniently(tmp_path):
     path = build_report(data_dir, tmp_path / "out", 2025, 25)
     wb = load_workbook(path, data_only=False)
 
-    assert wb.sheetnames == ["Top 25", "All items", "Sources"]  # Excluded skipped
+    # Excluded is skipped; the three carry sheets are written either way, so
+    # next year's upload always finds the same three.
+    assert wb.sheetnames == [
+        "Top 25", "All items", "Sources", "Item master", "Prices", "Prices retired",
+    ]
 
     ws = wb["Sources"]
     kv = {ws.cell(row=r, column=1).value: ws.cell(row=r, column=2).value for r in range(1, ws.max_row + 1)}

@@ -28,7 +28,17 @@ from openpyxl.workbook import Workbook
 openpyxl.styles.fonts.Font.family.max = 99
 
 from .errors import SupplytrackError
+from .ingest import (
+    CARRY_COLUMNS,
+    CARRY_LABELS,
+    CARRY_WIDTH_DEFAULT,
+    CARRY_WIDTHS,
+    INTEGER_COLUMNS,
+    carry_rows,
+    classify_exports,
+)
 from .prices import VENDORS, load_prices
+from .xlsx import is_canonical_int
 
 PRICE_FORMAT = "$#,##0.00"
 QTY_FORMAT = "#,##0"
@@ -63,6 +73,22 @@ BOLD = Font(bold=True)
 PRICE_COLS = ["F", "G", "H", "I"]
 TOTAL_COLS = ["K", "L", "M", "N"]
 
+# Where each carry sheet's rows come from, relative to the data directory, and
+# the order the three sheets are written in. One table, so writing the workbook
+# and reading it back with `import-report` cannot disagree about either.
+CARRY_SOURCES = {
+    "item_master": ("item_master.csv", False),
+    "prices": ("prices.csv", True),
+    "prices_retired": ("prices_retired.csv", True),
+}
+
+# Printed on the Sources sheet rather than above a carry sheet's header row:
+# the classifier looks for the header in row 1, so nothing may sit above it.
+CARRY_NOTE = (
+    "The Item master, Prices and Prices retired sheets are read back next year. "
+    "Do not edit them by hand."
+)
+
 
 def build_report(data_dir: Path, out_dir: Path, year: int, top: int) -> Path:
     """Write ``out_dir / f"Acme Widget Top {top} Items Comparison {year}.xlsx"`` and return its path."""
@@ -79,6 +105,10 @@ def build_report(data_dir: Path, out_dir: Path, year: int, top: int) -> Path:
 
     excluded_rows = _read_csv_rows(year_dir / "excluded.csv")
     run_info = _read_json(year_dir / "run.json")
+    carry = {
+        kind: _read_csv_rows(_carry_source(data_dir, year, kind)) or []
+        for kind in CARRY_SOURCES
+    }
     master_row_count = _count_master_rows(data_dir / "item_master.csv")
 
     prices = load_prices(data_dir, year, top)
@@ -92,6 +122,8 @@ def build_report(data_dir: Path, out_dir: Path, year: int, top: int) -> Path:
         _build_table_sheet(wb, "Excluded", excluded_rows)
     unpriced_count = sum(1 for cell in prices.values() if cell.status == "unpriced")
     _build_sources_sheet(wb, run_info, master_row_count, ranked_rows, top, unpriced_count)
+    for kind in CARRY_SOURCES:
+        _build_carry_sheet(wb, kind, carry[kind])
 
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"Acme Widget Top {top} Items Comparison {year}.xlsx"
@@ -264,6 +296,155 @@ def _build_top_sheet(wb, top_rows: list[dict[str, str]], prices, year: int, top:
     return ws
 
 
+def _carry_source(data_dir: Path, year: int, kind: str) -> Path:
+    name, per_year = CARRY_SOURCES[kind]
+    return (Path(data_dir) / str(year) / name) if per_year else (Path(data_dir) / name)
+
+
+def _write_carry_cell(cell, text: str, column: str) -> None:
+    """One carry-sheet cell, typed so the CSV survives the round trip.
+
+    Everything is written as text except the whole-number columns
+    (:data:`ingest.INTEGER_COLUMNS`), so a unit price typed as ``1.250`` comes
+    back spelled that way instead of as ``1.25``, and a date stays the ISO
+    string the rest of the pipeline writes rather than becoming a date cell
+    with a display format of its own. An integer column is only written as a
+    number when its text is already that integer's one spelling - ``007`` stays
+    text, because ``7`` would not be the same file.
+
+    The ``data_type`` line is not decoration: openpyxl reads a string starting
+    with ``=`` as a formula, and a formula cell read back with ``data_only``
+    is ``None``, so a note somebody wrote as ``="0000"`` would be lost. The
+    JavaScript port has no such rule, so without this the two would disagree.
+    """
+    if text == "":
+        return
+    if column in INTEGER_COLUMNS and is_canonical_int(text):
+        cell.value = int(text)
+        return
+    cell.value = text
+    cell.data_type = "s"
+
+
+def _build_carry_sheet(wb, kind: str, rows: list[dict[str, str]]):
+    """One of the three sheets that carry a data file forward into next year.
+
+    The header row is row 1 with nothing above it, because that is where the
+    sheet classifier looks for it; the guidance that these sheets are machine
+    read lives on the Sources sheet instead (:data:`CARRY_NOTE`). The sheet is
+    written even when there is nothing in it, so next year's upload finds the
+    same three sheets whether or not any prices were retired this year.
+    """
+    columns = CARRY_COLUMNS[kind]
+    ws = wb.create_sheet(CARRY_LABELS[kind])
+    for col_idx, header in enumerate(columns, start=1):
+        cell = ws.cell(row=1, column=col_idx, value=header)
+        cell.font = BOLD
+    for row_idx, row in enumerate(rows, start=2):
+        for col_idx, header in enumerate(columns, start=1):
+            _write_carry_cell(
+                ws.cell(row=row_idx, column=col_idx), str(row.get(header, "") or ""), header
+            )
+    for col_idx, header in enumerate(columns, start=1):
+        letter = get_column_letter(col_idx)
+        ws.column_dimensions[letter].width = CARRY_WIDTHS.get(header, CARRY_WIDTH_DEFAULT)
+    ws.freeze_panes = "A2"
+    return ws
+
+
+def import_report(data_dir: Path, year: int, path: Path, force: bool = False):
+    """Pull the item master and the price sheets back out of a report workbook.
+
+    This is the other half of the round trip: the workbook the office manager
+    keeps is the only file she has to find next year, and this turns it back
+    into the three CSVs the pipeline works from. Every target is checked before
+    anything is written, so a run that would overwrite one file does not leave
+    the other two already replaced.
+
+    Returns ``(written, missing)``: ``(path, row count, label)`` per file
+    written, and the labels of the carry sheets the workbook did not have.
+    """
+    data_dir = Path(data_dir)
+    path = Path(path)
+    recognised, _ = classify_exports([path], require_export=False)
+    found = {}
+    for sheet in recognised:
+        if sheet.kind in CARRY_SOURCES and sheet.kind not in found:
+            found[sheet.kind] = sheet
+    if not found:
+        raise SupplytrackError(
+            f"{path.name} carries none of the sheets this reads: "
+            + ", ".join(CARRY_LABELS.values())
+            + ". Point it at a report workbook this tool built."
+        )
+
+    targets = {kind: _carry_source(data_dir, year, kind) for kind in found}
+    if not force:
+        clashes = [t for t in targets.values() if t.exists() and t.read_text(encoding="utf-8-sig").strip()]
+        if clashes:
+            raise SupplytrackError(
+                f"{len(clashes)} file(s) already exist and would be overwritten: "
+                + ", ".join(str(t) for t in clashes)
+                + ". Move them aside, or pass --force to replace them."
+            )
+
+    written = []
+    for kind, sheet in found.items():
+        rows = carry_rows(sheet)
+        target = targets[kind]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open("w", encoding="utf-8", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=CARRY_COLUMNS[kind])
+            writer.writeheader()
+            for row in rows:
+                writer.writerow({c: row.get(c, "") for c in CARRY_COLUMNS[kind]})
+        written.append((target, len(rows), CARRY_LABELS[kind]))
+    missing = [CARRY_LABELS[k] for k in CARRY_SOURCES if k not in found]
+    return written, missing
+
+
+def carry_forward(data_dir: Path, year: int, paths: list[Path]):
+    """Fill in whichever data files are missing from a report workbook among ``paths``.
+
+    Only ever writes a file the data directory does not already have, so a
+    workbook handed to ``run`` alongside the exports never overwrites work in
+    progress. Returns ``(path, row count, label, where)`` per file filled in.
+    """
+    paths = [Path(p) for p in paths]
+    if not paths:
+        return []
+    wanted = {
+        kind: target
+        for kind, target in ((k, _carry_source(data_dir, year, k)) for k in CARRY_SOURCES)
+        if not (target.exists() and target.read_text(encoding="utf-8-sig").strip())
+    }
+    if not wanted:
+        return []
+    try:
+        recognised, _ = classify_exports(paths, require_export=False)
+    except SupplytrackError:
+        # Nothing here to carry forward. Whatever is wrong with these files is
+        # ingest's to report, in the words it already uses.
+        return []
+
+    filled = []
+    seen: set[str] = set()
+    for sheet in recognised:
+        if sheet.kind not in wanted or sheet.kind in seen:
+            continue
+        seen.add(sheet.kind)
+        rows = carry_rows(sheet)
+        target = wanted[sheet.kind]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open("w", encoding="utf-8", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=CARRY_COLUMNS[sheet.kind])
+            writer.writeheader()
+            for row in rows:
+                writer.writerow({c: row.get(c, "") for c in CARRY_COLUMNS[sheet.kind]})
+        filled.append((target, len(rows), CARRY_LABELS[sheet.kind], sheet.label))
+    return filled
+
+
 def _build_table_sheet(wb, name: str, rows: list[dict[str, str]]):
     ws = wb.create_sheet(name)
     headers = list(rows[0].keys()) if rows else []
@@ -313,6 +494,8 @@ def _build_sources_sheet(
     write_pair("top_n", top)
     write_pair("unpriced cells", unpriced_count)
     write_pair("report built at", datetime.now(timezone.utc).isoformat())
+    # Last, so nothing is inserted above the run.json rows a reader walks.
+    write_pair("keep this workbook", CARRY_NOTE)
 
     ws.column_dimensions["A"].width = 32
     ws.column_dimensions["B"].width = 70

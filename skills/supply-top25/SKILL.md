@@ -33,6 +33,22 @@ List the export files in any order; every sheet is looked at and each export is 
 its columns. The older `--amazon` and `--preferred` spelling still works and means the same
 thing.
 
+On a returning year, add last year's report workbook to the same command; it carries the item
+master and both price tables forward, so the run does not start with an empty review queue:
+
+```
+supplytrack run --year 2026 inbox/amazon-2026.xlsx inbox/preferred-2026.xlsx inbox/2025-report.xlsx
+```
+
+The person hands you that file the same way as the exports; it belongs in `inbox/` too. If only
+the item master and prices need pulling out of it, without running anything else:
+
+```
+supplytrack import-report --year 2025 --data-dir data inbox/2025-report.xlsx
+```
+
+Add `--force` only if the target files already exist and the person wants them replaced.
+
 Exit codes matter:
 
 - **0**, it worked.

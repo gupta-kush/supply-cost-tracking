@@ -22,8 +22,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { readTable, normHeader, newWorkbook, toArrayBuffer } from "../js/xlsxio.js";
+import { readTable, normHeader, newWorkbook, toArrayBuffer, readSheets } from "../js/xlsxio.js";
 import { buildReport } from "../js/report.js";
+import { classifyGrids, carryRows, MASTER_COLUMNS, PRICES_HEADER } from "../js/pipeline.js";
+import { serialiseObjects } from "../js/csv.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // src/web/tests -> src/web -> src
@@ -403,6 +405,10 @@ async function testGoldenReport() {
   const masterRows = readCsvObjects(path.join(expectedDir, "item_master.csv"));
   const prices = buildPricesMap(priceRows);
   const master = masterRows.length;
+  // The same three files report.py read off disk for the golden build: the
+  // item master it wrote, the filled price sheet, and no retired file at all,
+  // which is why "Prices retired" is a header row and nothing else there.
+  const retiredRows = [];
 
   // run.json itself isn't a committed golden file - make_golden.py never
   // saves it separately - but every key it held is right there in the
@@ -430,6 +436,9 @@ async function testGoldenReport() {
     prices,
     run,
     master,
+    masterRows,
+    priceRows,
+    retiredRows,
     year: YEAR,
     top: TOP,
     builtAt: "2026-06-01T12:00:00+00:00",
@@ -496,7 +505,16 @@ async function testHandFixtureFull() {
   const ws = await reloadedWorkbook(workbook);
   const top = ws.getWorksheet("Top 25");
 
-  eq("sheet names", JSON.stringify(ws.worksheets.map((w) => w.name)), JSON.stringify(["Top 25", "All items", "Excluded", "Sources"]));
+  eq(
+    "sheet names",
+    JSON.stringify(ws.worksheets.map((w) => w.name)),
+    JSON.stringify([
+      "Top 25", "All items", "Excluded", "Sources",
+      // The three sheets that carry the data files forward; the round-trip
+      // test below is what proves they read back unchanged.
+      "Item master", "Prices", "Prices retired",
+    ])
+  );
 
   eq("B4 title", top.getCell("B4").value, "Top 25 Items By Quantity");
   eq("B4 bold", top.getCell("B4").font.bold, true);
@@ -611,7 +629,9 @@ async function testHandFixtureLenient() {
   eq(
     "Excluded sheet skipped when absent",
     JSON.stringify(ws.worksheets.map((w) => w.name)),
-    JSON.stringify(["Top 3", "All items", "Sources"])
+    // The three carry sheets are written either way, so next year's upload
+    // always finds the same three.
+    JSON.stringify(["Top 3", "All items", "Sources", "Item master", "Prices", "Prices retired"])
   );
 
   const top = ws.getWorksheet("Top 3");
@@ -650,6 +670,120 @@ async function testHandFixtureLenient() {
   check("report built at still present with no run.json", typeof kv["report built at"] === "string", "");
 }
 
+// ------------------------------------------------------- 4. the round trip
+//
+// The point of the three carry sheets: a CSV written into the workbook and read
+// back out has to be the same file, not merely the same values. Excel widens a
+// number on the way through, and a spelling that changes (1.250 becoming 1.25,
+// 12 becoming 12.0) is a silent edit to a file somebody hand-maintains. The
+// values below are the awkward ones: a blank pack size, a leading-zero string
+// int() would eat, a note holding a comma and a quote, and Amazon's ="0000"
+// formula wrapper.
+
+const ROUND_TRIP_MASTER = [
+  {
+    key: "amz:copy paper 8.5x11 white", source: "amazon",
+    raw_title: "Copy Paper, 8.5 x 11, White", include: "y",
+    canonical_name: "Copy Paper 8.5x11 White", units_per_pack: "480", unit_label: "RM",
+    upp_source: "master", amazon_category: "Office Product",
+    first_seen: "2024", last_seen: "2025",
+    note: 'title says 500, the case ships 480; "checked twice"',
+  },
+  {
+    key: "amz:bubly sparkling water", source: "amazon",
+    raw_title: "Bubly Sparkling Water, Variety Pack", include: "n",
+    canonical_name: "Bubly Sparkling Water", units_per_pack: "", unit_label: "",
+    upp_source: "", amazon_category: "Grocery", first_seen: "2025", last_seen: "2025",
+    note: "excluded: not an office supply",
+  },
+  {
+    key: "pbs:UNV21200", source: "preferred", raw_title: "File Folders Letter Manila",
+    include: "y", canonical_name: "File Folders Letter Manila", units_per_pack: "100",
+    unit_label: "EA", upp_source: "2025-workbook", amazon_category: "",
+    first_seen: "2025", last_seen: "2025",
+    note: '="0007" is the card, and 007 is not seven',
+  },
+];
+
+const ROUND_TRIP_RETIRED = [
+  {
+    rank: "26", canonical_name: "Rubber Bands Assorted Size", vendor: "Office Depot",
+    unit_price: "1.250", status: "priced", url: "https://example.com/rubber-bands",
+    checked_on: "2026-04-01", note: "dropped out of the top 25 after the review",
+  },
+  {
+    rank: "27", canonical_name: "Binder Clips Medium", vendor: "Staples",
+    unit_price: "", status: "unpriced", url: "", checked_on: "", note: "",
+  },
+];
+
+async function testRoundTrip() {
+  console.log("round trip: CSV -> report workbook -> CSV, byte for byte");
+
+  const ranked = readCsvObjects(path.join(PY_FIXTURES_DIR, "ranked.csv"));
+  const priceRows = readCsvObjects(path.join(PY_FIXTURES_DIR, "prices.csv"));
+
+  const workbook = await buildReport({
+    ranked,
+    excluded: null,
+    prices: buildPricesMap(priceRows),
+    run: {},
+    master: ROUND_TRIP_MASTER.length,
+    masterRows: ROUND_TRIP_MASTER,
+    priceRows,
+    retiredRows: ROUND_TRIP_RETIRED,
+    year: 2025,
+    top: 25,
+    builtAt: "2026-06-01T00:00:00+00:00",
+  });
+
+  // Read the saved workbook back the way the page reads an uploaded file, and
+  // let the classifier find the three tables by their columns.
+  const sheets = await readSheets(await toArrayBuffer(workbook));
+  const { recognised, ignored } = classifyGrids(
+    sheets.map((sh) => ({ file: "report.xlsx", sheet: sh.name, grid: sh.grid })),
+    { requireExport: false }
+  );
+
+  checkDeep(
+    "the three carry sheets are found in the built workbook",
+    recognised.map((e) => [e.kind, e.sheet]),
+    [["item_master", "Item master"], ["prices", "Prices"], ["prices_retired", "Prices retired"]]
+  );
+  checkDeep(
+    "every other sheet is named as output, not as an input",
+    ignored.map((s) => s.reason),
+    new Array(ignored.length).fill("part of a previous report, not an input")
+  );
+
+  const cases = [
+    ["item master", "item_master", MASTER_COLUMNS, ROUND_TRIP_MASTER],
+    ["prices", "prices", PRICES_HEADER, priceRows],
+    ["prices retired", "prices_retired", PRICES_HEADER, ROUND_TRIP_RETIRED],
+  ];
+  for (const [label, kind, columns, rows] of cases) {
+    const sheet = recognised.find((e) => e.kind === kind);
+    const before = serialiseObjects(columns, rows);
+    const after = sheet ? serialiseObjects(columns, carryRows(sheet)) : "";
+    check(
+      `${label}: the CSV out is byte-identical to the CSV in`,
+      after === before,
+      firstDifference(before, after)
+    );
+  }
+}
+
+/** Where two strings first differ, with a little either side, for a failure. */
+function firstDifference(a, b) {
+  if (a === b) return "";
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return (
+    `differ at character ${i}: want ${JSON.stringify(a.slice(Math.max(0, i - 30), i + 30))}, ` +
+    `got ${JSON.stringify(b.slice(Math.max(0, i - 30), i + 30))}`
+  );
+}
+
 (async () => {
   try {
     await testXlsxio();
@@ -682,6 +816,13 @@ async function testHandFixtureLenient() {
   } catch (e) {
     fail++;
     console.log(`  FAIL  hand fixture (lenient) threw: ${e && e.stack ? e.stack : e}`);
+  }
+
+  try {
+    await testRoundTrip();
+  } catch (e) {
+    fail++;
+    console.log(`  FAIL  round trip threw: ${e && e.stack ? e.stack : e}`);
   }
 
   console.log(`\n${pass} passed, ${fail} failed`);

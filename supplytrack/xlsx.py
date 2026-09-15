@@ -277,6 +277,56 @@ def coerce_date(value: Any, *, where: str = "") -> str:
     )
 
 
+def csv_text(value: Any) -> str:
+    """A cell read back as the CSV text it was written from.
+
+    The report workbook carries the item master and the price sheet forward
+    (``docs/spec.md`` section 4.5), and those sheets have to come back out as
+    the same bytes that went in. Excel and openpyxl both widen a number on the
+    way through - 12 comes back as ``12.0``, a date as a datetime - so a blunt
+    ``str()`` would rewrite values nobody touched. This narrows each of those
+    back to one spelling:
+
+    * a blank cell is ``""``, never ``"None"``;
+    * a whole number is a canonical integer string, ``12`` and never ``12.0``;
+    * any other number drops its trailing zeros, the way the rest of this
+      module writes amounts;
+    * a date or datetime is an ISO ``YYYY-MM-DD`` date, matching every date
+      this package writes;
+    * text is returned exactly as it is, with nothing stripped and no formula
+      wrapper removed, because anything else would change the bytes.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "TRUE" if value else "FALSE"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return str(int(value)) if value.is_integer() else _trim(Decimal(str(value)))
+    if isinstance(value, Decimal):
+        return _trim(value)
+    if isinstance(value, dt.datetime):
+        return value.date().isoformat()
+    if isinstance(value, dt.date):
+        return value.isoformat()
+    return str(value)
+
+
+def is_canonical_int(text: str) -> bool:
+    """True when ``text`` is already the one spelling :func:`csv_text` gives that integer.
+
+    Only then is it safe to write the value to a sheet as a number: ``007`` or
+    ``1.0`` would come back as ``7`` and ``1`` and quietly rewrite the file, so
+    they stay text and survive the round trip untouched.
+    """
+    text = str(text)
+    try:
+        return str(int(text)) == text
+    except (TypeError, ValueError):
+        return False
+
+
 def coerce_int(value: Any, *, where: str = "") -> int:
     """Return a whole number from a quantity cell.
 

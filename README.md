@@ -36,6 +36,7 @@ supplytrack propose  --year 2025 [--provider anthropic|gemini] [--dry-run]
 supplytrack rank     --year 2025 [--top 25]
 supplytrack prices   --year 2025 [--template | --update]
 supplytrack report   --year 2025 [--top 25]
+supplytrack import-report --year 2025 --data-dir <d> <report.xlsx> [--force]
 supplytrack validate --year 2025
 supplytrack run      --year 2025 <export-file>... [--amazon <file>] [--preferred <file>]
 ```
@@ -61,6 +62,35 @@ checked. This means:
 - If the working workbook carries both the raw export and the office manager's own filtered "office
   supplies only" copy of it, the fuller sheet is read and the other is listed as a filtered view
   of it, not read twice.
+- A report workbook this tool built - the office manager's saved file from a previous year - can
+  be handed over the same way. It carries the item master and both price tables forward on
+  sheets of its own; `ingest` recognises those sheets but only reads the order lines from a file,
+  while `run` takes whichever of the three files the data directory does not already have from
+  it, and `import-report` (below) pulls them out on their own.
+
+### Carrying the item master and prices forward
+
+The report workbook this tool writes is also readable: it carries the item master and both price
+tables forward on three sheets of its own (`Item master`, `Prices`, `Prices retired`), in the
+exact CSV column order, written as text everywhere except the whole-number columns so a price
+like `1.250` or an ISO date survives byte for byte. This is what makes a returning year simple:
+hand over last year's report workbook alongside the new export and nothing else is needed.
+
+```
+supplytrack run --year 2026 inbox/amazon-2026.xlsx inbox/preferred-2026.xlsx "Acme Widget Top 25 Items Comparison 2025.xlsx"
+```
+
+`run` takes the item master and both price tables from the report workbook for whichever of the
+three the data directory does not already have; it never overwrites work already in progress. To
+pull the three files out on their own, without running the rest of the pipeline:
+
+```
+supplytrack import-report --year 2025 --data-dir data "Acme Widget Top 25 Items Comparison 2025.xlsx"
+```
+
+It refuses to overwrite a file that already has content, unless `--force` is given. The same
+sheet recognition that finds these three tables in a workbook also finds them in loose
+`item_master.csv`, `prices.csv` and `prices_retired.csv` files, so either form works.
 
 ### The review queue
 

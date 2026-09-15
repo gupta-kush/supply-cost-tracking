@@ -901,6 +901,150 @@ function testRecognition() {
     none != null && none.includes("No export file"), `message was: ${none}`);
 }
 
+// ----------------------------------------------- the report's carry sheets
+//
+// The report workbook carries the item master and the price sheet forward, so
+// next year the office manager uploads that workbook and the new export and
+// nothing else. These check the half of that which lives in pipeline.js:
+// recognising the three tables wherever they turn up, and reading their cells
+// back as the exact text the CSV was written from. The other half - writing
+// them into a workbook and reading that back - is in report-tests.js, which is
+// where the ExcelJS machinery lives.
+
+function gridOf(text) {
+  return csv.parse(text);
+}
+
+function goldenText(name) {
+  return fs.readFileSync(path.join(GOLDEN, name), "utf-8");
+}
+
+function testCarrySheets() {
+  assertDeep("the Item master signature is the four columns that identify it",
+    P.ITEM_MASTER_REQUIRED_COLUMNS, ["key", "include", "units_per_pack", "canonical_name"]);
+  assertDeep("the Prices signature is the five columns that identify it",
+    P.PRICES_REQUIRED_COLUMNS, ["rank", "canonical_name", "vendor", "unit_price", "status"]);
+
+  // csvText: the one spelling a cell comes back as. Anything else here would
+  // rewrite a file nobody touched.
+  const cellCases = [
+    [null, ""], [undefined, ""], ["", ""],
+    [12, "12"], [12.0, "12"], [1.25, "1.25"], [0, "0"],
+    ["1.250", "1.250"], ["007", "007"], ["  spaced  ", "  spaced  "],
+    ['="0000"', '="0000"'],
+    [new Date(Date.UTC(2026, 3, 1)), "2026-04-01"],
+    [true, "TRUE"],
+  ];
+  for (const [input, want] of cellCases) {
+    assertEqual(`csvText(${JSON.stringify(input)})`, P.csvText(input), want);
+  }
+  for (const [text, want] of [["12", true], ["0", true], ["-3", true], ["007", false],
+    ["1.0", false], ["", false], [" 5", false], ["+5", false], ["1_0", false]]) {
+    assertEqual(`isCanonicalInt(${JSON.stringify(text)})`, P.isCanonicalInt(text), want);
+  }
+
+  // A whole report workbook, as the page would hand it over: the three carry
+  // sheets are recognised and the report's own sheets are named as output.
+  const masterText = goldenText("expected/item_master.csv");
+  const pricesText = goldenText("inputs/prices.csv");
+  const book = {
+    file: "Acme Widget Top 25 Items Comparison 2025.xlsx",
+    sheets: [
+      { name: "Top 25", grid: [["Ranking", "Description", "Pack/Size"], [1, "Copy paper", "1 RM"]] },
+      { name: "All items", grid: gridOf(goldenText("expected/ranked.csv")) },
+      { name: "Excluded", grid: gridOf(goldenText("expected/excluded.csv")) },
+      { name: "Sources", grid: [["year", 2025], ["top_n", 25]] },
+      { name: "Item master", grid: gridOf(masterText) },
+      { name: "Prices", grid: gridOf(pricesText) },
+      { name: "Prices retired", grid: gridOf(pricesText) },
+    ],
+  };
+  const seen = P.classifyFiles([book], { requireExport: false });
+  assertDeep(
+    "the three carry sheets are recognised by their columns",
+    seen.recognised.map((e) => [e.kind, e.sheet]),
+    [["item_master", "Item master"], ["prices", "Prices"], ["prices_retired", "Prices retired"]]
+  );
+  assertTrue(
+    "a carry sheet is not an export and has no vendor",
+    seen.recognised.every((e) => e.vendor === ""),
+    "a carry sheet came back with a vendor"
+  );
+  assertDeep(
+    "the report's own sheets are listed as output, not as broken exports",
+    seen.ignored.map((s) => [s.sheet, s.reason]),
+    [
+      ["Top 25", "part of a previous report, not an input"],
+      ["All items", "part of a previous report, not an input"],
+      ["Excluded", "part of a previous report, not an input"],
+      ["Sources", "part of a previous report, not an input"],
+    ]
+  );
+
+  // Reading the cells back gives the CSV text they were written from.
+  const master = seen.recognised.find((e) => e.kind === "item_master");
+  assertEqual(
+    "the Item master reads back as the file it was written from",
+    csv.serialiseObjects(P.MASTER_COLUMNS, P.carryRows(master)),
+    masterText
+  );
+  const prices = seen.recognised.find((e) => e.kind === "prices");
+  assertEqual(
+    "the Prices sheet reads back as the file it was written from",
+    csv.serialiseObjects(P.PRICES_HEADER, P.carryRows(prices)),
+    pricesText
+  );
+
+  // A .csv has no sheet name, so prices_retired.csv is told from prices.csv by
+  // its file name. Without this a dropped retired file would replace the real
+  // price sheet.
+  const csvUploads = P.classifyFiles(
+    [
+      { file: "item_master.csv", sheets: [{ name: "", grid: gridOf(masterText) }] },
+      { file: "prices.csv", sheets: [{ name: "", grid: gridOf(pricesText) }] },
+      { file: "prices_retired.csv", sheets: [{ name: "", grid: gridOf(pricesText) }] },
+    ],
+    { requireExport: false }
+  );
+  assertDeep(
+    "the three files still classify one by one as .csv uploads",
+    csvUploads.recognised.map((e) => e.kind),
+    ["item_master", "prices", "prices_retired"]
+  );
+
+  // The review queue carries all four item-master columns, so without the
+  // queue_reason disqualifier it would be read as the master and pull its
+  // blank include and units_per_pack values in.
+  const queue = P.classifyFiles(
+    [{ file: "review_queue.csv", sheets: [{ name: "", grid: gridOf(goldenText("expected/review_queue.csv")) }] }],
+    { requireExport: false }
+  );
+  assertEqual("a review queue is not mistaken for the item master", queue.recognised.length, 0);
+
+  // A second copy of one table is a copy, not something to merge.
+  const twice = P.classifyFiles(
+    [
+      { file: "a.xlsx", sheets: [{ name: "Item master", grid: gridOf(masterText) }] },
+      { file: "b.xlsx", sheets: [{ name: "Item master", grid: gridOf(masterText) }] },
+    ],
+    { requireExport: false }
+  );
+  assertEqual("a second Item master is not read twice", twice.recognised.length, 1);
+  assertTrue(
+    "the second copy says which one was read instead",
+    twice.ignored.length === 1 && twice.ignored[0].reason.includes("a.xlsx"),
+    JSON.stringify(twice.ignored)
+  );
+
+  // Handed to ingest on its own, a report workbook is refused for what it is.
+  const alone = caught(() => P.classifyFiles([book]));
+  assertTrue(
+    "a report workbook alone is refused, naming what it does and does not hold",
+    alone != null && alone.includes("previous report workbook") && alone.includes("order export"),
+    `message was: ${alone}`
+  );
+}
+
 // ------------------------------------------------------------------ main
 
 testCsv();
@@ -908,6 +1052,7 @@ testPureHelpers();
 testUnitVectors();
 testIngest();
 testRecognition();
+testCarrySheets();
 testEndToEnd();
 testSecondRun();
 testConvenienceNames();

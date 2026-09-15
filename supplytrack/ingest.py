@@ -19,10 +19,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .errors import SupplytrackError
-from .master import year_dir
+from .master import MASTER_COLUMNS, year_dir
+from .prices import PRICES_HEADER
 from .xlsx import (
     cell,
     clean_text,
+    csv_text,
     coerce_date,
     coerce_decimal,
     coerce_int,
@@ -164,12 +166,84 @@ SIBLING_REPORTS: list[tuple[str, list[str]]] = [
 SIBLING_MIN_MARKERS = 2
 NEAR_MISS_MIN_COLUMNS = 2
 
+# ------------------------------------------------- the report's carry sheets
+#
+# The report workbook carries the item master and the price sheet on three
+# sheets of its own, so next year only that workbook and the new export are
+# needed (``report.py`` writes them). They are recognised here by header
+# signature, exactly as an export is, so the same workbook can be dropped on
+# either drop zone of the page and handed to `ingest` or `run` on the command
+# line without anybody having to say what it is.
+
+ITEM_MASTER_REQUIRED = ["key", "include", "units_per_pack", "canonical_name"]
+PRICES_REQUIRED = ["rank", "canonical_name", "vendor", "unit_price", "status"]
+
+# The review queue carries all four item-master columns as well, so without
+# this the queue file would be read as the master and pull its blank include
+# and units_per_pack values in. No item master ever has this column, so its
+# presence is a clean disqualifier rather than a guess.
+QUEUE_MARKER = "queue_reason"
+
+# The report's own sheets, which are output and never input. Only "Top N"
+# varies, by the --top the report was built with.
+REPORT_SHEET_NAMES = {"all items", "excluded", "sources"}
+_TOP_SHEET_RE = re.compile(r"top \d+")
+REPORT_SHEET_REASON = "part of a previous report, not an input"
+
+# What each carry kind is called, which columns it round trips through, and
+# which of those columns are whole numbers. Everything else is written to the
+# sheet as text so a price such as 1.250 comes back spelled the way it was
+# typed - see ``report._write_carry_cell``.
+CARRY_LABELS = {
+    "item_master": "Item master",
+    "prices": "Prices",
+    "prices_retired": "Prices retired",
+}
+CARRY_COLUMNS = {
+    "item_master": MASTER_COLUMNS,
+    "prices": PRICES_HEADER,
+    "prices_retired": PRICES_HEADER,
+}
+INTEGER_COLUMNS = frozenset({"units_per_pack", "packs_in_year", "rank"})
+
+# Modest, readable widths for the carry sheets, by column name. Anything not
+# named here gets CARRY_WIDTH_DEFAULT.
+CARRY_WIDTHS = {
+    "key": 34,
+    "source": 11,
+    "raw_title": 46,
+    "include": 9,
+    "canonical_name": 34,
+    "units_per_pack": 15,
+    "unit_label": 11,
+    "upp_source": 14,
+    "amazon_category": 24,
+    "first_seen": 12,
+    "last_seen": 12,
+    "note": 36,
+    "rank": 7,
+    "vendor": 14,
+    "unit_price": 12,
+    "status": 14,
+    "url": 40,
+    "checked_on": 12,
+}
+CARRY_WIDTH_DEFAULT = 16
+
 _AMAZON_REQUIRED = [norm_header(h) for h in AMAZON_REQUIRED]
 _PREFERRED_REQUIRED = [norm_header(h) for h in PREFERRED_REQUIRED]
 _AMAZON_OPTIONAL = [norm_header(h) for h in AMAZON_OPTIONAL]
 _PREFERRED_OPTIONAL = [norm_header(h) for h in PREFERRED_OPTIONAL]
 
 _SIGNATURES = [("amazon", _AMAZON_REQUIRED), ("preferred", _PREFERRED_REQUIRED)]
+_ITEM_MASTER_REQUIRED = [norm_header(h) for h in ITEM_MASTER_REQUIRED]
+_PRICES_REQUIRED = [norm_header(h) for h in PRICES_REQUIRED]
+_QUEUE_MARKER = norm_header(QUEUE_MARKER)
+# Prices and Prices retired share one signature; which of the two a sheet is
+# comes from its name (see :func:`_carry_kind`), because the two files hold
+# the same columns by design.
+_CARRY_SIGNATURES = [("item_master", _ITEM_MASTER_REQUIRED), ("prices", _PRICES_REQUIRED)]
+EXPORT_KINDS = ("amazon", "preferred")
 _VENDOR_LABELS = {"amazon": "Amazon", "preferred": "Preferred"}
 # Matching is on normalised headers; messages name the column the way it is
 # spelled in the export, because that is what somebody looking at the file sees.
@@ -182,18 +256,43 @@ def _spell(headers: list[str]) -> str:
 
 @dataclass
 class ExportSheet:
-    """One sheet that was recognised as a vendor export."""
+    """One sheet that was recognised: a vendor export or one of the carry sheets.
 
-    vendor: str
+    ``kind`` is ``amazon`` or ``preferred`` for an order export, and
+    ``item_master``, ``prices`` or ``prices_retired`` for a sheet of a previous
+    report workbook. ``vendor`` stays as the name the export half of the
+    pipeline has always used, so ``run.json`` and every caller that asks for a
+    vendor keep reading the same way.
+    """
+
+    kind: str
     file: str
     sheet: str
     headers: list[str] = field(default_factory=list)
     body: list[list] = field(default_factory=list)
 
     @property
+    def vendor(self) -> str:
+        """The export vendor, or "" for a carry sheet, which has no vendor."""
+        return self.kind if self.kind in EXPORT_KINDS else ""
+
+    @property
+    def is_export(self) -> bool:
+        return self.kind in EXPORT_KINDS
+
+    @property
     def label(self) -> str:
         """How the sheet is named in an error: the file, and the sheet if it has one."""
         return f"{self.file} sheet {self.sheet!r}" if self.sheet else self.file
+
+    @property
+    def rows(self) -> list[dict[str, str]]:
+        """A carry sheet's rows as the CSV text they were written from.
+
+        See :func:`carry_rows`; this is what makes item_master.csv -> report
+        workbook -> item_master.csv byte-identical.
+        """
+        return carry_rows(self)
 
 
 @dataclass
@@ -262,7 +361,7 @@ def preferred_key(code: str) -> str:
 # --------------------------------------------------------------- recognition
 
 
-def classify_grids(sources: list[tuple[str, str, list[list]]]):
+def classify_grids(sources: list[tuple[str, str, list[list]]], *, require_export: bool = True):
     """Sort raw sheets into the exports this tool reads and the ones it skips.
 
     ``sources`` is ``(file name, sheet name, raw grid)`` per sheet, in the order
@@ -271,9 +370,15 @@ def classify_grids(sources: list[tuple[str, str, list[list]]]):
     :data:`xlsx.MAX_HEADER_SCAN` rows, because a sheet somebody pasted an export
     into often has a title line above it.
 
+    Five kinds are recognised: the two order exports, and the ``Item master``,
+    ``Prices`` and ``Prices retired`` tables a report workbook carries forward
+    (:data:`CARRY_LABELS`). The report's own output sheets - ``Top N``,
+    ``All items``, ``Excluded`` and ``Sources`` - are listed as ignored.
+
     Returns ``(recognised, ignored)``. Raises when the same vendor turns up
-    twice, since there is no honest way to choose between them, and when
-    nothing at all was recognised.
+    twice, since there is no honest way to choose between them, and, unless
+    ``require_export`` is off, when no order export was found. ``import-report``
+    turns it off because a report workbook on its own is what it is given.
     """
     recognised: list[ExportSheet] = []
     ignored: list[IgnoredSheet] = []
@@ -281,18 +386,33 @@ def classify_grids(sources: list[tuple[str, str, list[list]]]):
 
     for file_name, sheet_name, grid in sources:
         rows = list(grid or [])
-        match = _match_signature(rows)
+        match = _match_signature(rows, file_name, sheet_name)
         if match is None:
-            sheet = IgnoredSheet(file_name, sheet_name, _ignore_reason(rows))
+            sheet = IgnoredSheet(file_name, sheet_name, _ignore_reason(rows, sheet_name))
             ignored.append(sheet)
             skipped.append((sheet, rows))
             continue
-        vendor, header_row = match
+        kind, header_row = match
         headers, body = normalise_grid(rows, header_row)
-        recognised.append(ExportSheet(vendor, file_name, sheet_name, headers, body))
+        recognised.append(ExportSheet(kind, file_name, sheet_name, headers, body))
+
+    # A carry table is one table, not something spread over several files, so a
+    # second one is a copy rather than something to merge: the first is read and
+    # the rest are named. The strict-subset rule below is for exports only.
+    for kind in CARRY_LABELS:
+        found = [e for e in recognised if e.kind == kind]
+        for other in found[1:]:
+            recognised.remove(other)
+            ignored.append(
+                IgnoredSheet(
+                    other.file,
+                    other.sheet,
+                    f"a second {CARRY_LABELS[kind]} table; {found[0].label} was read instead",
+                )
+            )
 
     for vendor, required in _SIGNATURES:
-        found = [e for e in recognised if e.vendor == vendor]
+        found = [e for e in recognised if e.kind == vendor]
         if len(found) < 2:
             continue
         full = _pick_full_export(found, required)
@@ -314,19 +434,47 @@ def classify_grids(sources: list[tuple[str, str, list[list]]]):
                 )
             )
 
-    if not recognised:
+    if require_export and not any(e.is_export for e in recognised):
+        if recognised:
+            raise SupplytrackError(
+                "The only thing recognised was a previous report workbook: "
+                + ", ".join(f"{CARRY_LABELS[e.kind]} on {e.label}" for e in recognised)
+                + ". That carries the item master and the prices forward but holds no order "
+                "lines, so hand over this year's order export as well."
+            )
         raise _nothing_recognised(skipped)
     return recognised, ignored
 
 
-def classify_exports(paths: list[Path]):
+def classify_exports(paths: list[Path], *, require_export: bool = True):
     """:func:`classify_grids` over files on disk, workbooks or .csv files."""
     sources: list[tuple[str, str, list[list]]] = []
     for path in paths:
         path = Path(path)
         for sheet_name, grid in sheet_grids(path):
             sources.append((path.name, sheet_name, grid))
-    return classify_grids(sources)
+    return classify_grids(sources, require_export=require_export)
+
+
+def carry_rows(sheet: ExportSheet) -> list[dict[str, str]]:
+    """One carry sheet's rows as text, in the column order of the file it came from.
+
+    Only the columns that file has are read, so an extra column somebody added
+    on the sheet is dropped rather than carried into a file whose shape the rest
+    of the pipeline depends on. Every value comes back as text:
+    :func:`xlsx.csv_text` turns the numbers the integer columns are written as
+    back into canonical integer strings (12, never 12.0) and a blank cell into "".
+    """
+    columns = CARRY_COLUMNS[sheet.kind]
+    index = {h: i for i, h in enumerate(sheet.headers) if h}
+    return [
+        {
+            column: csv_text(row[index[column]] if index[column] < len(row) else None)
+            for column in columns
+            if column in index
+        }
+        for row in sheet.body
+    ]
 
 
 def _row_signature(export: ExportSheet, required: list[str]) -> Counter:
@@ -363,14 +511,37 @@ def _pick_full_export(found: list[ExportSheet], required: list[str]) -> ExportSh
     return winners[0] if len(winners) == 1 else None
 
 
-def _match_signature(grid: list[list]) -> tuple[str, int] | None:
-    """The first row that is a header row, and which vendor it belongs to."""
+def _match_signature(grid: list[list], file_name: str = "", sheet_name: str = "") -> tuple[str, int] | None:
+    """The first row that is a header row, and which of the five kinds it is.
+
+    Export signatures are tried first, so nothing about the carry sheets can
+    change how an order export is recognised.
+    """
     for row_number, headers in enumerate(scan_headers(grid)):
         present = {h for h in headers if h}
         for vendor, required in _SIGNATURES:
             if all(h in present for h in required):
                 return vendor, row_number
+        for kind, required in _CARRY_SIGNATURES:
+            if all(h in present for h in required):
+                if kind == "item_master" and _QUEUE_MARKER in present:
+                    continue
+                return _carry_kind(kind, file_name, sheet_name), row_number
     return None
+
+
+def _carry_kind(kind: str, file_name: str, sheet_name: str) -> str:
+    """Prices or Prices retired: the same columns, told apart by the name.
+
+    The two files hold the same columns on purpose, so there is nothing in the
+    rows to tell them apart. The sheet name says which it is in a report
+    workbook; a .csv has no sheet name at all, so the file name is read for a
+    dropped ``prices_retired.csv``.
+    """
+    if kind != "prices":
+        return kind
+    where = f"{sheet_name} {file_name}".casefold()
+    return "prices_retired" if "retired" in where else "prices"
 
 
 def _scanned_headers(grid: list[list]) -> set[str]:
@@ -404,13 +575,23 @@ def _near_miss(grid: list[list]) -> tuple[str, list[str]] | None:
     return (best[1], best[2]) if best else None
 
 
-def _ignore_reason(grid: list[list]) -> str:
+def _is_report_sheet(sheet_name: str) -> bool:
+    """True for the report's own output sheets, which are never an input."""
+    name = norm_header(sheet_name)
+    return name in REPORT_SHEET_NAMES or bool(_TOP_SHEET_RE.fullmatch(name))
+
+
+def _ignore_reason(grid: list[list], sheet_name: str = "") -> str:
     """Why one sheet was passed over, in the words the page and the CLI show.
 
-    A sibling Amazon report is named first: it is the most specific thing that
-    can be said, and it also carries Order Date and Order ID, so the
-    missing-column wording would otherwise take over and hide the real problem.
+    The report's own sheets are named first, by name: they hold finished output
+    and there is nothing useful to say about their columns. A sibling Amazon
+    report comes next, because it is the most specific thing that can be said
+    and it also carries Order Date and Order ID, so the missing-column wording
+    would otherwise take over and hide the real problem.
     """
+    if _is_report_sheet(sheet_name):
+        return REPORT_SHEET_REASON
     sibling = _sibling_report(grid)
     if sibling:
         return f"this is the Amazon {sibling} report, not the Orders report"
@@ -479,8 +660,8 @@ def ingest(data_dir: Path, year: int, *sources: Path | None) -> IngestResult:
         )
     recognised, ignored = classify_exports(paths)
 
-    amazon_export = next((e for e in recognised if e.vendor == "amazon"), None)
-    preferred_export = next((e for e in recognised if e.vendor == "preferred"), None)
+    amazon_export = next((e for e in recognised if e.kind == "amazon"), None)
+    preferred_export = next((e for e in recognised if e.kind == "preferred"), None)
 
     empty_notes: dict = {"warnings": [], "dates_out_of_year": [], "non_closed": []}
     amazon_rows: list[dict] = []

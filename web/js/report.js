@@ -6,6 +6,14 @@
 // This module returns a built ExcelJS Workbook; callers serialise it with
 // xlsxio.toArrayBuffer() for a download, or open it directly in Node tests.
 import { newWorkbook } from "./xlsxio.js";
+import {
+  CARRY_COLUMNS,
+  CARRY_LABELS,
+  CARRY_WIDTH_DEFAULT,
+  CARRY_WIDTHS,
+  INTEGER_COLUMNS,
+  isCanonicalInt,
+} from "./pipeline.js";
 
 const PRICE_FORMAT = "$#,##0.00";
 const QTY_FORMAT = "#,##0";
@@ -36,6 +44,17 @@ const VENDOR_HEADER_ARGB = {
   Staples: "00E4DFEC",
 };
 const LEGEND_ARGB = "00FFF2CC";
+
+// The order the three carry sheets are written in, mirroring
+// supplytrack.report.CARRY_SOURCES.
+const CARRY_ORDER = ["item_master", "prices", "prices_retired"];
+
+// Printed on the Sources sheet rather than above a carry sheet's header row:
+// the classifier looks for the header in row 1, so nothing may sit above it.
+// Mirrors supplytrack.report.CARRY_NOTE.
+const CARRY_NOTE =
+  "The Item master, Prices and Prices retired sheets are read back next year. " +
+  "Do not edit them by hand.";
 
 const TITLE_FONT = Object.freeze({ bold: true, size: 14 });
 const BOLD = Object.freeze({ bold: true });
@@ -133,6 +152,15 @@ function setColumnWidth(ws, letter, width) {
  *   with "; ", matching report.py exactly.
  * @param {number|null} args.master - item_master.csv row count, or null/
  *   undefined when that file does not exist (mirrors `master_row_count`).
+ * @param {Array<object>} args.masterRows - item_master.csv rows, in the order
+ *   that file holds them (sorted by key - what masterToCsv writes), as plain
+ *   objects of STRING values. Written to the "Item master" sheet so next
+ *   year's upload can read them straight back out.
+ * @param {Array<object>} args.priceRows - prices.csv rows for this year, in
+ *   file order, for the "Prices" sheet.
+ * @param {Array<object>} args.retiredRows - prices_retired.csv rows, for the
+ *   "Prices retired" sheet. All three default to empty; each sheet is written
+ *   either way, so a workbook always carries the same three sheets.
  * @param {number} args.year
  * @param {number} args.top
  * @param {string} args.builtAt - ISO 8601 timestamp for the "report built
@@ -141,7 +169,19 @@ function setColumnWidth(ws, letter, width) {
  *   argument instead so a build is reproducible/testable without a clock.
  * @returns {Promise<import("exceljs").Workbook>}
  */
-export async function buildReport({ ranked, excluded, prices, run, master, year, top, builtAt }) {
+export async function buildReport({
+  ranked,
+  excluded,
+  prices,
+  run,
+  master,
+  masterRows,
+  priceRows,
+  retiredRows,
+  year,
+  top,
+  builtAt,
+}) {
   const rankedRows = ranked || [];
   const priceMap = prices || {};
   const runInfo = run || {};
@@ -161,7 +201,72 @@ export async function buildReport({ ranked, excluded, prices, run, master, year,
   const unpricedCount = countUnpriced(priceMap);
   buildSourcesSheet(workbook, runInfo, master, rankedRows, top, unpricedCount, builtAt);
 
+  const carry = {
+    item_master: masterRows || [],
+    prices: priceRows || [],
+    prices_retired: retiredRows || [],
+  };
+  for (const kind of CARRY_ORDER) buildCarrySheet(workbook, kind, carry[kind]);
+
   return workbook;
+}
+
+/**
+ * One carry-sheet cell, typed so the CSV survives the round trip. Ports
+ * supplytrack.report._write_carry_cell.
+ *
+ * Everything is written as text except the whole-number columns
+ * (INTEGER_COLUMNS), so a unit price typed as 1.250 comes back spelled that way
+ * instead of as 1.25, and a date stays the ISO string the rest of the pipeline
+ * writes rather than becoming a date cell with a display format of its own. An
+ * integer column is only written as a number when its text is already that
+ * integer's one spelling - 007 stays text, because 7 would not be the same file.
+ *
+ * report.py also forces the cell's type to text, because openpyxl reads a
+ * string starting with "=" as a formula. ExcelJS has no such rule - a string is
+ * a string - so there is nothing to force here, and the two agree anyway.
+ */
+function carryCellValue(text, column) {
+  if (text === "") return null;
+  if (INTEGER_COLUMNS.has(column) && isCanonicalInt(text)) return parseInt(text, 10);
+  return text;
+}
+
+/**
+ * One of the three sheets that carry a data file forward into next year.
+ *
+ * The header row is row 1 with nothing above it, because that is where the
+ * sheet classifier looks for it; the guidance that these sheets are machine
+ * read lives on the Sources sheet instead (CARRY_NOTE). The sheet is written
+ * even when there is nothing in it, so next year's upload finds the same three
+ * sheets whether or not any prices were retired this year.
+ */
+function buildCarrySheet(workbook, kind, rows) {
+  const columns = CARRY_COLUMNS[kind];
+  const ws = workbook.addWorksheet(CARRY_LABELS[kind]);
+  columns.forEach((header, i) => {
+    const cell = ws.getCell(1, i + 1);
+    cell.value = header;
+    cell.font = BOLD;
+  });
+  rows.forEach((row, rIdx) => {
+    columns.forEach((header, cIdx) => {
+      const raw = row[header];
+      const text = raw == null ? "" : String(raw);
+      ws.getCell(rIdx + 2, cIdx + 1).value = carryCellValue(text, header);
+    });
+  });
+  columns.forEach((header, i) => {
+    setColumnWidth(
+      ws,
+      columnLetter(i + 1),
+      Object.prototype.hasOwnProperty.call(CARRY_WIDTHS, header)
+        ? CARRY_WIDTHS[header]
+        : CARRY_WIDTH_DEFAULT
+    );
+  });
+  ws.views = [{ state: "frozen", ySplit: 1, topLeftCell: "A2", activePane: "bottomLeft" }];
+  return ws;
 }
 
 function countUnpriced(prices) {
@@ -413,6 +518,8 @@ function buildSourcesSheet(workbook, runInfo, masterRowCount, rankedRows, top, u
   writePair("top_n", top);
   writePair("unpriced cells", unpricedCount);
   writePair("report built at", builtAt);
+  // Last, so nothing is inserted above the run.json rows a reader walks.
+  writePair("keep this workbook", CARRY_NOTE);
 
   setColumnWidth(ws, "A", 32);
   setColumnWidth(ws, "B", 70);
