@@ -31,14 +31,14 @@ proposing answers for the review queue, which a person confirms.
 
 ```
 supplytrack ingest   --year 2025 <export-file>... [--amazon <file>] [--preferred <file>]
-supplytrack review   --year 2025 [--apply <decisions.csv>]
+supplytrack review   --year 2025 [--apply <decisions.csv>] [--proposed]
 supplytrack propose  --year 2025 [--provider anthropic|gemini] [--dry-run]
 supplytrack rank     --year 2025 [--top 25]
 supplytrack prices   --year 2025 [--template | --update]
 supplytrack report   --year 2025 [--top 25]
 supplytrack import-report --year 2025 --data-dir <d> <report.xlsx> [--force]
-supplytrack validate --year 2025
-supplytrack run      --year 2025 <export-file>... [--amazon <file>] [--preferred <file>]
+supplytrack validate --year 2025 [--top 25]
+supplytrack run      --year 2025 <export-file>... [--amazon <file>] [--preferred <file>] [--top 25]
 ```
 
 `run` chains the lot and stops wherever a person is needed. It takes the same export files as
