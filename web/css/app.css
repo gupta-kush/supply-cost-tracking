@@ -683,6 +683,9 @@ body {
   position: sticky;
   top: 1rem;
   align-self: start;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--app-rule);
   border-radius: var(--app-radius);
   background-color: var(--app-surface);
@@ -710,8 +713,19 @@ body {
   font-size: 0.78rem;
 }
 
+/* The head and the foot stay put and the list scrolls between them, so the panel
+   is never taller than the window however many questions there are. The gutter is
+   reserved so the list does not shift sideways the moment it becomes scrollable. */
 .panel-body {
-  overflow: visible;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.panel-head,
+.panel-foot {
+  flex: 0 0 auto;
 }
 
 .panel-list {
@@ -832,6 +846,38 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--app-ink-quiet);
+}
+
+/* A cluster of names that may be one product. Closed by default: the question is
+   "are these one thing", and the list of names is the detail behind it. */
+.entry-more {
+  margin-top: 0.15rem;
+}
+
+.entry-more summary {
+  font-size: 0.75rem;
+  color: var(--app-ink-quiet);
+  cursor: pointer;
+}
+
+.entry-more .entry-controls {
+  margin-top: 0.5rem;
+}
+
+/* The part of the name every option in the cluster shares, said once so each
+   button can carry only what makes it different. */
+.entry-shared {
+  margin: 0.45rem 0 0;
+  font-size: 0.73rem;
+  line-height: 1.35;
+  color: var(--app-ink-quiet);
+}
+
+.entry-more .chip {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .panel-empty {
@@ -1292,9 +1338,16 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* Stacked under the table there is nothing to stick to and the page itself
+     scrolls, so the panel gives up its own scroller and grows. */
   .panel {
     position: static;
+    max-height: none;
     max-width: 34rem;
+  }
+
+  .panel-body {
+    overflow: visible;
   }
 
 }

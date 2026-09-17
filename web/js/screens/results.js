@@ -28,6 +28,7 @@ const view = {
   reviewMode: false,
   panelOpen: true,
   lastRanks: new Map(),
+  clusters: [],
 };
 
 let api = null;
@@ -83,6 +84,11 @@ function plural(n, word) {
 function displayName(row) {
   const f = fmt().displayName;
   return f ? f(row) : String(row.canonical_name || row.raw_title || "");
+}
+
+/** The same shortening, for a card that only has a name to work from. */
+function shortName(name) {
+  return displayName({ canonical_name: String(name || "") });
 }
 
 /* Provenance wording lives in format.js so the leaderboard, the price card and the
@@ -390,9 +396,10 @@ function panelEntries() {
   for (const c of conflicts()) {
     out.push({ kind: "conflict", conflict: c });
   }
-  for (const d of duplicates()) {
-    out.push({ kind: "duplicate", duplicate: d });
-  }
+  view.clusters = clusterNames(duplicates());
+  view.clusters.forEach((cluster, index) => {
+    out.push({ kind: "duplicate", cluster, index });
+  });
   for (const n of notes()) {
     out.push({ kind: "note", note: n });
   }
@@ -515,7 +522,7 @@ function renderPanel() {
 function entryHtml(entry) {
   if (entry.kind === "undecided") return undecidedHtml(entry.row);
   if (entry.kind === "conflict") return conflictHtml(entry.conflict);
-  if (entry.kind === "duplicate") return duplicateHtml(entry.duplicate);
+  if (entry.kind === "duplicate") return duplicateHtml(entry.cluster, entry.index);
   return noteHtml(entry.note);
 }
 
@@ -559,6 +566,39 @@ function undecidedHtml(row) {
   return entryShell(name, fullTitle(row), question, controls);
 }
 
+/**
+ * Pairs into clusters: the union of every pair that shares a name. The finding
+ * reports pairs, so four names that all look alike arrive as six pairs and became
+ * six cards asking the same question. One cluster is one question.
+ */
+function clusterNames(pairs) {
+  const parent = new Map();
+  const find = (x) => {
+    if (!parent.has(x)) parent.set(x, x);
+    while (parent.get(x) !== x) {
+      parent.set(x, parent.get(parent.get(x)));
+      x = parent.get(x);
+    }
+    return x;
+  };
+  const union = (a, b) => { parent.set(find(a), find(b)); };
+
+  for (const pair of pairs) {
+    const [a, b] = pair.names || [];
+    if (a && b) union(a, b);
+  }
+
+  const groups = new Map();
+  for (const name of parent.keys()) {
+    const root = find(name);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(name);
+  }
+  return Array.from(groups.values())
+    .filter((names) => names.length > 1)
+    .map((names) => names.slice().sort());
+}
+
 function conflictHtml(conflict) {
   const key = esc(conflict.key || "");
   const a = esc(conflict.master_units);
@@ -572,18 +612,69 @@ function conflictHtml(conflict) {
     ` data-name="${esc(conflict.name)}">${a}, what is on file</button>` +
     `<button type="button" class="chip" data-units-chip="${b}" data-key="${key}"` +
     ` data-name="${esc(conflict.name)}">${b}, from the title</button>`;
-  return entryShell(conflict.name, "", `${question}${evidence}`, controls);
+  return entryShell(shortName(conflict.name), conflict.name, `${question}${evidence}`, controls);
 }
 
-function duplicateHtml(duplicate) {
-  const [first, second] = duplicate.names || [];
-  const question = `Same product as ${esc(second)}? Pick the name to keep for both.`;
-  const controls =
-    `<button type="button" class="chip" data-merge-from="${esc(second)}"` +
-    ` data-merge-into="${esc(first)}">${esc(first)}</button>` +
-    `<button type="button" class="chip" data-merge-from="${esc(first)}"` +
-    ` data-merge-into="${esc(second)}">${esc(second)}</button>`;
-  return entryShell(first, "", question, controls);
+/**
+ * What actually tells a cluster's names apart. Names that look alike are alike for
+ * most of their length, so the shared head and tail are lifted out and each option
+ * is labelled with only the part that differs. Without this the four HP 712
+ * cartridges truncate to the same forty characters and the picker offers four
+ * identical-looking buttons, which is worse than not clustering at all.
+ */
+function distinguish(names) {
+  if (names.length < 2) return { shared: "", tails: names.slice() };
+  const words = names.map((name) => String(name).split(" "));
+
+  let head = 0;
+  while (words.every((w) => w.length > head + 1 && w[head] === words[0][head])) head += 1;
+
+  let tail = 0;
+  while (
+    words.every((w) =>
+      w.length > head + tail + 1 && w[w.length - 1 - tail] === words[0][words[0].length - 1 - tail])
+  ) tail += 1;
+
+  const tails = words.map((w) => w.slice(head, w.length - tail).join(" "));
+
+  // The remainders have to be told apart by a reader, not just by a comparison.
+  // "Medium" and "Medium," are two different strings and the same label, so a
+  // difference that is only punctuation means the full names are the honest
+  // option.
+  const plain = tails.map((t) => t.toLowerCase().replace(/[^a-z0-9]+/g, ""));
+  if (
+    tails.some((t) => !t) ||
+    new Set(tails).size !== names.length ||
+    new Set(plain).size !== names.length
+  ) {
+    return { shared: "", tails: names.slice() };
+  }
+  const shared = [
+    words[0].slice(0, head).join(" "),
+    tail ? words[0].slice(words[0].length - tail).join(" ") : "",
+  ].filter(Boolean).join(" … ");
+  return { shared, tails };
+}
+
+function duplicateHtml(cluster, index) {
+  const names = cluster || [];
+  const heading = `These ${int(names.length)} look alike`;
+  const question =
+    "They are being counted as separate items. Pick the name to keep for all of them.";
+  const { shared, tails } = distinguish(names);
+  const controls = names
+    .map((name, at) =>
+      `<button type="button" class="chip" data-merge-cluster="${index}"` +
+      ` data-merge-into="${esc(name)}" title="${esc(name)}">` +
+      `${esc(shortName(tails[at]))}</button>`
+    )
+    .join("");
+  return `<li class="panel-entry" data-test="panel-entry">` +
+    `<div class="entry-name">${esc(heading)}</div>` +
+    `<p class="entry-q">${esc(question)}</p>` +
+    `<details class="entry-more"><summary>Show the names</summary>` +
+    (shared ? `<p class="entry-shared">${esc(shared)}</p>` : "") +
+    `<div class="entry-controls">${controls}</div></details></li>`;
 }
 
 function noteHtml(note) {
@@ -714,10 +805,14 @@ function onPanelClick(event) {
     return;
   }
 
-  const merge = target.closest("[data-merge-from]");
+  const merge = target.closest("[data-merge-cluster]");
   if (merge) {
-    answerByName(merge.dataset.mergeFrom, { canonical_name: merge.dataset.mergeInto });
-    say(`Counted as ${merge.dataset.mergeInto}.`);
+    const into = merge.dataset.mergeInto;
+    const cluster = view.clusters[Number(merge.dataset.mergeCluster)] || [];
+    for (const name of cluster) {
+      if (name !== into) answerByName(name, { canonical_name: into });
+    }
+    say(`Counted as ${into}.`);
     return;
   }
 
