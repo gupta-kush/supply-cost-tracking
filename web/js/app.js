@@ -16,6 +16,7 @@ import {
 } from "./pipeline.js";
 import { mountResults } from "./screens/results.js";
 import { mountPrice } from "./screens/price.js";
+import { mountDone } from "./screens/done.js";
 import { mount as mountDrop } from "./screens/drop.js";
 
 window.__supplytrackReady = true;
@@ -55,6 +56,7 @@ export const state = {
   carriedPrices: null,
   uploadedRetired: [],
   topMoved: null,
+  yearMovement: null,
   priceFocus: null,
   modelAvailable: false,
   busy: false,
@@ -264,6 +266,50 @@ function movement(before, after, reason) {
   return entered.length || left.length ? { reason, entered, left } : null;
 }
 
+/** name -> rank, for names inside the top N only. */
+function rankMap(ranked, top) {
+  const map = new Map();
+  for (const r of ranked || []) {
+    const n = Number(r.rank);
+    if (Number.isFinite(n) && n <= top) map.set(String(r.canonical_name || ""), n);
+  }
+  return map;
+}
+
+/**
+ * Done's "movement since last year" (section 2.4). The frozen adapter carries
+ * no prior year's rank (only item_master.csv/prices.csv are carry sheets),
+ * so "last year" here is the carried master ranked against this year's lines
+ * before auto-decide adds anything new to it - what the Top N would still be
+ * if nothing this year were decided - diffed against the final rank once
+ * auto-decide and every confirmation are in. A first year has no carried
+ * master to rank, `baselineRanked` is empty, and this returns null, which is
+ * "hidden entirely in a first year" without a separate gate.
+ */
+function computeYearMovement(baselineRanked, afterRanked, top) {
+  const before = rankMap(baselineRanked, top);
+  const after = rankMap(afterRanked, top);
+  if (!before.size) return null;
+  const entered = [];
+  const left = [];
+  const movers = [];
+  for (const [name, rank] of after) {
+    if (!before.has(name)) entered.push({ name, rank });
+  }
+  for (const name of before.keys()) {
+    if (!after.has(name)) left.push(name);
+  }
+  for (const [name, afterRank] of after) {
+    const beforeRank = before.get(name);
+    if (beforeRank !== undefined && beforeRank !== afterRank) {
+      movers.push({ name, before: beforeRank, after: afterRank, delta: beforeRank - afterRank });
+    }
+  }
+  entered.sort((a, b) => a.rank - b.rank);
+  movers.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  return { entered, left, movers };
+}
+
 /** Park every row auto-decide could not finish with a blank `include` (spec section 7): a
  *  decision not made, never a false one. `rank` excludes it as "no decision yet" and it is
  *  requeued next run instead of vanishing. */
@@ -455,6 +501,12 @@ export async function buildList({ onStage } = {}) {
     emit("lines", state.lines.length);
     emit("products", new Set(state.lines.map((l) => l.key)).size);
 
+    // Taken before buildQueue/autoDecide touch the master: exactly what was carried in,
+    // ranked against this year's lines. computeYearMovement diffs the final rank against this.
+    const baseline = pipe.rank({
+      lines: state.lines, master: state.master, year: state.year, run: state.run || {},
+    });
+
     const queue = pipe.buildQueue({ lines: state.lines, master: state.master, year: state.year });
     state.queueRows = queue.queueRows ?? [];
 
@@ -470,6 +522,7 @@ export async function buildList({ onStage } = {}) {
     parkOpenRows(decided.open);
 
     recomputeRank(null);
+    state.yearMovement = computeYearMovement(baseline.ranked || [], state.ranked, state.top);
     emit("items", state.ranked.length);
     emit("top", Math.min(state.top, state.ranked.length));
 
@@ -574,12 +627,26 @@ function priceMapForReport() {
   return out;
 }
 
+/**
+ * `rank`'s live output is genuinely numeric (`eaches`/`packs` are running sums); the CLI's
+ * `ranked.csv`/`excluded.csv`, which `buildTableSheet` writes unmodified, are always text.
+ * Stringified here so the downloaded workbook's "All items"/"Excluded" cells are text either
+ * way, matching what running the report from a carried CSV always produced.
+ */
+function stringifyRows(rows) {
+  return (rows || []).map((row) => {
+    const out = {};
+    for (const [key, value] of Object.entries(row)) out[key] = value == null ? "" : String(value);
+    return out;
+  });
+}
+
 export async function downloadReport() {
   if (!reportModule) throw new Error("report.js is not available.");
   const build = reportModule.buildReport || reportModule.default;
   const workbook = await build({
-    ranked: state.ranked,
-    excluded: state.excluded,
+    ranked: stringifyRows(state.ranked),
+    excluded: stringifyRows(state.excluded),
     prices: priceMapForReport(),
     run: state.run,
     master: masterRows(state.master).length,
@@ -658,4 +725,5 @@ loadLogicModules.__ready = loadLogicModules().then((ok) => {
 wireTheme();
 mountResults(api);
 mountPrice(api);
+mountDone(api);
 mountDrop(api);
