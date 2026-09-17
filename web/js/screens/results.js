@@ -23,8 +23,16 @@
 import { VENDORS, PILL_WORDS, toNumber, cheapestVendors } from "./vendor-prices.js";
 
 /* Local view state. Nothing here is a decision, so none of it belongs in app state. */
+/* Above this many open questions the panel stops reading as "a few things worth a
+   look" and starts reading as the review queue v2 exists to replace. Past it the
+   header leads with what would fix the volume, and the panel pages. */
+const A_LOT = 25;
+const PAGE = 20;
+
 const view = {
   showAll: false,
+  search: "",
+  shown: PAGE,
   reviewMode: false,
   panelOpen: true,
   lastRanks: new Map(),
@@ -152,14 +160,21 @@ function renderHead() {
 
   $("#results-title").textContent = `Top ${top} office supplies, ${s.year || ""}`.trim();
 
-  const parts = [
-    `${int(lines)} order lines read`,
-    `${int(office)} office items ranked`,
-    undecided
-      ? `${int(undecided)} left for you to decide`
-      : "nothing left uncounted",
-  ];
-  $("#results-subtitle").textContent = `${parts.join(", ")}.`;
+  const counted = `${int(lines)} order lines read, ${int(office)} office items ranked`;
+
+  if (undecided > A_LOT) {
+    // A first year with no model: 286 undecided is honest and useless as a lead.
+    // Say what would fix it first, and keep the counts as the second sentence.
+    const offer = api.state.modelAvailable === false
+      ? " Add a model key on the first screen and the page will propose them."
+      : "";
+    $("#results-subtitle").textContent =
+      `${int(undecided)} products need a decision.${offer} ${counted}.`;
+  } else {
+    $("#results-subtitle").textContent = undecided
+      ? `${counted}, ${int(undecided)} left for you to decide.`
+      : `${counted}, nothing left uncounted.`;
+  }
 
   renderMoney();
 
@@ -260,7 +275,16 @@ function renderLeaderboard() {
   }
 
   const biggest = Math.max(...all.map((entry) => entry.eaches), 1);
-  const shown = view.showAll ? all : firstNRanked(all, top);
+
+  // Showing an undecided row where its volume would put it is right when there are
+  // a handful of them. In a first year there are hundreds, most of them outranking
+  // the items that are actually decided, and interleaving them turns the
+  // leaderboard into the queue this screen replaced. Past the threshold the
+  // collapsed view is the ranked items alone; the header says how many are waiting
+  // and the panel is where they get answered. "Show all" still shows everything.
+  const crowded = openRows().length > A_LOT;
+  const collapsed = crowded ? all.filter((entry) => entry.kind === "ranked") : all;
+  const shown = view.showAll ? all : firstNRanked(collapsed, top);
 
   body.innerHTML = shown
     .map((entry, index) => rowHtml(entry, index + 1, top, biggest))
@@ -276,7 +300,7 @@ function renderLeaderboard() {
   flashMoved(shown);
 
   const more = $("#btn-show-all");
-  if (all.length <= top) {
+  if (all.length <= shown.length) {
     more.hidden = true;
   } else {
     more.hidden = false;
@@ -508,15 +532,45 @@ function renderPanel() {
     empty.hidden = true;
   }
 
+  // Long lists page rather than running to thousands of pixels. The search box is
+  // the way to reach one product without scrolling past two hundred others.
+  const paging = questions.length > PAGE;
+  const needle = view.search.trim().toLowerCase();
+  const matching = needle
+    ? questions.filter((entry) => entryText(entry).toLowerCase().includes(needle))
+    : questions;
+  const visible = paging ? matching.slice(0, view.shown) : matching;
+
+  $("#panel-search").hidden = !paging || !view.panelOpen;
+
   list.hidden = !entries.length;
   list.innerHTML =
-    questions.map(entryHtml).join("") +
-    (asides.length
+    visible.map(entryHtml).join("") +
+    (needle && !matching.length
+      ? `<li class="panel-entry is-note"><p class="entry-q">Nothing here matches that.</p></li>`
+      : "") +
+    (asides.length && !needle
       ? `<li class="panel-aside-head">Also worth knowing</li>` +
         asides.map(entryHtml).join("")
       : "");
 
+  const more = $("#btn-panel-more");
+  const left = matching.length - visible.length;
+  more.hidden = left <= 0;
+  more.textContent = `Show ${int(Math.min(PAGE, left))} more of ${int(matching.length)}`;
+
   renderPanelFoot(questions.length);
+}
+
+/** The words on a card, for the search box to look through. */
+function entryText(entry) {
+  if (entry.kind === "undecided") {
+    const row = entry.row;
+    return `${row.canonical_name || ""} ${row.raw_title || ""} ${row.amazon_category || ""}`;
+  }
+  if (entry.kind === "conflict") return String(entry.conflict.name || "");
+  if (entry.kind === "duplicate") return (entry.cluster || []).join(" ");
+  return String(entry.note.text || "");
 }
 
 function entryHtml(entry) {
@@ -757,6 +811,7 @@ function wire() {
     $("#panel-toggle").setAttribute("aria-expanded", String(view.panelOpen));
     $("#panel-toggle").querySelector(".panel-toggle-label").textContent =
       view.panelOpen ? "Hide" : "Show";
+    renderPanel();
   });
 
   // A pill is a way into the price screen at that item, not an editable field.
@@ -764,6 +819,17 @@ function wire() {
     const pill = event.target.closest("[data-price-item]");
     if (!pill) return;
     api.go("price", { item: pill.dataset.priceItem, vendor: pill.dataset.vendor });
+  });
+
+  $("#panel-search-input").addEventListener("input", (event) => {
+    view.search = event.target.value;
+    view.shown = PAGE;
+    renderPanel();
+  });
+
+  $("#btn-panel-more").addEventListener("click", () => {
+    view.shown += PAGE;
+    renderPanel();
   });
 
   $("#panel-list").addEventListener("click", onPanelClick);

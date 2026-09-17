@@ -237,12 +237,20 @@ body {
   background-color: var(--app-surface);
 }
 
+.file-chip-name {
+  font-variant-numeric: tabular-nums;
+}
+
+/* What the page worked out the file is. It sits on the chip as a quiet label, not
+   a badge: recognising the file is the normal case, not an event. */
 .file-chip-kind {
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--app-rule);
   color: var(--app-ink-quiet);
   font-size: 0.72rem;
 }
 
-.file-chip-x {
+.file-chip-remove {
   border: 0;
   background: none;
   line-height: 1;
@@ -251,7 +259,7 @@ body {
   cursor: pointer;
 }
 
-.file-chip-x:hover {
+.file-chip-remove:hover {
   color: var(--bs-danger);
 }
 
@@ -387,11 +395,22 @@ body {
 
 .results-sub {
   margin: 0.4rem 0 0;
+  max-width: 46rem;
   font-size: 0.88rem;
+  line-height: 1.45;
   color: var(--app-ink-quiet);
 }
 
+/* The sentence on the left grows in a first year, when it leads with the model
+   offer. Without these the money line is pushed onto its own row and ends up
+   floating a long way from the title it belongs beside. */
+.results-head-left {
+  flex: 1 1 22rem;
+  min-width: 0;
+}
+
 .results-head-right {
+  flex: 0 0 auto;
   margin-left: auto;
 }
 
@@ -724,8 +743,26 @@ body {
 }
 
 .panel-head,
+.panel-search,
 .panel-foot {
   flex: 0 0 auto;
+}
+
+/* Only there when the list is long enough to need it, which in a year with a
+   carried master is never. */
+.panel-search {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--app-rule);
+}
+
+.panel-more {
+  margin: 0;
+  padding: 0.6rem 1rem;
+}
+
+.panel-more .btn-link {
+  padding: 0;
+  font-size: 0.8rem;
 }
 
 .panel-list {
@@ -989,10 +1026,10 @@ body {
   box-shadow: var(--app-shadow);
 }
 
+/* Sentence case. All caps for a rank label made it the loudest thing on the
+   quietest screen, which read as marketing rather than as a tool. */
 .price-rank {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: 0.78rem;
   color: var(--app-ink-quiet);
 }
 

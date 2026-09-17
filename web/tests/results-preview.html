@@ -27,6 +27,7 @@
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-some">Some prices</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-all">All prices</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="panel-empty">Empty panel</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="first-year">First year</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="reset">Reset</button>
   <span class="ms-auto" id="preview-width"></span>
 </div>
@@ -225,6 +226,30 @@ document.querySelector(".preview-bar").addEventListener("click", (event) => {
   }
   if (action === "screen-results" || action === "screen-price") {
     showScreen(action.slice("screen-".length));
+    notify();
+    return;
+  }
+  // Exports alone, no carried master, no model key: the shape the reviewer measured
+  // at 286 undecided, so the framing and the paging can be looked at.
+  if (action === "first-year") {
+    const seed = state.open[0];
+    const many = [];
+    for (let i = 0; i < 286; i += 1) {
+      many.push({
+        ...seed,
+        key: `amz:first year sample product ${i}`,
+        raw_title: `Sample Product ${i}, Assorted, 12 Count`,
+        canonical_name: `Sample Product ${i}, Assorted, 12 Count`,
+        include: "",
+        eaches: String(300 - i),
+        would_rank: "",
+      });
+    }
+    state.open = many;
+    state.counts.lines = 1238;
+    state.counts.office = 95;
+    state.counts.undecided = many.length;
+    state.modelAvailable = false;
     notify();
     return;
   }

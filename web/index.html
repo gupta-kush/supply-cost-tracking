@@ -152,9 +152,18 @@
           <span class="panel-toggle-label">Hide</span>
         </button>
       </div>
+      <div class="panel-search" id="panel-search" hidden>
+        <label class="visually-hidden" for="panel-search-input">Search what needs you</label>
+        <input type="search" class="form-control form-control-sm" id="panel-search-input"
+               placeholder="Search these products" autocomplete="off">
+      </div>
       <div class="panel-body" id="panel-body">
         <ul class="panel-list" id="panel-list" data-test="panel-list"></ul>
         <p class="panel-empty" id="panel-empty" data-test="panel-empty" hidden></p>
+        <p class="panel-more">
+          <button type="button" class="btn btn-link" id="btn-panel-more"
+                  data-test="btn-panel-more" hidden></button>
+        </p>
       </div>
       <div class="panel-foot" id="panel-foot"></div>
     </aside>
