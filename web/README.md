@@ -147,6 +147,17 @@ node tests/headless-report-parity.js # the report Done downloads, against a CLI-
 `js/app.js` and the four screens are the DOM layer and are not covered by the four Node suites
 beyond what they export as pure functions; the headless harnesses are what exercise them.
 
+**On this page, "done" means rendered, not exported.** Three times in this build a capability
+was finished, unit tested, and green in every suite, while nothing on the page ever called it:
+`app.js` never mounted `screens/price.js`'s screen, so Price rendered as an empty ring despite
+a passing test suite that drove it directly; `done.js` emitted class names `app.css` had never
+defined, so the summary screen rendered as unstyled runs of text; `format.js`'s
+`distinctDisplayNames` (which resolves two Top N rows that would otherwise show the same
+truncated name) was exported, tested, and passed through to every screen as `api.fmt`, and
+still went uncalled. None of the four suites above catch a function nobody wired up, because a
+suite proves a function is correct, not that a screen uses it. Load the real page against the
+real 2025 data and look at it before calling a screen finished.
+
 ## Deployment
 
 `.github/workflows/pages.yml` publishes this folder to GitHub Pages on every push to `main`
