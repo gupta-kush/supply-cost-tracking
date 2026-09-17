@@ -148,6 +148,29 @@ export function blockingRows(rows) {
 }
 
 /**
+ * Split provider-answered queue rows into what applyQueue can take right now
+ * and what still needs a person. webapp-v2-spec.md section 7: a row is ready
+ * when it has an include answer, a single canonical pack size, and a name.
+ * Everything else - two candidates and no single answer, no name, include
+ * still blank - stays open, which is the page's "worth a look" list.
+ *
+ * @param {object[]} rows
+ * @returns {{ready: object[], open: object[]}}
+ */
+export function autoAccept(rows) {
+  const ready = [];
+  const open = [];
+  for (const row of rows || []) {
+    const include = casefold(text((row || {}).include));
+    const hasInclude = include === "y" || include === "n";
+    const hasUnits = coerceUnits((row || {}).units_per_pack) !== "";
+    const hasName = Boolean(text((row || {}).canonical_name));
+    (hasInclude && hasUnits && hasName ? ready : open).push(row);
+  }
+  return { ready, open };
+}
+
+/**
  * Copy `pack_desc` onto queue rows from the order lines they came from.
  *
  * A Preferred pack code says the pack size outright, so it is the single most

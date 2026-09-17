@@ -550,6 +550,46 @@ function regexRows(rows, names = []) {
   return S.regexProvider.proposeSync(rows, names);
 }
 
+// -------------------------------------------------------- auto-decide
+
+function testAutoAccept() {
+  const base = {
+    key: "amz:x", source: "amazon", raw_title: "Pens", amazon_category: "Office Product",
+    include: "y", units_per_pack: "12", canonical_name: "Pens, Blue", unit_label: "EA",
+  };
+
+  const complete = S.autoAccept([{ ...base }]);
+  assertEqual("a complete row is ready", complete.ready.length, 1);
+  assertEqual("a complete row is not open", complete.open.length, 0);
+  assertDeep("a ready row is handed back unchanged", complete.ready[0], base);
+
+  const noInclude = S.autoAccept([{ ...base, include: "" }]);
+  assertEqual("a row missing include is open, not ready", noInclude.open.length, 1);
+  assertEqual("a row missing include is not ready", noInclude.ready.length, 0);
+
+  const twoCandidates = S.autoAccept([
+    { ...base, units_per_pack: "", upp_candidates: "12 (12/Pack)|10 (Case of 10)" },
+  ]);
+  assertEqual(
+    "two pack candidates with no single answer stay open",
+    twoCandidates.open.length,
+    1
+  );
+
+  const noName = S.autoAccept([{ ...base, canonical_name: "" }]);
+  assertEqual("a row with no name is open, not ready", noName.open.length, 1);
+
+  const preferred = S.autoAccept([
+    { key: "pbs:BX100", source: "preferred", raw_title: "FILE FOLDER",
+      include: "y", units_per_pack: "100", canonical_name: "File Folder", unit_label: "EA" },
+  ]);
+  assertEqual("a decoded Preferred pack code is ready", preferred.ready.length, 1);
+  assertEqual("a decoded Preferred pack code has nothing open", preferred.open.length, 0);
+
+  assertDeep("no rows means nothing ready or open", S.autoAccept([]), { ready: [], open: [] });
+  assertDeep("a missing list is tolerated", S.autoAccept(undefined), { ready: [], open: [] });
+}
+
 // ------------------------------------------------ what the page needs
 
 /* These three are the logic the review panel in app.js would otherwise carry itself.
@@ -659,6 +699,7 @@ async function run() {
   testGeminiSchema();
   await testApiProvider();
   await testRegexProvider();
+  testAutoAccept();
   testPageHelpers();
 
   if (failures.length) {
