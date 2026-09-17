@@ -91,6 +91,7 @@ const state = {
   findings: [],
   reviewFilter: "",
   reviewHits: new Set(),      // keys/names a finding sent us back to look at
+  onlyMissing: false,         // "Show what is left": only rows a write would skip
   // The optional AI pass over the queue. The key is deliberately not in here:
   // it lives in the password box and nowhere else, so nothing that dumps or
   // logs state can ever carry it.
@@ -846,6 +847,9 @@ function visibleQueueRows() {
   const needle = state.reviewFilter.trim().toLowerCase();
   const hits = state.reviewHits;
   return state.queueRows.filter((row) => {
+    // "Show what is left": the rows a Confirm or Accept would skip, which after a bulk
+    // action is the only set still worth looking at.
+    if (state.onlyMissing && readyToApply(decisionFor(row.key) || row)) return false;
     if (hits.size) {
       const name = String(row.canonical_name || "").toLowerCase();
       const title = String(row.raw_title || "").toLowerCase();
@@ -942,8 +946,52 @@ function renderLastChange() {
     `</div>`;
 }
 
+/**
+ * Where the reader was, so a re-render can put them back.
+ *
+ * renderReview() replaces the whole table body, and the queue on a first-ever run is 498 rows
+ * and roughly 48,000 pixels tall. Rebuilding it reset the scroll box to the top and dropped
+ * focus, so a single click on a chip two thirds of the way down threw the page back to the
+ * first row. Capturing the scroll offsets and the focused cell before the write and restoring
+ * them after is what makes the table stay still while it is worked.
+ */
+function captureReviewView() {
+  const wrap = $("#review-table")?.closest(".table-wrap");
+  const active = document.activeElement;
+  const inTable = active && wrap && wrap.contains(active) ? active : null;
+  return {
+    wrap,
+    top: wrap ? wrap.scrollTop : 0,
+    left: wrap ? wrap.scrollLeft : 0,
+    key: inTable?.dataset?.key || null,
+    field: inTable?.dataset?.edit || inTable?.dataset?.select || null,
+    isSelect: Boolean(inTable?.dataset?.select),
+    start: typeof inTable?.selectionStart === "number" ? inTable.selectionStart : null,
+  };
+}
+
+function restoreReviewView(view) {
+  if (!view?.wrap) return;
+  view.wrap.scrollTop = view.top;
+  view.wrap.scrollLeft = view.left;
+  if (!view.key || !view.field) return;
+  const sel = view.isSelect
+    ? `[data-select="${CSS.escape(view.key)}"]`
+    : `[data-key="${CSS.escape(view.key)}"][data-edit="${CSS.escape(view.field)}"]`;
+  const el = view.wrap.querySelector(sel);
+  if (!el) return;
+  el.focus({ preventScroll: true });
+  if (view.start !== null && typeof el.setSelectionRange === "function") {
+    try { el.setSelectionRange(view.start, view.start); } catch { /* not a text input */ }
+  }
+  // focus() on a freshly written node can still nudge the box; put it back.
+  view.wrap.scrollTop = view.top;
+  view.wrap.scrollLeft = view.left;
+}
+
 function renderReview() {
   const table = $("#review-table");
+  const view = captureReviewView();
   $("#blocking-count").textContent = `${state.counts.blocking} blocking`;
   $("#blocking-count").className =
     `badge rounded-pill ${state.counts.blocking ? "bg-danger" : "bg-success"}`;
@@ -951,9 +999,15 @@ function renderReview() {
   $("#review-state").textContent = !state.lines
     ? "Load the files first"
     : (state.queueRows.length ? `${plural(state.queueRows.length, "row")} in the queue` : "Queue is empty");
-  $("#btn-clear-filter").hidden = !(state.reviewFilter || state.reviewHits.size);
+  $("#btn-clear-filter").hidden =
+    !(state.reviewFilter || state.reviewHits.size || state.onlyMissing);
   $("#btn-confirm").disabled = state.selected.size === 0;
   $("#btn-accept").disabled = state.selected.size === 0;
+  $("#btn-set-y").disabled = state.selected.size === 0;
+  $("#btn-set-n").disabled = state.selected.size === 0;
+  $("#btn-show-missing").hidden = !state.queueRows.length;
+  $("#btn-show-missing").textContent =
+    state.onlyMissing ? "Show every queued row" : "Show what is left";
 
   renderQueueBreakdown();
   renderLastChange();
@@ -971,6 +1025,7 @@ function renderReview() {
         : "Nothing to review. Every item in these files is already known.") +
       `</td></tr>`;
     fillNameList();
+    restoreReviewView(view);
     return;
   }
 
@@ -992,6 +1047,7 @@ function renderReview() {
   }
   table.tBodies[0].innerHTML = html;
   fillNameList();
+  restoreReviewView(view);
 }
 
 function reviewRow(row, names) {
@@ -1107,14 +1163,20 @@ function renderSelectionImpact() {
     }
     span.textContent = ` (${ready.length})`;
   }
+  const needInclude = notReady.filter(
+    (row) => !["y", "n", "yes", "no"].includes(String(row.include || "").trim().toLowerCase())
+  ).length;
   line.textContent =
     `${plural(state.selected.size, "row")} ticked. ` +
     (ready.length
       ? `Confirm or Accept will write ${ready.length} of them. `
       : "None of them can be written yet. ") +
     (notReady.length
-      ? `${plural(notReady.length, "row")} will stay in the queue: ` +
-        notReady.slice(0, 3).map(whatIsMissing).join(". ") + "."
+      ? `${plural(notReady.length, "row")} will stay in the queue` +
+        (needInclude
+          ? `, ${needInclude} of them only because nothing has said y or n. Use the Include ` +
+            `buttons to answer the ticked rows in one go.`
+          : `: ` + notReady.slice(0, 3).map(whatIsMissing).join(". ") + ".")
       : "");
 }
 
@@ -1936,8 +1998,36 @@ async function applyDecisions(keys, proposed) {
   }
 }
 
+/** The rows a bulk action works on: the ticked ones, or everything on screen if none are. */
+function bulkTargets() {
+  if (state.selected.size) {
+    return state.queueRows.filter((row) => state.selected.has(row.key));
+  }
+  return visibleQueueRows();
+}
+
+/**
+ * Set include on every ticked row in one click.
+ *
+ * On a first-ever run the queue is 498 rows and roughly 200 of them are groceries and kitchen
+ * items the suggestions cannot call either way, so Accept skips them and the ticking achieves
+ * nothing. Filtering to those rows and answering all of them at once is the honest version of
+ * "one click": the person still makes the call, they just make it for a group.
+ */
+function setIncludeOnSelection(value) {
+  const rows = bulkTargets();
+  if (!rows.length) return;
+  for (const row of rows) {
+    const edit = state.edits[row.key] || (state.edits[row.key] = {});
+    edit.include = value;
+    state.selected.add(row.key);
+  }
+  renderReview();
+  say(`Include set to ${value} on ${plural(rows.length, "row")}. Nothing is saved until you confirm or accept.`);
+}
+
 function useEverySuggestion() {
-  for (const row of visibleQueueRows()) {
+  for (const row of bulkTargets()) {
     const edit = state.edits[row.key] || (state.edits[row.key] = {});
     if (row.include) edit.include = row.include;
     if (row.canonical_name) edit.canonical_name = row.canonical_name;
@@ -1948,7 +2038,7 @@ function useEverySuggestion() {
     state.selected.add(row.key);
   }
   renderReview();
-  say("Suggestions copied into the editable cells. Nothing is saved until you confirm.");
+  say("Suggestions copied into the boxes. Nothing is saved until you confirm.");
 }
 
 async function buildAndDownloadReport() {
@@ -2018,7 +2108,7 @@ function resetAll() {
     master: null, lines: null, run: null, ingestWarnings: [],
     queueRows: [], counts: { blocking: 0, unconfirmed: 0 }, edits: {},
     selected: new Set(), ranked: [], excluded: [], priceRows: [], retiredRows: [],
-    priceEdits: {}, findings: [], reviewFilter: "", reviewHits: new Set(),
+    priceEdits: {}, findings: [], reviewFilter: "", reviewHits: new Set(), onlyMissing: false,
     lastChange: null, topMoved: null, rankCounts: null, fileStats: [],
     ai: { scope: "blocking", busy: false, lastRun: null },
   });
@@ -2153,6 +2243,12 @@ function wireReview() {
   $("#btn-confirm").addEventListener("click", () => applyDecisions(Array.from(state.selected), false));
   $("#btn-accept").addEventListener("click", () => applyDecisions(Array.from(state.selected), true));
   $("#btn-use-all").addEventListener("click", useEverySuggestion);
+  $("#btn-set-y").addEventListener("click", () => setIncludeOnSelection("y"));
+  $("#btn-set-n").addEventListener("click", () => setIncludeOnSelection("n"));
+  $("#btn-show-missing").addEventListener("click", () => {
+    state.onlyMissing = !state.onlyMissing;
+    renderReview();
+  });
   $("#review-filter").addEventListener("input", (e) => {
     state.reviewFilter = e.target.value;
     renderReview();
@@ -2160,6 +2256,7 @@ function wireReview() {
   $("#btn-clear-filter").addEventListener("click", () => {
     state.reviewFilter = "";
     state.reviewHits = new Set();
+    state.onlyMissing = false;
     $("#review-filter").value = "";
     renderReview();
   });

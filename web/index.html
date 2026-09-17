@@ -101,15 +101,23 @@
           <label class="form-label" for="review-filter">Filter</label>
           <input type="search" class="form-control" id="review-filter" placeholder="Item name, key or reason">
         </div>
-        <div class="col-12 col-lg-7 d-flex flex-wrap gap-2">
+        <div class="col-12 col-lg-7 d-flex flex-wrap gap-2 align-items-center">
           <button type="button" class="btn btn-primary" id="btn-confirm" disabled>
             <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Confirm selected
           </button>
           <button type="button" class="btn btn-outline-secondary" id="btn-accept" disabled>
-            Accept suggestions for now
+            Accept suggestions
           </button>
-          <button type="button" class="btn btn-outline-secondary" id="btn-use-all">Use every suggestion</button>
-          <button type="button" class="btn btn-link" id="btn-clear-filter" hidden>Clear filter</button>
+          <span class="vr d-none d-lg-inline"></span>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-use-all"
+                  title="Copy the suggestions into the boxes without writing anything">Fill from suggestions</button>
+          <span class="caption" id="set-include-label">Include</span>
+          <div class="btn-group btn-group-sm" role="group" aria-labelledby="set-include-label">
+            <button type="button" class="btn btn-outline-secondary" id="btn-set-y" disabled>y</button>
+            <button type="button" class="btn btn-outline-secondary" id="btn-set-n" disabled>n</button>
+          </div>
+          <button type="button" class="btn btn-link btn-sm" id="btn-show-missing" hidden>Show what is left</button>
+          <button type="button" class="btn btn-link btn-sm" id="btn-clear-filter" hidden>Clear filter</button>
         </div>
         <div class="col-12">
           <p class="caption caption-plain mb-0" id="review-impact"></p>
