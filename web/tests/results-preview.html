@@ -22,6 +22,7 @@
   <strong>Screen preview</strong>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="screen-results">Results</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="screen-price">Price</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="screen-done">Done</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="theme">Theme</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-none">No prices</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-some">Some prices</button>
@@ -37,6 +38,7 @@
 <script type="module">
 import { mountResults } from "../js/screens/results.js";
 import { mountPrice } from "../js/screens/price.js";
+import { mountDone } from "../js/screens/done.js";
 import { pricesToCsv } from "../js/pipeline.js";
 
 /* ── format.js and the money line ───────────────────────────────────
@@ -73,6 +75,9 @@ function load() {
     carriedPrices: copy.carriedPrices,
     findings: [],
     modelAvailable: false,
+    openCount: copy.open.length,
+    queueRows: copy.masterRows.map((r) => ({ key: r.key })),
+    yearMovement: copy.yearMovement,
   };
 }
 
@@ -184,7 +189,7 @@ const shell = await (await fetch("../index.html")).text();
 const parsed = new DOMParser().parseFromString(shell, "text/html");
 const live = document.importNode(parsed.querySelector("#status-live"), true);
 document.body.insertBefore(live, document.querySelector("#app"));
-for (const id of ["#screen-results", "#screen-price"]) {
+for (const id of ["#screen-results", "#screen-price", "#screen-done"]) {
   document.querySelector("#app").appendChild(document.importNode(parsed.querySelector(id), true));
 }
 
@@ -193,9 +198,13 @@ mountAll();
 showScreen("results");
 
 function mountAll() {
-  const shared = { state, subscribe, go, answer, confirmProposed, setPrice, moneyLine, fmt };
+  const shared = {
+    state, subscribe, go, answer, confirmProposed, setPrice, moneyLine, fmt,
+    downloadReport: () => {}, downloadTables: () => {},
+  };
   mountResults(shared);
   mountPrice(shared);
+  mountDone(shared);
 }
 
 /* ── preview controls ───────────────────────────────────────────────────────── */
@@ -224,7 +233,7 @@ document.querySelector(".preview-bar").addEventListener("click", (event) => {
     notify();
     return;
   }
-  if (action === "screen-results" || action === "screen-price") {
+  if (action.startsWith("screen-")) {
     showScreen(action.slice("screen-".length));
     notify();
     return;
