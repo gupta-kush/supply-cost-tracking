@@ -177,6 +177,11 @@ function testProvenance() {
     "pack size varies, confirmed"
   );
   assertEqual(
+    "a non-numeric pack size also reads as varying, not as zero",
+    F.provenance({ units_per_pack: "12|10", upp_source: "master" }),
+    "pack size varies, confirmed"
+  );
+  assertEqual(
     "an unrecognised source states only the pack size",
     F.provenance({ units_per_pack: "10", upp_source: "" }),
     "10 per pack"

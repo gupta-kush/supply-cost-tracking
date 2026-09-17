@@ -98,7 +98,8 @@ export function provenance(row) {
     source === "proposed" ? "proposed by the model" :
     "";
   const raw = String((row && row.units_per_pack) || "").trim();
-  const lead = raw ? `${int(raw)} per pack` : "pack size varies";
+  const numeric = raw !== "" && Number.isFinite(Number(raw));
+  const lead = numeric ? `${int(raw)} per pack` : "pack size varies";
   return phrase ? `${lead}, ${phrase}` : lead;
 }
 
