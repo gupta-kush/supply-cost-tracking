@@ -584,6 +584,25 @@ function testParkedRows() {
     !ranking.findings.some((f) => f.code === "CATEGORY_UNUSUAL"),
     JSON.stringify(ranking.findings)
   );
+
+  // A0 parity check: the category-rule guard must casefold include the same
+  // way masterIncluded does, or an upper-case "N" silently skips the warning.
+  const uppercaseN = new Map([
+    ["amz:excluded", P.makeMasterRow({
+      key: "amz:excluded", include: "N", canonical_name: "Excluded Item",
+      amazon_category: "Office Product", source: "amazon", raw_title: "Excluded Item",
+    })],
+  ]);
+  const uppercaseLines = [{
+    key: "amz:excluded", source: "amazon", raw_title: "Excluded Item",
+    amazon_category: "Office Product", packs: 1, order_date: "2025-01-01",
+  }];
+  const uppercaseRanking = P.rank({ lines: uppercaseLines, master: uppercaseN, year: 2025 });
+  assertTrue(
+    "an uppercase include=N is still recognised as a real decision",
+    uppercaseRanking.findings.some((f) => f.code === "CATEGORY_UNUSUAL"),
+    JSON.stringify(uppercaseRanking.findings)
+  );
 }
 
 /** A decision row that is not ready to apply is rejected, and nothing is written. */

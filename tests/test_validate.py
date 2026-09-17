@@ -80,6 +80,17 @@ def test_an_item_included_against_its_category_is_flagged(reviewed):
     assert "Grocery" in [f for f in findings if f.code == "CATEGORY_UNUSUAL"][0].message
 
 
+def test_an_uppercase_include_n_is_still_recognised(reviewed):
+    """A0 parity: the category-rule check must casefold include the same way
+    `included` does, or an upper-case "N" silently skips the warning."""
+    master = load_master(reviewed)
+    office = next(k for k, row in master.items() if row.amazon_category == "Office Product")
+    master[office].include = "N"
+    save_master(reviewed, master)
+    findings = check_master(reviewed, YEAR)
+    assert "CATEGORY_UNUSUAL" in codes(findings, "warn")
+
+
 def test_a_parked_row_raises_no_category_warning(reviewed):
     """webapp-v2-spec.md section 7: a blank include has no decision yet, so it
     cannot be "odd for its category" - that warning is only for a real
