@@ -30,7 +30,6 @@ const NEAR_DUPLICATE = 0.9;
 
 export const state = {
   screen: "drop",
-  focus: null,
   files: [],
   exportFiles: [],
   classified: null,
@@ -52,9 +51,10 @@ export const state = {
   priceRows: [],
   retiredRows: [],
   priceEdits: {},
-  uploadedPrices: null,
+  carriedPrices: null,
   uploadedRetired: [],
   topMoved: null,
+  priceFocus: null,
   modelAvailable: false,
   busy: false,
   error: null,
@@ -404,7 +404,7 @@ function recomputeRank(movementReason) {
 export function go(screen, focus) {
   if (!SCREENS.includes(screen)) return;
   state.screen = screen;
-  state.focus = focus || null;
+  state.priceFocus = focus || null;
   for (const section of document.querySelectorAll("[data-screen]")) {
     section.hidden = section.dataset.screen !== screen;
   }
@@ -438,7 +438,7 @@ export async function buildList({ onStage } = {}) {
 
     const carried = carriedTables();
     state.master = carried.item_master || pipe.emptyMaster();
-    state.uploadedPrices = carried.prices || null;
+    state.carriedPrices = carried.prices || null;
     state.uploadedRetired = carried.prices_retired || [];
 
     if (!state.year) state.year = detectYear() || new Date().getFullYear();
@@ -519,9 +519,9 @@ function applyPriceEdit(row) {
 /** The price grid, rebuilt from the ranking and repainted with whatever was typed. */
 export function rebuildPrices() {
   let result = null;
-  if (state.uploadedPrices && state.uploadedPrices.length) {
+  if (state.carriedPrices && state.carriedPrices.length) {
     result = pipe.pricesUpdate({
-      ranked: state.ranked, top: state.top, existing: state.uploadedPrices,
+      ranked: state.ranked, top: state.top, existing: state.carriedPrices,
     });
   } else {
     result = pipe.pricesTemplate({ ranked: state.ranked, top: state.top });
