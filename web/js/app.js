@@ -239,6 +239,39 @@ function exportStatsFor(found) {
   return { vendor: found.vendor, file: found.file, sheet: found.sheet, rows };
 }
 
+/** Reads and classifies every file in `state.files`, setting `state.exportFiles`/
+ *  `state.classified`/`state.fileStats`. Shared by `buildList` and `classifyPreview`. */
+async function readAndClassify() {
+  state.exportFiles = [];
+  for (const file of state.files) state.exportFiles.push(await readExportFile(file));
+  state.classified = pipe.classifyFiles(state.exportFiles);
+  state.fileStats = state.classified.recognised.filter((f) => f.vendor).map(exportStatsFor);
+}
+
+/**
+ * A read-only preview so a file chip can show its kind before Build is pressed (spec section
+ * 2.1: "name, kind once recognised, remove"). Drop.js calls this after every file add/remove;
+ * failures are swallowed here on purpose - a file that will not classify is Build's error to
+ * show, in full, not a half-formed one on every keystroke of adding files.
+ */
+export async function classifyPreview() {
+  if (!state.files.length) {
+    state.classified = null;
+    state.fileStats = [];
+    notify();
+    return;
+  }
+  const ready = await loadLogicModules.__ready;
+  if (!ready) return;
+  try {
+    await readAndClassify();
+  } catch {
+    state.classified = null;
+    state.fileStats = [];
+  }
+  notify();
+}
+
 /** Whatever the classifier found of last year's three carried tables. */
 function carriedTables() {
   const out = {};
@@ -517,10 +550,7 @@ export async function buildList({ onStage } = {}) {
       throw new Error("The calculation modules did not load, so no file can be processed yet.");
     }
 
-    state.exportFiles = [];
-    for (const file of state.files) state.exportFiles.push(await readExportFile(file));
-    state.classified = pipe.classifyFiles(state.exportFiles);
-    state.fileStats = state.classified.recognised.filter((f) => f.vendor).map(exportStatsFor);
+    await readAndClassify();
 
     const carried = carriedTables();
     state.master = carried.item_master || pipe.emptyMaster();
@@ -751,7 +781,7 @@ function wireTheme() {
 
 const api = {
   state, subscribe, go, answer, confirmProposed, setPrice, moneyLine,
-  buildList, aiConfigured, setAiSettings, downloadReport, downloadTables, fmt,
+  buildList, classifyPreview, aiConfigured, setAiSettings, downloadReport, downloadTables, fmt,
 };
 
 loadLogicModules.__ready = loadLogicModules().then((ok) => {

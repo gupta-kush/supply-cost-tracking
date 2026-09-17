@@ -66,12 +66,12 @@ function render() {
 
 function figureEl(value, label) {
   const li = document.createElement("li");
-  li.className = "done-figure";
+  li.className = "done-fig";
   const v = document.createElement("span");
-  v.className = "done-figure-value";
+  v.className = "done-fig-value";
   v.textContent = value;
   const l = document.createElement("span");
-  l.className = "done-figure-label";
+  l.className = "done-fig-label";
   l.textContent = label;
   li.append(v, l);
   return li;
@@ -92,6 +92,13 @@ function renderFigures(s, fmt) {
 
 function renderMoney(s, fmt) {
   const money = api.moneyLine();
+  // Same guard results.js uses (results.js:195): with nothing priced, "Amazon was already
+  // cheapest" reads as a claim the run never made, not as "nothing to compare yet".
+  if (!money || money.itemsCounted === 0) {
+    $("#done-money").textContent = "No prices entered yet, so nothing to compare.";
+    $("#done-money-caption").textContent = "";
+    return;
+  }
   $("#done-money").textContent = fmt.money(money.amount);
   $("#done-money-caption").textContent = money.basisSentence;
 }
@@ -242,7 +249,7 @@ function renderDownloadState(s, fmt) {
     setBlocked(
       `${fmt.plural(s.openCount, "item")} still need a decision. They are named on the ` +
         "Sources sheet in the download.",
-      { linkText: "Back to the list" }
+      { linkText: "Back to the things worth a look" }
     );
   } else {
     clearBlocked();

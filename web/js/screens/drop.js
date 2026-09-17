@@ -53,11 +53,15 @@ function addFiles(fileList) {
     api.state.files.push(file);
   }
   render();
+  // Spec 2.1: a chip shows its kind "once recognised" - classify now rather than waiting for
+  // Build, so the chip has a moment to show it. Async; render() runs again when it resolves.
+  api.classifyPreview();
 }
 
 function removeFile(id) {
   api.state.files = api.state.files.filter((f) => fileId(f) !== id);
   render();
+  api.classifyPreview();
 }
 
 function wireFileInputs() {
