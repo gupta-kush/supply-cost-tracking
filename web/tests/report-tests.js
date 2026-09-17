@@ -26,6 +26,7 @@ import { readTable, normHeader, newWorkbook, toArrayBuffer, readSheets } from ".
 import { buildReport } from "../js/report.js";
 import { classifyGrids, carryRows, MASTER_COLUMNS, PRICES_HEADER } from "../js/pipeline.js";
 import { serialiseObjects } from "../js/csv.js";
+import { dumpWorkbook, deepEqual } from "./xlsx-dump.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // src/web/tests -> src/web -> src
@@ -48,22 +49,6 @@ function check(label, ok, detail) {
 
 function eq(label, actual, expected) {
   check(label, actual === expected, `expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
-}
-
-function deepEqual(a, b) {
-  if (a === b) return true;
-  if (a == null || b == null) return a === b;
-  if (Array.isArray(a) || Array.isArray(b)) {
-    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
-    return a.every((v, i) => deepEqual(v, b[i]));
-  }
-  if (typeof a === "object" && typeof b === "object") {
-    const ak = Object.keys(a);
-    const bk = Object.keys(b);
-    if (ak.length !== bk.length) return false;
-    return ak.every((k) => Object.prototype.hasOwnProperty.call(b, k) && deepEqual(a[k], b[k]));
-  }
-  return false;
 }
 
 function checkDeep(label, actual, expected) {
@@ -199,125 +184,8 @@ function buildPricesMap(rows) {
 
 // ------------------------------------------------------- workbook dumping
 //
-// Mirrors src/scripts/make_golden.py's dump_workbook() closely enough to
-// diff directly against src/tests/golden/expected/report.json: same
-// {v,f,t} cell shape, same fill payload shape (fgColor/bgColor always
-// present, defaulting to "00000000" the way openpyxl's PatternFill always
-// carries both Color objects), same sorted merged_cells/conditional
-// formatting, same freeze_panes representation, same "<TIMESTAMP>" masking
-// for ISO-looking wall-clock strings.
-
-const TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
-const TIMESTAMP_TOKEN = "<TIMESTAMP>";
-
-function maskScalar(v) {
-  if (typeof v === "string" && TIMESTAMP_RE.test(v)) return TIMESTAMP_TOKEN;
-  return v;
-}
-
-function columnLetter(n) {
-  let s = "";
-  while (n > 0) {
-    const rem = (n - 1) % 26;
-    s = String.fromCharCode(65 + rem) + s;
-    n = Math.floor((n - 1) / 26);
-  }
-  return s;
-}
-
-function argbColorPayload(argb) {
-  return { type: "rgb", rgb: argb || "00000000" };
-}
-
-function fillPayload(fill) {
-  return {
-    patternType: fill.pattern,
-    fgColor: argbColorPayload(fill.fgColor && fill.fgColor.argb),
-    bgColor: argbColorPayload(fill.bgColor && fill.bgColor.argb),
-  };
-}
-
-function cellPayload(raw) {
-  if (raw == null || raw === "") return null;
-  if (typeof raw === "object" && "formula" in raw) {
-    const f = "=" + raw.formula;
-    return { v: f, f, t: "f" };
-  }
-  if (typeof raw === "number") {
-    return { v: raw, f: null, t: "n" };
-  }
-  if (raw instanceof Date) {
-    return { v: raw.toISOString(), f: null, t: "d" };
-  }
-  return { v: maskScalar(String(raw)), f: null, t: "s" };
-}
-
-function dumpSheet(ws) {
-  const cells = {};
-  const fills = {};
-  const maxRow = Math.max(ws.rowCount || 0, 40);
-  const maxCol = Math.max(ws.columnCount || 0, 20);
-  for (let r = 1; r <= maxRow; r++) {
-    for (let c = 1; c <= maxCol; c++) {
-      const cellObj = ws.getCell(r, c);
-      // A merged cell that is not its range's own master/anchor mirrors the
-      // master's value/fill when read back (ExcelJS-only behaviour -
-      // openpyxl leaves every non-anchor cell in a merge genuinely blank),
-      // so skip it here or every merge would count as N extra populated
-      // cells instead of the one the golden dump actually records.
-      if (cellObj.master !== cellObj) continue;
-      const fill = cellObj.fill;
-      // An unfilled but otherwise-styled cell (e.g. bold-only) still comes
-      // back with a fill object of {type:"pattern", pattern:"none"} rather
-      // than undefined - "none" is not a real fill, just ExcelJS's way of
-      // saying "this cell has a style record but no fill in it".
-      if (fill && fill.pattern && fill.pattern !== "none") {
-        fills[cellObj.address] = fillPayload(fill);
-      }
-      const payload = cellPayload(cellObj.value);
-      if (payload) cells[cellObj.address] = payload;
-    }
-  }
-
-  const columnWidths = {};
-  for (let c = 1; c <= maxCol; c++) {
-    const col = ws.getColumn(c);
-    if (col.width !== undefined) columnWidths[columnLetter(c)] = col.width;
-  }
-
-  const frozenView = (ws.views || []).find((v) => v.state === "frozen");
-
-  const cfRules = [];
-  for (const cf of ws.conditionalFormattings || []) {
-    for (const rule of cf.rules || []) {
-      const fill = rule.style && rule.style.fill;
-      cfRules.push({
-        sqref: cf.ref,
-        type: rule.type,
-        formula: rule.formulae ? rule.formulae.slice() : [],
-        highlight_fill: fill ? fillPayload(fill) : null,
-      });
-    }
-  }
-  cfRules.sort((a, b) => (a.sqref < b.sqref ? -1 : a.sqref > b.sqref ? 1 : 0));
-
-  return {
-    cells,
-    fills,
-    merged_cells: (ws.model.merges || []).slice().sort(),
-    column_widths: columnWidths,
-    freeze_panes: frozenView ? frozenView.topLeftCell : null,
-    conditional_formatting: cfRules,
-  };
-}
-
-function dumpWorkbook(workbook) {
-  const sheets = {};
-  for (const ws of workbook.worksheets) {
-    sheets[ws.name] = dumpSheet(ws);
-  }
-  return { sheet_order: workbook.worksheets.map((w) => w.name), sheets };
-}
+// dumpWorkbook lives in xlsx-dump.js now, shared with headless-report-parity.js
+// (D2), so the two never compare a workbook two different ways.
 
 function compareSheet(name, actualSheet, expectedSheet) {
   if (!actualSheet) {
