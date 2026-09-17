@@ -57,6 +57,27 @@ function testMoney() {
   assertEqual("money zero", F.money(0), "$0");
   assertEqual("money negative", F.money(-12), "-$12");
   assertEqual("money negative with cents", F.money(-1.5, { cents: true }), "-$1.50");
+
+  // Per-each prices: at least two decimals, up to four, trailing zeros past
+  // the cent trimmed. STATUS.md, worker B: two prices this close must not
+  // render identically while the accent fill marks one of them cheaper.
+  assertEqual("unit price keeps four decimals when they matter", F.money(0.0997, { unit: true }), "$0.0997");
+  assertEqual("unit price trims a trailing zero", F.money(0.095, { unit: true }), "$0.095");
+  assertEqual("unit price never drops below two decimals", F.money(1.25, { unit: true }), "$1.25");
+  assertEqual("unit price of a whole number still shows cents", F.money(0.04, { unit: true }), "$0.04");
+  assertEqual("unit price at three decimals stays put", F.money(0.038, { unit: true }), "$0.038");
+  assertEqual("unit price of zero", F.money(0, { unit: true }), "$0.00");
+  assertEqual("unit price negative", F.money(-0.0997, { unit: true }), "-$0.0997");
+  assertEqual(
+    "unit price with a large whole part keeps the thousands separator",
+    F.money(1234.5, { unit: true }),
+    "$1,234.50"
+  );
+  assertTrue(
+    "0.0997 and 0.095 no longer render identically",
+    F.money(0.0997, { unit: true }) !== F.money(0.095, { unit: true }),
+    `${F.money(0.0997, { unit: true })} vs ${F.money(0.095, { unit: true })}`
+  );
 }
 
 // ---------------------------------------------------------------- plural

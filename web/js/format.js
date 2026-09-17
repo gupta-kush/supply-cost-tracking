@@ -18,11 +18,23 @@ export function int(n) {
 
 /**
  * A dollar figure. Whole dollars for the headline money line ("$3,092"); pass
- * `cents: true` for a per-each price or a workbook-matching total, which needs
- * the same two decimal places `report.js` writes ($#,##0.00).
+ * `cents: true` for a workbook-matching total, which needs the same two
+ * decimal places `report.js` writes ($#,##0.00); pass `unit: true` for a
+ * per-each price, at least two decimals and up to four so two prices that
+ * only differ past the cent (0.0997 vs 0.095) do not render identically
+ * while the accent fill marks one of them cheaper.
  */
-export function money(n, { cents = false } = {}) {
+export function money(n, { cents = false, unit = false } = {}) {
   const value = Number(n) || 0;
+  if (unit) {
+    const sign = value < 0 ? "-" : "";
+    const [intPart, fracPart] = Math.abs(value)
+      .toFixed(4)
+      // Keep at least two decimal digits; trim only the trailing zeros past them.
+      .replace(/(\.\d{2}\d*?)0+$/, "$1")
+      .split(".");
+    return `${sign}$${Number(intPart).toLocaleString("en-US")}.${fracPart}`;
+  }
   const rounded = cents ? value : Math.round(value);
   const sign = rounded < 0 ? "-" : "";
   const digits = Math.abs(rounded).toLocaleString("en-US", {
