@@ -149,13 +149,72 @@ async function main() {
       "the prefill has not made the Amazon row priced"
     );
 
+    // Item 3: the first field with no answer has focus the moment the card opens.
+    await page.waitForFunction(() =>
+      document.activeElement && document.activeElement.hasAttribute("data-price-input"));
+    is(
+      await page.evaluate(() => document.activeElement.getAttribute("data-price-input")),
+      "Office Depot",
+      "the first unpriced field has focus on entry"
+    );
+
+    // Item 2: four prices in four presses. The status controls and the vendor
+    // links come after them, not between them.
+    const tabbed = [];
+    for (let i = 0; i < 3; i += 1) {
+      await page.keyboard.press("Tab");
+      tabbed.push(await page.evaluate(() => document.activeElement.getAttribute("data-price-input")));
+    }
+    is(
+      tabbed.join(","),
+      "Preferred,Amazon,Staples",
+      "Tab moves across the four price fields"
+    );
+
     await typePrice(page, "Office Depot", "0.10");
     await typePrice(page, "Amazon", "0.12");
 
-    is(
-      await page.getAttribute('[data-test="price-vendor"][data-vendor="Office Depot"]', "class"),
-      "price-vendor is-best",
+    ok(
+      (await page.getAttribute('[data-test="price-vendor"][data-vendor="Office Depot"]', "class"))
+        .split(" ").includes("is-best"),
       "the cheaper vendor is marked as soon as two prices exist"
+    );
+    is(
+      await page.$$eval('[data-test="price-vendor"].is-best', (els) => els.length),
+      1,
+      "and only that one, while the prices differ"
+    );
+
+    // ── a tie lights every vendor at the lowest price ────────────────────────
+    await typePrice(page, "Staples", "0.10");
+    is(
+      await page.$$eval('[data-test="price-vendor"].is-best', (els) =>
+        els.map((e) => e.dataset.vendor).join(",")),
+      "Office Depot,Staples",
+      "a tie for cheapest marks every vendor at that price"
+    );
+    await typePrice(page, "Staples", "");
+
+    // ── Enter accepts the card and moves on, without throwing ────────────────
+    // Item 1 of the phase 2 fix list: this threw an uncaught DOMException on every
+    // run, because a change event fires while the field is blurring and the card
+    // was being replaced underneath it. The `errors` check at the end is what
+    // catches a regression; this is the path that produced it.
+    const before = await page.textContent('[data-test="price-name"]');
+    await page.focus('[data-price-input="Preferred"]');
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(200);
+    ok(
+      (await page.textContent('[data-test="price-name"]')) !== before,
+      "Enter accepts the card and moves to the next unfinished item"
+    );
+
+    await page.click('[data-test="price-dot"]');
+    await page.waitForTimeout(150);
+    is(
+      (await page.textContent('[data-test="price-name"]')).trim(),
+      "Avery Name Tag Inserts",
+      "a dot jumps back to its item"
     );
 
     // ── back to Results, money line filled, no reload ─────────────────────────

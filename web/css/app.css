@@ -971,35 +971,30 @@ body {
   color: var(--app-ink-quiet);
 }
 
-.price-vendors {
+/* One grid, four columns, four rows: vendor, price, status, note. The four price
+   inputs are adjacent in the markup, which is what makes Tab cross them in four
+   presses rather than twelve. */
+.price-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.1rem;
+  gap: 0.45rem 1.1rem;
   margin-top: 1.9rem;
 }
 
-/* The vendor's own rule lights up when it is the cheapest filled one, so the
+/* The vendor's own rule lights up when it is among the cheapest filled, so the
    comparison happens while she types rather than after she finishes. */
-.price-vendor {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding-top: 0.7rem;
-  border-top: 2px solid var(--app-rule);
-  transition: border-color 0.2s var(--app-ease);
-}
-
-.price-vendor.is-best {
-  border-top-color: var(--app-accent);
-}
-
-/* The vendor name and the cheapest mark share a line, so the mark sits with the
-   rule that lights up rather than floating below an empty note. */
 .pv-head {
   display: flex;
   align-items: baseline;
   gap: 0.4rem;
   min-height: 1.35rem;
+  padding-top: 0.7rem;
+  border-top: 2px solid var(--app-rule);
+  transition: border-color 0.2s var(--app-ease);
+}
+
+.pv-head.is-best {
+  border-top-color: var(--app-accent);
 }
 
 .pv-name {
@@ -1009,6 +1004,11 @@ body {
 
 .pv-name a {
   color: inherit;
+}
+
+.pv-cell {
+  display: flex;
+  flex-direction: column;
 }
 
 .pv-input {
@@ -1032,7 +1032,7 @@ body {
   visibility: hidden;
 }
 
-.price-vendor.is-best .pv-best-mark {
+.pv-head.is-best .pv-best-mark {
   visibility: visible;
 }
 
@@ -1321,9 +1321,10 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .price-vendors {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  /* The price card keeps its four columns at every width. The grid flows vendor
+     row, price row, status row, note row, so halving the columns would pair each
+     vendor's name with the wrong field. Four narrow columns still read; a
+     scrambled card does not. */
 }
 
 /* ─────────────────────────── accessibility and motion ─────────────────────────── */

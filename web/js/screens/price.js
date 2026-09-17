@@ -16,7 +16,7 @@
  * Nothing is written until the person edits the field or presses Enter on the card.
  */
 
-const VENDORS = ["Office Depot", "Preferred", "Amazon", "Staples"];
+import { VENDORS, toNumber, cheapestVendors } from "./vendor-prices.js";
 
 const STATUS_LABELS = [
   ["unpriced", "not priced"],
@@ -49,6 +49,7 @@ const view = {
   /* Item names whose Amazon prefill the person has accepted or overwritten. */
   accepted: new Set(),
   flash: false,
+  wasVisible: false,
 };
 
 let api = null;
@@ -85,12 +86,7 @@ function esc(value) {
     .split('"').join("&quot;");
 }
 
-const num = (value) => {
-  const text = String(value ?? "").trim().replace("$", "").split(",").join("");
-  if (!text) return null;
-  const n = Number(text);
-  return Number.isFinite(n) ? n : null;
-};
+const num = toNumber;
 
 const fmt = () => (api && api.fmt) || {};
 
@@ -177,18 +173,14 @@ function fillState(name) {
   return answered === VENDORS.length ? "full" : "part";
 }
 
-/** The cheapest vendor actually priced on this item, once two of them are. */
+/**
+ * Every vendor at the lowest price, once at least two are priced. Spec 2.3 wants
+ * the comparison to appear as she types, and two figures are the least that can be
+ * compared. A tie lights all of them, because none of them is the cheaper one.
+ */
 function cheapest(name) {
-  const rows = rowsFor(name);
-  const priced = [];
-  for (const vendor of VENDORS) {
-    const row = rows.get(vendor);
-    if (!row || row.status !== "priced") continue;
-    const value = num(row.unit_price);
-    if (value !== null) priced.push([vendor, value]);
-  }
-  if (priced.length < 2) return null;
-  return priced.sort((a, b) => a[1] - b[1])[0][0];
+  const { best, priced } = cheapestVendors(rowsFor(name));
+  return priced >= 2 ? best : new Set();
 }
 
 /* ───────────────────────────── render ───────────────────────────── */
@@ -203,9 +195,18 @@ function render() {
     delete api.state.priceFocus;
   }
 
+  // Arriving on the screen is its own moment to take focus. Rebuilding the card
+  // covers moving between items, but the card is usually already built when she
+  // opens the screen, and then nothing would have claimed the caret.
+  const screen = $("#screen-price");
+  const visible = !!screen && !screen.hidden;
+
   renderProgress();
   renderCard();
   renderDots();
+
+  if (visible && !view.wasVisible) focusFirstUnpriced();
+  view.wasVisible = visible;
 }
 
 function renderProgress() {
@@ -253,18 +254,106 @@ function renderCard() {
   const short = displayName(item);
   const full = fullTitle(item);
 
+  // Rebuilding the card takes away whatever is standing in it. If that happens
+  // while a field is blurring, the browser is midway through removing the node the
+  // blur handler is on and setting innerHTML throws. Standing down first makes the
+  // change event fire and settle before anything is replaced.
+  if (stage.contains(document.activeElement)) document.activeElement.blur();
+
+  // The four price fields are adjacent in the DOM, which is the only way Tab can
+  // move across them in four presses. The card is laid out as one grid with four
+  // columns and four rows (vendor, price, status, note), so reading order and
+  // tab order are the same thing and neither fights the layout.
   stage.innerHTML =
     `<article class="price-card" data-test="price-card" data-item="${esc(name)}">` +
-    `<p class="price-rank">Number ${esc(int(item.rank))} of the year</p>` +
+    `<p class="price-rank">Rank ${esc(int(item.rank))}</p>` +
     `<h2 class="price-name" data-test="price-name">${esc(short)}</h2>` +
     (full && full !== short ? `<p class="price-full">${esc(full)}</p>` : "") +
     `<p class="price-facts">${esc(int(item.eaches))} bought` +
       (item.units_per_pack ? `, ${esc(int(item.units_per_pack))} per pack` : "") +
       `</p>` +
-    `<div class="price-vendors">` +
-    VENDORS.map((vendor) => vendorHtml(item, vendor, rows.get(vendor), best)).join("") +
+    `<div class="price-grid">` +
+    VENDORS.map((v) => headHtml(item, v, best)).join("") +
+    VENDORS.map((v) => inputHtml(item, v, rows.get(v))).join("") +
+    VENDORS.map((v) => statusHtml(item, v, rows.get(v))).join("") +
+    VENDORS.map((v) => noteHtml(item, v, rows.get(v))).join("") +
     `</div></article>`;
 
+  focusFirstUnpriced();
+}
+
+/** The vendor name, its link, and the mark that says it is the cheapest so far. */
+function headHtml(item, vendor, best) {
+  const query = encodeURIComponent(displayName(item));
+  const override = api.state.vendorSites && api.state.vendorSites[vendor];
+  const site = override || (VENDOR_SEARCH[vendor] ? VENDOR_SEARCH[vendor](query) : "");
+  const hint = VENDOR_LINK_TITLE[vendor];
+  const label = site
+    ? `<a href="${esc(site)}" target="_blank" rel="noopener noreferrer"` +
+      `${hint ? ` title="${esc(hint)}"` : ""}>${esc(vendor)}</a>`
+    : esc(vendor);
+  return `<div class="pv-head${best.has(vendor) ? " is-best" : ""}" data-test="price-vendor"` +
+    ` data-vendor="${esc(vendor)}">` +
+    `<span class="pv-name">${label}</span>` +
+    `<span class="pv-best-mark">cheapest</span></div>`;
+}
+
+function inputHtml(item, vendor, row) {
+  const value = boxValue(item, vendor, row);
+  return `<div class="pv-cell" data-vendor="${esc(vendor)}">` +
+    `<label class="visually-hidden" for="pv-${esc(vendor)}">` +
+      `${esc(vendor)} price per each for ${esc(displayName(item))}</label>` +
+    `<input class="form-control pv-input" id="pv-${esc(vendor)}" type="text"` +
+      ` inputmode="decimal" data-price-input="${esc(vendor)}" value="${esc(value)}"` +
+      ` data-test="pv-input"></div>`;
+}
+
+function statusHtml(item, vendor, row) {
+  const status = String((row && row.status) || "unpriced");
+  return `<div class="pv-cell" data-vendor="${esc(vendor)}">` +
+    `<label class="visually-hidden" for="pv-status-${esc(vendor)}">` +
+      `${esc(vendor)} status for ${esc(displayName(item))}</label>` +
+    `<select class="form-select form-select-sm" id="pv-status-${esc(vendor)}"` +
+      ` data-price-status="${esc(vendor)}">` +
+    STATUS_LABELS.map(([code, label]) =>
+      `<option value="${code}"${status === code ? " selected" : ""}>${label}</option>`
+    ).join("") +
+    `</select></div>`;
+}
+
+function noteHtml(item, vendor, row) {
+  const status = String((row && row.status) || "unpriced");
+  return `<span class="pv-note" data-vendor="${esc(vendor)}">` +
+    `${esc(noteFor(item, vendor, status))}</span>`;
+}
+
+/**
+ * Item 3 of the phase 2 fix list: the screen opens with nothing focused, so even a
+ * correct tab order starts from the top of the document. The first field with no
+ * answer takes focus instead, and typing can start at once.
+ */
+function focusFirstUnpriced() {
+  const screen = $("#screen-price");
+  if (!screen || screen.hidden) return;
+  const item = current();
+  if (!item) return;
+  const rows = rowsFor(item.canonical_name);
+  const open = VENDORS.find((vendor) => {
+    const row = rows.get(vendor);
+    return !row || !row.status || row.status === "unpriced";
+  });
+  const box = document.querySelector(`[data-price-input="${open || VENDORS[0]}"]`);
+  if (!box) return;
+
+  // The click that brought her here focuses its own button after this render runs,
+  // so focusing now would be undone a moment later. Taking the next frame puts the
+  // card's first field last in that argument. It stands down if she has already
+  // put the caret somewhere in the card herself.
+  window.requestAnimationFrame(() => {
+    if (screen.hidden || !box.isConnected) return;
+    if (document.activeElement && screen.contains(document.activeElement)) return;
+    box.focus({ preventScroll: true });
+  });
 }
 
 /**
@@ -285,30 +374,28 @@ function boxValue(item, vendor, row) {
 
 /** The same card, moved to agree with state, without touching what has focus. */
 function updateCard(item) {
-  const name = item.canonical_name;
-  const rows = rowsFor(name);
-  const best = cheapest(name);
+  const rows = rowsFor(item.canonical_name);
+  const best = cheapest(item.canonical_name);
   const active = document.activeElement;
 
-  for (const cell of document.querySelectorAll("[data-test='price-vendor']")) {
-    const vendor = cell.dataset.vendor;
+  for (const vendor of VENDORS) {
     const row = rows.get(vendor);
     const status = String((row && row.status) || "unpriced");
 
-    cell.classList.toggle("is-best", vendor === best);
+    const head = document.querySelector(`.pv-head[data-vendor="${CSS.escape(vendor)}"]`);
+    if (head) head.classList.toggle("is-best", best.has(vendor));
 
     // A box is only rewritten when what it should show has actually moved, and
     // never while it has focus. Rewriting a focused input resets the caret, which
-    // on a keyboard-first screen shows up as typed digits landing in the wrong
-    // order.
-    const box = cell.querySelector("[data-price-input]");
+    // on a keyboard-first screen shows up as typed digits landing out of order.
+    const box = document.querySelector(`[data-price-input="${CSS.escape(vendor)}"]`);
     const should = boxValue(item, vendor, row);
     if (box && box !== active && box.value !== should) box.value = should;
 
-    const select = cell.querySelector("[data-price-status]");
+    const select = document.querySelector(`[data-price-status="${CSS.escape(vendor)}"]`);
     if (select && select !== active && select.value !== status) select.value = status;
 
-    const note = cell.querySelector(".pv-note");
+    const note = document.querySelector(`.pv-note[data-vendor="${CSS.escape(vendor)}"]`);
     if (note) note.textContent = noteFor(item, vendor, status);
   }
 }
@@ -332,44 +419,6 @@ function fullTitle(item) {
     if (row && row.raw_title) return row.raw_title;
   }
   return "";
-}
-
-function vendorHtml(item, vendor, row, best) {
-  const name = item.canonical_name;
-  const status = String((row && row.status) || "unpriced");
-  const value = boxValue(item, vendor, row);
-  const isBest = vendor === best;
-
-  const query = encodeURIComponent(displayName(item));
-  const override = api.state.vendorSites && api.state.vendorSites[vendor];
-  const site = override || (VENDOR_SEARCH[vendor] ? VENDOR_SEARCH[vendor](query) : "");
-  const hint = VENDOR_LINK_TITLE[vendor];
-  const heading = site
-    ? `<a href="${esc(site)}" target="_blank" rel="noopener noreferrer"` +
-      `${hint ? ` title="${esc(hint)}"` : ""}>${esc(vendor)}</a>`
-    : esc(vendor);
-
-  const note = noteFor(item, vendor, status);
-
-  return `<div class="price-vendor${isBest ? " is-best" : ""}" data-test="price-vendor"` +
-    ` data-vendor="${esc(vendor)}">` +
-    `<span class="pv-head"><span class="pv-name">${heading}</span>` +
-    `<span class="pv-best-mark">cheapest</span></span>` +
-    `<label class="visually-hidden" for="pv-${esc(vendor)}">` +
-      `${esc(vendor)} price per each for ${esc(displayName(item))}</label>` +
-    `<input class="form-control pv-input" id="pv-${esc(vendor)}" type="text"` +
-      ` inputmode="decimal" data-price-input="${esc(vendor)}" value="${esc(value)}"` +
-      ` data-test="pv-input">` +
-    `<label class="visually-hidden" for="pv-status-${esc(vendor)}">` +
-      `${esc(vendor)} status for ${esc(displayName(item))}</label>` +
-    `<select class="form-select form-select-sm" id="pv-status-${esc(vendor)}"` +
-      ` data-price-status="${esc(vendor)}">` +
-    STATUS_LABELS.map(([code, label]) =>
-      `<option value="${code}"${status === code ? " selected" : ""}>${label}</option>`
-    ).join("") +
-    `</select>` +
-    `<span class="pv-note">${esc(note)}</span>` +
-    `</div>`;
 }
 
 function renderDots() {
@@ -527,9 +576,13 @@ function markCheapestLive() {
     const value = num(box.value);
     if (value !== null) typed.push([vendor, value]);
   }
-  const best = typed.length >= 2 ? typed.sort((a, b) => a[1] - b[1])[0][0] : null;
+  let best = new Set();
+  if (typed.length >= 2) {
+    const lowest = Math.min(...typed.map(([, value]) => value));
+    best = new Set(typed.filter(([, value]) => value === lowest).map(([v]) => v));
+  }
   for (const cell of document.querySelectorAll("[data-test='price-vendor']")) {
-    cell.classList.toggle("is-best", cell.dataset.vendor === best);
+    cell.classList.toggle("is-best", best.has(cell.dataset.vendor));
   }
 }
 
