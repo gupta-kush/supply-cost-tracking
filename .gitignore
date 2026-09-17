@@ -29,3 +29,7 @@ tests/golden/__pycache__/
 # Local credentials. Never committed; the tools read keys from the environment or Windows Credential Manager.
 secrets.json
 .env
+
+# The headless harness's one dev dependency (Playwright). package.json is the deliverable.
+node_modules/
+package-lock.json

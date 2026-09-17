@@ -60,6 +60,11 @@ export const state = {
   error: null,
 };
 
+// Read by web/tests/headless-2025.js only: a live handle for a headless browser to assert
+// against directly (line counts, ranked order, undecided count) instead of scraping rendered
+// text, which would make the harness depend on wording a screen is free to change.
+window.__supplytrackState = state;
+
 const listeners = new Set();
 
 /** Call `fn(state)` on every change from here on; returns a function that stops it. */

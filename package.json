@@ -1,0 +1,8 @@
+{
+  "name": "supplytrack-web",
+  "private": true,
+  "description": "Dev dependency for the headless harness only (web/tests/headless-2025.js). The page itself ships no bundler and no framework. Deliberately no \"type\": \"module\": xlsxio.js's require() of the vendored UMD ExcelJS build (web/vendor/exceljs.min.js) needs it resolved as CommonJS, which \"type\": \"module\" breaks (require() then returns {}, not the library) - see report-tests.js if this is ever revisited.",
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
