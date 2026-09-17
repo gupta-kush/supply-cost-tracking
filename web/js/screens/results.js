@@ -12,9 +12,9 @@
  *   go(screen)       router, "price" or "done"
  *   answer(k, f)     write one panel answer to the master and re-rank
  *   confirmProposed(keys)   confirm pack sizes the page proposed, no other change
- *   moneyLine()      {amount, itemsCounted, basisSentence} per spec section 4
- *   fmt              format.js: money, moneyWhole, int, plural, displayName,
- *                    provenance
+ *   moneyLine()      {amount, itemsCounted, basisSentence} per spec section 4;
+ *                    falls back to fmt.moneyLine(ranked, priceRows, top)
+ *   fmt              format.js: money, int, plural, displayName, provenance
  *
  * Injecting the api rather than importing app.js keeps this file loadable before
  * app.js exists and keeps the two modules out of an import cycle.
@@ -62,19 +62,14 @@ const num = (value) => {
 
 const fmt = () => (api && api.fmt) || {};
 
-function money(value) {
+/* format.js money() is whole dollars for the headline and two places with
+   {cents: true} for a per-each price, which is what report.js writes. */
+function money(value, options) {
   const f = fmt().money;
-  return f ? f(value) : String(value ?? "");
+  return f ? f(value, options) : String(value ?? "");
 }
 
-/* The headline figure is whole dollars. Cents on a four-figure number are noise,
-   and the same function cannot also print a unit price of $0.0997. */
-function moneyWhole(value) {
-  const f = fmt().moneyWhole;
-  if (f) return f(value);
-  const n = num(value);
-  return money(n === null ? value : Math.round(n));
-}
+const price = (value) => money(value, { cents: true });
 
 function int(value) {
   const f = fmt().int;
@@ -193,7 +188,7 @@ function renderHead() {
 function renderMoney() {
   const figure = $("#money-figure");
   const caption = $("#money-caption");
-  const line = api.moneyLine ? api.moneyLine() : null;
+  const line = moneyLineNow();
 
   if (!line || line.itemsCounted === 0) {
     figure.classList.add("is-waiting");
@@ -204,12 +199,20 @@ function renderMoney() {
 
   figure.classList.remove("is-waiting");
   if (num(line.amount) !== null && num(line.amount) <= 0) {
-    figure.textContent = moneyWhole(0);
+    figure.textContent = money(0);
     caption.textContent = "Amazon was already cheapest on every item priced.";
     return;
   }
-  figure.textContent = moneyWhole(line.amount);
+  figure.textContent = money(line.amount);
   caption.textContent = line.basisSentence || "";
+}
+
+/** The app supplies this; format.js has the pure version behind it. */
+function moneyLineNow() {
+  if (api.moneyLine) return api.moneyLine();
+  const f = fmt().moneyLine;
+  const s = api.state;
+  return f ? f(s.ranked || [], s.priceRows || [], s.top || 25) : null;
 }
 
 /** How many of the top N items have a price or a status on every vendor. */
@@ -359,7 +362,7 @@ function pillHtml(row, vendor, priceRow, best) {
   const status = String((priceRow && priceRow.status) || "unpriced");
   const value = priceRow ? num(priceRow.unit_price) : null;
   const priced = status === "priced" && value !== null;
-  const label = priced ? money(value) : (PILL_WORDS[status] || PILL_WORDS.unpriced);
+  const label = priced ? price(value) : (PILL_WORDS[status] || PILL_WORDS.unpriced);
   const classes = ["pill"];
   if (!priced) classes.push("is-empty");
   if (priced && vendor === best) classes.push("is-best");

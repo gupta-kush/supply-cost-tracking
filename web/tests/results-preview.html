@@ -40,29 +40,23 @@ import { mountResults } from "../js/screens/results.js";
    to the next comma or parenthesis, hard cut at 40) and the three provenance
    strings from section 2.2. When format.js exists, delete these and import it.     */
 
-const money = (value) => {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "";
-  // Unit prices are per each and are routinely under a dollar, so two decimals
-  // would flatten 0.0997 and 0.10 into the same figure and hide the comparison.
-  // Never fewer than two, or $0.10 prints as $0.1 and stops looking like money.
-  const places = Math.abs(n) > 0 && Math.abs(n) < 1 ? 4 : 2;
-  const text = n.toFixed(places).replace(/(\.\d{2}\d*?)0+$/, "$1");
-  const [whole, part] = text.split(".");
-  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return `$${grouped}${part ? `.${part}` : ""}`;
-};
-
-/* The headline money line is whole dollars; money() keeps cents for unit prices. */
-const moneyWhole = (value) => {
-  const n = Number(value);
-  return Number.isFinite(n) ? `$${Math.round(n).toLocaleString("en-US")}` : "";
-};
-
+/* format.js as worker A shipped it in task A3: whole dollars by default, two
+   places with {cents: true}. Delete this block and import ../js/format.js once
+   the preview no longer has to run before app.js exists. */
 const int = (value) => {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return String(value ?? "");
+  const n = Number(value) || 0;
   return Math.round(n).toLocaleString("en-US");
+};
+
+const money = (value, { cents = false } = {}) => {
+  const n = Number(value) || 0;
+  const rounded = cents ? n : Math.round(n);
+  const sign = rounded < 0 ? "-" : "";
+  const digits = Math.abs(rounded).toLocaleString("en-US", {
+    minimumFractionDigits: cents ? 2 : 0,
+    maximumFractionDigits: cents ? 2 : 0,
+  });
+  return `${sign}$${digits}`;
 };
 
 const plural = (n, word) => `${int(n)} ${word}${Number(n) === 1 ? "" : "s"}`;
@@ -81,15 +75,16 @@ function displayName(row) {
 }
 
 function provenance(row) {
-  const units = String(row.units_per_pack || "").trim();
-  if (!units) return "pack size varies between the listings";
   const source = String(row.upp_source || "").trim();
-  if (source === "title") return `${int(units)} per pack, from the title`;
-  if (source === "proposed") return `${int(units)} per pack, proposed by the model`;
-  return `${int(units)} per pack, confirmed`;
+  const phrase = source === "master" ? "confirmed"
+    : source === "title" ? "from the title"
+    : source === "proposed" ? "proposed by the model" : "";
+  const raw = String(row.units_per_pack || "").trim();
+  const lead = raw ? `${int(raw)} per pack` : "pack size varies";
+  return phrase ? `${lead}, ${phrase}` : lead;
 }
 
-const fmt = { money, moneyWhole, int, plural, displayName, provenance };
+const fmt = { money, int, plural, displayName, provenance };
 
 /* ── the money line, spec section 4 ─────────────────────────────────────────── */
 
