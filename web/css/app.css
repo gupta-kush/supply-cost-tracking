@@ -1,307 +1,253 @@
-/* Page-specific rules only.
+/* Supply Top 25 builder, v2.
  *
- * Everything else comes from vendor/main.css, which is the firm Style Guide's own compiled
- * Bootstrap build (house palette, Work Sans, Bootstrap Icons). No hex value below is new:
- * the page background and the shadow tint are the two fixed house values the guide names
- * outside the Bootstrap tokens, and every colour beyond them is a Bootstrap CSS variable.
- * Every custom surface here is styled for both themes, because the guide allows no
- * light-only surfaces.
+ * Four screens: drop, results, price, done. Everything structural lives here; the
+ * palette, type and dark mode come from vendor/main.css, which is the firm Style
+ * Guide's own compiled Bootstrap build.
+ *
+ * Two rules hold this file together:
+ *   1. Every colour is a token declared in the two blocks below. No hex, rgb or hsl
+ *      value appears anywhere else in the file.
+ *   2. One accent. It is the house navy the navbar already wears in light mode, and
+ *      the house light blue main.css already uses for selected states in dark mode,
+ *      because the navy has nothing like enough contrast on a dark ground.
  */
 
+/* ─────────────────────────── tokens ─────────────────────────── */
+
 :root {
-  --app-page-bg: #F1F6F8;                       /* house page background, light */
-  --app-shadow: 0 8px 24px rgba(41, 48, 61, 0.16);   /* house shadow tint, resting */
+  /* The two fixed house values that sit outside the Bootstrap tokens. */
+  --app-page-bg: #F1F6F8;
+  --app-shadow: 0 8px 24px rgba(41, 48, 61, 0.16);
   --app-shadow-lifted: 0 16px 40px rgba(41, 48, 61, 0.20);
+
+  /* The accent, and the four ways it is used: solid, text on solid, a wash, a rule. */
+  --app-accent: #013C66;
+  --app-accent-on: #FFFFFF;
+  --app-accent-soft: rgba(1, 60, 102, 0.07);
+  --app-accent-line: rgba(1, 60, 102, 0.34);
+  --app-accent-bar: rgba(1, 60, 102, 0.72);
+
+  /* Named aliases so a rule never reaches for a Bootstrap variable in passing. */
+  --app-surface: var(--bs-body-bg);
+  --app-rule: var(--bs-border-color);
+  --app-ink: var(--bs-body-color);
+  --app-ink-quiet: var(--bs-secondary-color);
+
+  --app-backdrop: rgba(41, 48, 61, 0.45);
+
+  --app-radius: 0.75rem;
+  --app-radius-sm: 0.5rem;
+  --app-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --app-gutter: 1.25rem;
+  --app-max: 90rem;
 }
 
 [data-bs-theme="dark"] {
-  --app-page-bg: #111112;                       /* house page background, dark */
+  --app-page-bg: #111112;
+  --app-shadow: 0 8px 24px rgba(0, 0, 0, 0.50);
+  --app-shadow-lifted: 0 16px 40px rgba(0, 0, 0, 0.62);
+
+  --app-accent: #B5E1EA;
+  --app-accent-on: #0A1B21;
+  --app-accent-soft: rgba(181, 225, 234, 0.10);
+  --app-accent-line: rgba(181, 225, 234, 0.40);
+  --app-accent-bar: rgba(181, 225, 234, 0.85);
+
+  --app-backdrop: rgba(0, 0, 0, 0.62);
 }
 
-html, body {
+/* ─────────────────────────── page ─────────────────────────── */
+
+html,
+body {
   background-color: var(--app-page-bg);
 }
 
 body {
-  /* Work Sans when the machine has it; main.css's webfont import was removed so the page
-     makes no network calls. The rest of the stack is what Bootstrap itself falls back to. */
+  /* Work Sans when the machine has it; main.css's webfont import was removed so the
+     page makes no network calls. The rest is what Bootstrap itself falls back to. */
   font-family: "Work Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
+}
+
+/* A screen is display:flex or display:grid, which would otherwise beat the hidden
+   attribute and show all four at once. */
+[hidden] {
+  display: none !important;
+}
+
+#app {
+  max-width: var(--app-max);
+  margin-inline: auto;
+  padding-inline: var(--app-gutter);
 }
 
 .app-mark {
   opacity: 0.9;
 }
 
-/* Small caption / label pattern from the Style Guide. */
-.caption {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--bs-secondary-color, #6c757d);
+.app-alerts {
+  max-width: var(--app-max);
+  margin: 0.75rem auto 0;
+  padding-inline: var(--app-gutter);
 }
 
-/* Sentence-case helper text that should not be shouted. */
-.caption.caption-plain {
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-/* ─────────────────────────── summary strips ─────────────────────────── */
-
-/* The before-and-after line for a step: a row of small fact chips. */
-.summary-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: stretch;
-}
-
-.summary-strip:empty {
+.app-alerts:empty {
   display: none;
 }
 
-/* One fact: a quiet uppercase label with the number under it. Same shape as .coverage-chip
-   so the price coverage row and these read as one family. */
-.fact {
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius);
-  background-color: var(--bs-body-bg);
-  padding: 0.35rem 0.7rem;
-  line-height: 1.25;
-}
-
-.fact .fact-label {
-  display: block;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--bs-secondary-color);
-}
-
-.fact .fact-value {
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.fact .fact-sub {
-  display: block;
-  font-size: 0.7rem;
-  color: var(--bs-secondary-color);
-}
-
-/* A fact that is a group header for the chips beside it, for example one file. */
-.fact.fact-wide {
-  min-width: 14rem;
-}
-
-/* What an action changed, or what moved in or out of the top N. Neutral surface, not an
-   alert: nothing here is wrong, it is a record of what just happened. */
-.change-note {
-  border: 1px solid var(--bs-border-color);
-  border-left: 3px solid var(--bs-primary);
-  border-radius: var(--bs-border-radius);
-  background-color: var(--bs-tertiary-bg);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.85rem;
-}
-
-.change-note ul {
-  margin-bottom: 0;
-  padding-left: 1.1rem;
-}
-
-.change-note .caption {
-  display: block;
-  margin-bottom: 0.15rem;
-}
-
-/* The file list on the download step: name, what is in it, how big it is. */
-.file-list {
-  display: grid;
-  gap: 0.4rem;
-}
-
-.file-list .file-row {
+/* A labelled control, used on the drop strip and in the settings sheet. */
+.field {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.15rem 0.6rem;
-  align-items: baseline;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--bs-border-color);
-  font-size: 0.85rem;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
-.file-list .file-row:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
+.field-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-ink-quiet);
 }
 
-.file-list .file-name {
-  font-weight: 600;
-  font-family: var(--bs-font-monospace);
-  font-size: 0.8rem;
+.field-note {
+  font-size: 0.72rem;
+  color: var(--app-ink-quiet);
 }
 
-.file-list .file-what {
-  color: var(--bs-secondary-color);
-}
+/* ─────────────────────────── drop ─────────────────────────── */
 
-.file-list .file-row.is-held .file-name {
-  text-decoration: line-through;
-}
-
-/* ─────────────────────────── cards ─────────────────────────── */
-
-.app-card {
-  box-shadow: var(--app-shadow);
-  border-color: var(--bs-border-color);
-}
-
-.app-card > .card-header {
-  background-color: var(--bs-tertiary-bg);
-}
-
-.app-card.is-locked > .card-body {
-  opacity: 0.45;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* A locked step still shows its warnings, and they stay clickable: the findings are how
-   somebody works out what to go back and fix. */
-.app-card.is-locked .always-on {
-  opacity: 1;
-  pointer-events: auto;
-  user-select: auto;
-}
-
-/* ─────────────────────────── step header ─────────────────────────── */
-
-.steps {
-  margin-bottom: 0;
-}
-
-.step {
-  border: 1px solid var(--bs-border-color);
-  background-color: var(--bs-body-bg);
-  color: var(--bs-secondary-color);
-  border-radius: 2rem;
-  padding: 0.25rem 0.9rem 0.25rem 0.35rem;
-  font-size: 0.875rem;
-  display: inline-flex;
+.screen-drop {
+  min-height: calc(100vh - 4.5rem);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.45rem;
+  justify-content: center;
+  gap: 0.85rem;
+  padding: 2rem 0 3rem;
+  text-align: center;
 }
 
-.step:hover:not(:disabled) {
-  border-color: var(--bs-primary);
-  color: var(--bs-body-color);
+.drop-target {
+  width: 100%;
+  max-width: 56rem;
+  min-height: min(58vh, 32rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 3rem 2rem;
+  border: 2px dashed var(--app-rule);
+  border-radius: 1.25rem;
+  background-color: var(--app-surface);
+  transition: border-color 0.16s var(--app-ease), background-color 0.16s var(--app-ease),
+    min-height 0.24s var(--app-ease), padding 0.24s var(--app-ease);
 }
 
-.step:disabled {
+.drop-target.is-over {
+  border-style: solid;
+  border-color: var(--app-accent);
+  background-color: var(--app-accent-soft);
+}
+
+.drop-mark {
   opacity: 0.55;
+  margin-bottom: 0.4rem;
 }
 
-.step .step-n {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  background-color: var(--bs-secondary-bg);
-  color: var(--bs-body-color);
-  font-size: 0.75rem;
-  font-weight: 700;
-  flex: 0 0 auto;
-}
-
-.step[aria-current="step"] {
-  border-color: var(--bs-primary);
-  color: var(--bs-body-color);
+.drop-head {
+  font-size: clamp(1.35rem, 2.2vw, 2rem);
   font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
-.step[aria-current="step"] .step-n,
-.step.is-done .step-n {
-  background-color: var(--bs-primary);
-  color: #fff;
+.drop-sub {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 0.9rem;
+  color: var(--app-ink-quiet);
 }
 
-.step.is-done {
-  color: var(--bs-body-color);
+.drop-actions {
+  margin: 1.1rem 0 0;
 }
 
-/* The numbered badge inside a card header, same shape, quieter. */
-.card-header .step-n {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
-  border-radius: 50%;
-  background-color: var(--bs-secondary-bg);
-  font-size: 0.7rem;
-  font-weight: 700;
+.drop-privacy {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--app-ink-quiet);
 }
 
-/* ─────────────────────────── drop zones ─────────────────────────── */
-
-.dropzone {
-  border: 1px dashed var(--bs-border-color);
-  border-radius: var(--bs-border-radius);
-  padding: 0.85rem;
-  height: 100%;
-  background-color: var(--bs-body-bg);
-  transition: border-color 0.12s ease-in-out, background-color 0.12s ease-in-out;
+/* Once files are in, the target gives up the viewport and becomes a bar that still
+   accepts a drop, and the strip below carries the controls. */
+.screen-drop.has-files {
+  justify-content: flex-start;
+  padding-top: 3.5rem;
 }
 
-.dropzone.is-over {
-  border-color: var(--bs-primary);
-  border-style: solid;
-  background-color: var(--bs-tertiary-bg);
-  box-shadow: var(--app-shadow-lifted);
+.screen-drop.has-files .drop-target {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  min-height: 0;
+  padding: 0.85rem 1.25rem;
 }
 
-.dropzone.is-loaded {
-  border-style: solid;
-  border-color: var(--bs-success);
+.screen-drop.has-files .drop-mark,
+.screen-drop.has-files .drop-sub {
+  display: none;
 }
 
-.dropzone .form-label {
-  margin-bottom: 0.1rem;
+.screen-drop.has-files .drop-head {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--app-ink-quiet);
+}
+
+.screen-drop.has-files .drop-actions {
+  margin: 0;
+}
+
+.drop-strip {
+  width: 100%;
+  max-width: 56rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  text-align: left;
 }
 
 .file-chips {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .file-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.15rem 0.3rem 0.15rem 0.55rem;
-  font-size: 0.8125rem;
-  border: 1px solid var(--bs-border-color);
+  gap: 0.45rem;
+  padding: 0.2rem 0.35rem 0.2rem 0.75rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--app-rule);
   border-radius: 2rem;
-  background-color: var(--bs-tertiary-bg);
+  background-color: var(--app-surface);
 }
 
-.file-chip-size {
-  color: var(--bs-secondary-color);
+.file-chip-kind {
+  color: var(--app-ink-quiet);
+  font-size: 0.72rem;
 }
 
 .file-chip-x {
   border: 0;
   background: none;
   line-height: 1;
-  padding: 0 0.25rem;
-  color: var(--bs-secondary-color);
+  padding: 0 0.3rem;
+  color: var(--app-ink-quiet);
   cursor: pointer;
 }
 
@@ -309,263 +255,1070 @@ body {
   color: var(--bs-danger);
 }
 
-/* ─────────────────────────── tables ─────────────────────────── */
-
-.table-wrap {
-  max-height: 32rem;
-  overflow: auto;
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius);
+.drop-strip-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
 }
 
-.app-table {
-  font-size: 0.85rem;                 /* the guide's compact-grid size */
-  margin-bottom: 0;
+.drop-strip-controls .form-control {
+  width: 6.5rem;
 }
 
-.app-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background-color: var(--bs-tertiary-bg);
-  border-bottom: 2px solid var(--bs-border-color);
-  white-space: nowrap;
+.btn-build {
+  margin-left: auto;
 }
 
-.app-table th.num,
-.app-table td.num {
-  text-align: right;
+.btn-settings {
+  padding-inline: 0.5rem;
+  color: var(--app-ink-quiet);
+}
+
+/* ─────────────────────────── funnel ─────────────────────────── */
+
+/* Four figures, each with a rule that draws itself as the stage lands. The rules get
+   shorter down the row, which is the whole point of showing them. */
+.funnel {
+  list-style: none;
+  width: 100%;
+  max-width: 56rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 2.5rem 0 0;
+  padding: 0;
+  text-align: left;
+}
+
+.funnel-fig {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition: opacity 0.45s var(--app-ease), transform 0.45s var(--app-ease);
+}
+
+.funnel-fig.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+.funnel-fig::after {
+  content: "";
+  height: 2px;
+  border-radius: 1px;
+  background-color: var(--app-rule);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.5s var(--app-ease);
+}
+
+.funnel-fig.is-shown::after {
+  transform: scaleX(1);
+}
+
+.funnel-fig[data-stage="top"] .funnel-value {
+  color: var(--app-accent);
+}
+
+.funnel-fig[data-stage="top"].is-shown::after {
+  background-color: var(--app-accent);
+}
+
+.funnel-value {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
-.app-table th.sortable {
-  cursor: pointer;
-  user-select: none;
-}
-
-.app-table th.sortable:hover {
-  color: var(--bs-primary);
-}
-
-.app-table tbody tr.is-blocking > td:first-child {
-  box-shadow: inset 3px 0 0 var(--bs-danger);
-}
-
-.app-table tbody tr.is-top {
-  background-color: var(--bs-tertiary-bg);
-  font-weight: 600;
-}
-
-.app-table tbody tr.is-hit > td {
-  background-color: rgba(181, 225, 234, 0.45);   /* $info #B5E1EA, as a wash */
-}
-
-[data-bs-theme="dark"] .app-table tbody tr.is-hit > td {
-  background-color: rgba(181, 225, 234, 0.16);
-}
-
-.group-row th {
-  position: sticky;
-  top: 2.2rem;
-  z-index: 1;
-  background-color: var(--bs-secondary-bg);
-  font-size: 0.75rem;
+.funnel-label {
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
+  color: var(--app-ink-quiet);
 }
 
-.app-table td .form-control,
-.app-table td .form-select {
-  font-size: 0.85rem;
-  padding: 0.15rem 0.4rem;
+.drop-error {
+  width: 100%;
+  max-width: 44rem;
+  margin-top: 1.5rem;
+  text-align: left;
 }
 
-/* ─────────────────────────── review table ─────────────────────────── */
+.drop-error-text {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
 
-/* Six columns that fit one screen. Each suggestion sits under the control it fills, so
-   nothing has to be read across a horizontal scroll. Widths are percentages because the
-   table is laid out fixed: without that, one long product title stretches its column and
-   squeezes every control. */
+.drop-error-sheets {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--app-ink-quiet);
+}
 
-#review-table {
+/* ─────────────────────────── results ─────────────────────────── */
+
+.screen-results {
+  padding: 1.75rem 0 4rem;
+}
+
+.results-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem 2.5rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--app-rule);
+}
+
+.results-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.results-sub {
+  margin: 0.4rem 0 0;
+  font-size: 0.88rem;
+  color: var(--app-ink-quiet);
+}
+
+.results-head-right {
+  margin-left: auto;
+}
+
+.results-head-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin: 0.9rem 0 0;
+}
+
+/* The money line. Large, quiet weight, one caption under it that says what it means. */
+.money {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  margin: 0;
+}
+
+.money-figure {
+  font-size: clamp(1.9rem, 3.4vw, 2.75rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--app-accent);
+}
+
+/* Before any price exists the figure is a sentence, so it must stop looking like a
+   number or it reads as a heading with no content. */
+.money-figure.is-waiting {
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--app-ink-quiet);
+  max-width: 18rem;
+}
+
+.money-caption {
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--app-ink-quiet);
+  max-width: 24rem;
+  text-align: right;
+}
+
+.results-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21rem;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Bootstrap's own primary is the house navy, which all but disappears on the dark
+   ground. Every outlined primary action in this app wears the accent token instead,
+   so it is legible in both themes. */
+.btn-outline-primary {
+  border-color: var(--app-accent);
+  color: var(--app-accent);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus-visible {
+  background-color: var(--app-accent);
+  border-color: var(--app-accent);
+  color: var(--app-accent-on);
+}
+
+/* ─────────────────────────── leaderboard ─────────────────────────── */
+
+/* No card around it. The table sits on the page ground and the panel is the only
+   raised surface on the screen, which is what keeps this from reading as a dashboard.
+   Fixed layout because one Amazon title left free would eat every other column. */
+.leaderboard {
   table-layout: fixed;
   width: 100%;
+  border-collapse: collapse;
 }
 
-.w-pick { width: 2.5rem; }
-.w-title { width: 30%; }
-.w-inc { width: 5.5rem; }
-.w-upp { width: 9.5rem; }
-.w-name { width: auto; }
-.w-decide { width: 7.5rem; }
-
-/* Two lines of title is enough to recognise a product; the rest is on the tooltip. Left
-   unclamped, a single Amazon title runs to six lines and the row is taller than the box. */
-.item-title {
+.leaderboard thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0 0.5rem 0.55rem;
+  font-size: 0.68rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  text-align: left;
+  color: var(--app-ink-quiet);
+  background-color: var(--app-page-bg);
+  border-bottom: 1px solid var(--app-rule);
+}
+
+.leaderboard thead th.col-vendor {
+  text-align: center;
+}
+
+.col-rank { width: 3.25rem; }
+.col-item { width: 30%; }
+.col-vol { width: 14%; }
+.col-vendor { width: 13%; }
+
+/* The item cell is a row header, so a screen reader reading a pill announces the
+   vendor from the column and the item from the row without any hidden text. */
+.leaderboard tbody td,
+.leaderboard tbody th {
+  padding: 0.7rem 0.5rem;
+  vertical-align: middle;
+  text-align: left;
+  font-weight: 400;
+  border-bottom: 1px solid var(--app-rule);
+}
+
+.lb-row td,
+.lb-row th {
+  transition: background-color 0.14s var(--app-ease);
+}
+
+.lb-row:hover td,
+.lb-row:hover th {
+  background-color: var(--app-accent-soft);
+}
+
+.leaderboard td.lb-rank {
+  padding-right: 0.9rem;
+  text-align: right;
+  font-size: 1.45rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--app-ink-quiet);
+}
+
+.lb-name {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
-.item-meta {
-  font-size: 0.75rem;
-  color: var(--bs-secondary-color);
-  margin-top: 0.15rem;
+.lb-prov {
+  margin-top: 0.22rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--app-ink-quiet);
 }
 
-.upp-pair {
+/* Provenance is a mark, not a warning: hollow when the page worked it out, solid when
+   a person confirmed it. Nothing on this row is ever coloured as an error. */
+.prov-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.4rem;
+  border: 1px solid var(--app-accent-line);
+  border-radius: 50%;
+  vertical-align: 0.04em;
+}
+
+.prov-dot.is-confirmed {
+  background-color: var(--app-accent-line);
+}
+
+.lb-vol {
   display: flex;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.55rem;
 }
 
-.upp-pair input { min-width: 0; }
-.upp-pair select { width: 4.25rem; flex: none; }
-
-.note-input {
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
+.vol-track {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  height: 0.4rem;
+  border-radius: 0.2rem;
+  background-color: var(--app-accent-soft);
+  overflow: hidden;
 }
 
-.suggests {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem;
-  margin-top: 0.25rem;
+/* --lb-vol is a number between 0 and 1, written by results.js per row. It is data,
+   not styling: the bar cannot be proportional without it. */
+.vol-fill {
+  display: block;
+  height: 100%;
+  width: calc(var(--lb-vol, 0) * 100%);
+  border-radius: 0.2rem;
+  background-color: var(--app-accent-bar);
+  transition: width 0.3s var(--app-ease);
 }
 
-.suggests-none {
-  font-size: 0.75rem;
-  color: var(--bs-secondary-color);
+.lb-eaches {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-/* A chip is the suggestion and the button that applies it in one thing, rather than a
-   value with a separate "use" link beside it. The dashed edge is what marks it as
-   something waiting to be put in the box above, which is why no cell needs the word
-   "suggested" on it; the line above the table says that once. */
-.suggest-chip {
-  max-width: 100%;
+.leaderboard td.lb-vendor {
+  padding-inline: 0.22rem;
+}
+
+.pill {
+  display: block;
+  width: 100%;
+  padding: 0.22rem 0.35rem;
+  border: 1px solid var(--app-rule);
+  border-radius: 2rem;
+  background-color: var(--app-surface);
+  color: var(--app-ink);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0 0.4rem;
-  font-size: 0.75rem;
-  line-height: 1.5;
-  text-align: left;
-  border: 1px dashed var(--bs-border-color);
-  border-radius: 2rem;
-  background-color: var(--bs-tertiary-bg);
-  color: var(--bs-body-color);
   cursor: pointer;
+  transition: border-color 0.12s var(--app-ease), background-color 0.12s var(--app-ease),
+    color 0.12s var(--app-ease);
 }
 
-.suggest-chip:hover,
-.suggest-chip:focus-visible {
-  border-color: var(--bs-primary);
-  color: var(--bs-primary);
+.pill:hover {
+  border-color: var(--app-accent-line);
 }
 
-#review-table thead th {
-  background-color: var(--bs-tertiary-bg);
-}
-
-/* ─────────────────────────── prices ─────────────────────────── */
-
-.price-table td.vendor-cell {
-  min-width: 11rem;
-}
-
-.price-table .price-input {
-  max-width: 7rem;
-}
-
-.price-table .helper {
-  font-size: 0.7rem;
-  color: var(--bs-secondary-color);
-}
-
-.badge-new {
-  font-size: 0.65rem;
+.pill.is-best {
+  background-color: var(--app-accent);
+  border-color: var(--app-accent);
+  color: var(--app-accent-on);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border: 1px solid var(--bs-warning);
-  border-radius: 2rem;
-  padding: 0 0.4rem;
-  color: var(--bs-warning-text-emphasis);
-  background-color: var(--bs-warning-bg-subtle);
-  white-space: nowrap;
 }
 
-.coverage-chip {
-  border: 1px solid var(--bs-border-color);
-  border-radius: 2rem;
-  padding: 0.2rem 0.75rem;
-  font-size: 0.8rem;
-  background-color: var(--bs-body-bg);
+.pill.is-empty {
+  border-style: dashed;
+  color: var(--app-ink-quiet);
+  font-size: 0.72rem;
 }
 
-/* ─────────────────────────── findings ─────────────────────────── */
-
-.finding {
-  display: flex;
-  gap: 0.6rem;
-  align-items: start;
-  padding: 0.45rem 0;
-  border-bottom: 1px solid var(--bs-border-color);
+/* An item the page could not decide still shows at the rank it would take, so the
+   screen is never a lie about where it sits. It just does not count yet. */
+.lb-row.is-open td,
+.lb-row.is-open th {
+  opacity: 0.55;
 }
 
-.finding:last-child {
-  border-bottom: 0;
+.lb-row.is-open:hover td,
+.lb-row.is-open:hover th {
+  opacity: 0.8;
 }
 
-.finding .badge {
-  flex: 0 0 auto;
-  min-width: 3.4rem;
+@keyframes lb-flash {
+  from { background-color: var(--app-accent-soft); }
+  to { background-color: transparent; }
 }
 
-.finding code {
-  font-size: 0.75rem;
+.lb-row.is-moved td,
+.lb-row.is-moved th {
+  animation: lb-flash 1s var(--app-ease) 1;
 }
 
-/* ─────────────────────────── the AI panel ─────────────────────────── */
-
-/* A native disclosure, closed by default: the page works with it never opened, which is
-   how the optional step should read. Same border and tint as .change-note so it sits in
-   the same family as the other boxes inside a step. */
-.ai-panel {
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius);
-  background-color: var(--bs-tertiary-bg);
+.leaderboard-more {
+  margin: 0.75rem 0 0;
 }
 
-.ai-panel-head {
+.leaderboard-empty {
+  padding: 2.5rem 0.5rem;
+  text-align: center;
+  color: var(--app-ink-quiet);
+  font-size: 0.9rem;
+}
+
+/* ─────────────────────────── worth a look panel ─────────────────────────── */
+
+/* One surface. Entries are separated by a hairline rather than each being its own
+   box, so the panel does not become cards inside a card. */
+.panel {
+  position: sticky;
+  top: 1rem;
+  border: 1px solid var(--app-rule);
+  border-radius: var(--app-radius);
+  background-color: var(--app-surface);
+  box-shadow: var(--app-shadow);
+  overflow: hidden;
+}
+
+.panel-head {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  border-bottom: 1px solid var(--bs-border-color);
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--app-rule);
 }
 
-.ai-panel-body {
-  padding: 0.75rem;
+.panel-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
 }
 
-/* ─────────────────────────── a11y ─────────────────────────── */
+.panel-toggle {
+  margin-left: auto;
+  padding: 0;
+  font-size: 0.78rem;
+}
 
-:focus-visible {
-  outline: 2px solid var(--bs-primary);
+.panel-body {
+  max-height: calc(100vh - 12rem);
+  overflow-y: auto;
+}
+
+.panel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.panel-entry {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--app-rule);
+}
+
+.panel-entry:last-child {
+  border-bottom: 0;
+}
+
+.entry-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.entry-q {
+  margin: 0.25rem 0 0.6rem;
+  font-size: 0.79rem;
+  line-height: 1.4;
+  color: var(--app-ink-quiet);
+}
+
+.entry-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.entry-controls .form-control,
+.entry-controls .form-select {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.45rem;
+  width: auto;
+  min-width: 0;
+}
+
+.entry-units {
+  width: 5rem;
+}
+
+/* A plain note with nothing to answer: the lines outside the year, the cancelled
+   orders. It is here so the panel count is the whole truth, not so it is actioned. */
+.panel-entry.is-note .entry-q {
+  margin-bottom: 0;
+}
+
+.yn {
+  display: inline-flex;
+  border: 1px solid var(--app-rule);
+  border-radius: 2rem;
+  overflow: hidden;
+}
+
+.yn button {
+  border: 0;
+  padding: 0.15rem 0.75rem;
+  background-color: transparent;
+  color: var(--app-ink);
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: background-color 0.12s var(--app-ease), color 0.12s var(--app-ease);
+}
+
+.yn button + button {
+  border-left: 1px solid var(--app-rule);
+}
+
+.yn button:hover {
+  background-color: var(--app-accent-soft);
+}
+
+.yn button.is-on {
+  background-color: var(--app-accent);
+  color: var(--app-accent-on);
+  font-weight: 600;
+}
+
+/* A candidate the page found and is offering. Dashed means it is not the answer yet. */
+.chip {
+  padding: 0.1rem 0.65rem;
+  border: 1px dashed var(--app-rule);
+  border-radius: 2rem;
+  background-color: transparent;
+  color: var(--app-ink);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  cursor: pointer;
+  transition: border-color 0.12s var(--app-ease), color 0.12s var(--app-ease);
+}
+
+.chip:hover,
+.chip:focus-visible {
+  border-style: solid;
+  border-color: var(--app-accent);
+  color: var(--app-accent);
+}
+
+.panel-empty {
+  margin: 0;
+  padding: 1.1rem 1rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--app-ink-quiet);
+}
+
+.panel-foot {
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--app-rule);
+  background-color: var(--app-page-bg);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.panel-foot .btn-link {
+  font-size: 0.78rem;
+  padding: 0;
+}
+
+.panel-foot p {
+  margin: 0;
+  color: var(--app-ink-quiet);
+}
+
+/* Review mode: the decisions the page made on its own, one confirm each. */
+.review-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.review-row .entry-name {
+  flex: 1 1 auto;
+}
+
+.review-upp {
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--app-ink-quiet);
+}
+
+/* ─────────────────────────── price ─────────────────────────── */
+
+.screen-price {
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: 2rem 0 4rem;
+}
+
+.price-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.price-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.ring {
+  width: 2.4rem;
+  height: 2.4rem;
+  transform: rotate(-90deg);
+}
+
+.ring-track,
+.ring-fill {
+  fill: none;
+  stroke-width: 3;
+}
+
+.ring-track {
+  stroke: var(--app-rule);
+}
+
+/* 2 * pi * 17, the circumference of the circle in the markup. */
+.ring-fill {
+  stroke: var(--app-accent);
+  stroke-linecap: round;
+  stroke-dasharray: 106.81;
+  stroke-dashoffset: calc(106.81 - var(--ring-done, 0) * 106.81);
+  transition: stroke-dashoffset 0.4s var(--app-ease);
+}
+
+.price-count {
+  font-size: 0.85rem;
+  color: var(--app-ink-quiet);
+  font-variant-numeric: tabular-nums;
+}
+
+.price-close {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
+.price-card {
+  padding: 1.75rem;
+  border: 1px solid var(--app-rule);
+  border-radius: var(--app-radius);
+  background-color: var(--app-surface);
+  box-shadow: var(--app-shadow);
+}
+
+.price-rank {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--app-ink-quiet);
+}
+
+.price-name {
+  margin: 0.25rem 0 0.35rem;
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.price-full {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--app-ink-quiet);
+}
+
+.price-facts {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--app-ink-quiet);
+}
+
+.price-vendors {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.1rem;
+  margin-top: 1.9rem;
+}
+
+/* The vendor's own rule lights up when it is the cheapest filled one, so the
+   comparison happens while she types rather than after she finishes. */
+.price-vendor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.7rem;
+  border-top: 2px solid var(--app-rule);
+  transition: border-color 0.2s var(--app-ease);
+}
+
+.price-vendor.is-best {
+  border-top-color: var(--app-accent);
+}
+
+.pv-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pv-name a {
+  color: inherit;
+}
+
+.pv-input {
+  font-variant-numeric: tabular-nums;
+}
+
+.pv-note {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--app-ink-quiet);
+  min-height: 1.9rem;
+}
+
+.pv-best-mark {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--app-accent);
+  visibility: hidden;
+}
+
+.price-vendor.is-best .pv-best-mark {
+  visibility: visible;
+}
+
+.price-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 2rem 0 0;
+}
+
+.dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  padding: 0;
+  border: 1px solid var(--app-accent-line);
+  border-radius: 50%;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s var(--app-ease);
+}
+
+.dot.is-part {
+  background-color: var(--app-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--app-accent-line);
+}
+
+.dot.is-full {
+  background-color: var(--app-accent);
+  border-color: var(--app-accent);
+}
+
+.dot.is-current {
+  outline: 2px solid var(--app-accent);
   outline-offset: 2px;
 }
 
-[data-bs-theme="dark"] :focus-visible {
-  outline-color: var(--bs-info);
+.price-flash {
+  padding: 4rem 1rem;
+  text-align: center;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--app-accent);
+}
+
+/* ─────────────────────────── done ─────────────────────────── */
+
+.screen-done {
+  max-width: 50rem;
+  margin-inline: auto;
+  padding: 3rem 0 4rem;
+}
+
+.done-title {
+  margin: 0 0 2rem;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.done-figures {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 0 0 2.25rem;
+  padding: 0;
+}
+
+.done-fig {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 0.6rem;
+  border-top: 2px solid var(--app-rule);
+}
+
+.done-fig-value {
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.done-fig-label {
+  font-size: 0.71rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-ink-quiet);
+}
+
+.money-done {
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.money-done .money-figure {
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+}
+
+.money-done .money-caption {
+  text-align: left;
+  max-width: 34rem;
+  font-size: 0.8rem;
+}
+
+.done-basket:empty,
+.done-movement:empty,
+.done-decided:empty {
+  display: none;
+}
+
+.done-basket {
+  margin-bottom: 2rem;
+}
+
+.basket-table {
+  width: 100%;
+  max-width: 28rem;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.basket-table th,
+.basket-table td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--app-rule);
+  text-align: left;
+}
+
+.basket-table td.num,
+.basket-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.done-movement {
+  margin-bottom: 2rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.done-movement h2 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-ink-quiet);
+  margin: 0 0 0.4rem;
+}
+
+.done-movement ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.done-decided {
+  margin: 0 0 2.5rem;
+  font-size: 0.88rem;
+  color: var(--app-ink-quiet);
+}
+
+.done-actions {
+  padding-top: 2rem;
+  border-top: 1px solid var(--app-rule);
+}
+
+.done-keep {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  color: var(--app-ink-quiet);
+  max-width: 30rem;
+}
+
+.done-blocked {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-width: 34rem;
+}
+
+.done-extra {
+  margin-top: 2rem;
+  font-size: 0.82rem;
+}
+
+.done-extra summary {
+  cursor: pointer;
+  color: var(--app-ink-quiet);
+}
+
+.done-extra-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.done-back {
+  margin: 2rem 0 0;
+}
+
+/* ─────────────────────────── settings sheet ─────────────────────────── */
+
+.sheet {
+  width: min(24rem, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid var(--app-rule);
+  border-radius: var(--app-radius);
+  background-color: var(--app-surface);
+  color: var(--app-ink);
+  box-shadow: var(--app-shadow-lifted);
+}
+
+.sheet::backdrop {
+  background-color: var(--app-backdrop);
+}
+
+.sheet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.sheet-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.sheet-note {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--app-ink-quiet);
+}
+
+.sheet-switch {
+  margin: 0;
+}
+
+.sheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0.25rem 0 0;
+}
+
+/* ─────────────────────────── narrow screens ─────────────────────────── */
+
+/* At 1024px the panel drops below the leaderboard, which is what "usable with the
+   panel collapsed" means here: the table keeps the full width and nothing scrolls
+   sideways. */
+@media (max-width: 1180px) {
+  .results-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel {
+    position: static;
+    max-width: 34rem;
+  }
+
+  /* Stacked under the table there is vertical room, so the list flows instead of
+     becoming a second scroller inside the page. */
+  .panel-body {
+    max-height: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .results-head-right {
+    margin-left: 0;
+  }
+
+  .money {
+    align-items: flex-start;
+  }
+
+  .money-caption {
+    text-align: left;
+  }
+
+  .results-head-actions {
+    justify-content: flex-start;
+  }
+
+  .funnel,
+  .done-figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .price-vendors {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ─────────────────────────── accessibility and motion ─────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dropzone { transition: none; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
+
+/* The figures still appear one at a time as their stage lands, because that is the
+   information. With motion reduced each one simply snaps in rather than easing. */

@@ -1,0 +1,132 @@
+{
+  "_what": "Scaffolding for building the Results screen before app.js buildList exists. Built from tests/golden/expected (ranked.csv, prices.csv, item_master.csv, review_queue.csv, findings.json), with the pack-size sources spread across master, title and proposed, two rows left undecided and one near-duplicate name added, so every state the panel and the leaderboard can show appears at least once. Deleted in phase 4.",
+  "year": 2025,
+  "top": 10,
+  "counts": { "lines": 17, "distinct": 17, "office": 13, "top": 10, "undecided": 2 },
+
+  "ranked": [
+    { "rank": "1", "canonical_name": "Avery Name Tag Inserts", "eaches": "1000", "packs": "3", "units_per_pack": "", "unit_label": "EA", "keys": "amz:avery name badge inserts 400 printable name tag inserts 3 x 4 in white|amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches", "sources": "amazon", "last_paid_per_each": "0.1105", "upp_source": "master" },
+    { "rank": "2", "canonical_name": "BIC Ballpoint Pens Black Medium", "eaches": "600", "packs": "10", "units_per_pack": "60", "unit_label": "EA", "keys": "amz:bic round stic ballpoint pens medium point black 60-count", "sources": "amazon", "last_paid_per_each": "0.0997", "upp_source": "title" },
+    { "rank": "3", "canonical_name": "Binder Clips Medium Black", "eaches": "300", "packs": "3", "units_per_pack": "100", "unit_label": "EA", "keys": "pbs:UNV35668", "sources": "preferred", "last_paid_per_each": "", "upp_source": "master" },
+    { "rank": "4", "canonical_name": "EXPO Dry Erase Markers Assorted", "eaches": "96", "packs": "2", "units_per_pack": "48", "unit_label": "EA", "keys": "amz:expo low-odor dry erase markers chisel tip assorted 48/pack", "sources": "amazon", "last_paid_per_each": "0.8331", "upp_source": "title" },
+    { "rank": "5", "canonical_name": "Post-it Notes 3x3 Yellow", "eaches": "60", "packs": "5", "units_per_pack": "12", "unit_label": "EA", "keys": "amz:post-it notes 3 x 3 inches canary yellow 12 pads", "sources": "amazon", "last_paid_per_each": "1.2292", "upp_source": "title" },
+    { "rank": "6", "canonical_name": "Sharpie Permanent Markers Assorted", "eaches": "48", "packs": "2", "units_per_pack": "24", "unit_label": "EA", "keys": "amz:sharpie permanent markers fine point assorted 12 count", "sources": "amazon", "last_paid_per_each": "0.4717", "upp_source": "master" },
+    { "rank": "7", "canonical_name": "Hammermill Copy Paper 8.5x11", "eaches": "30", "packs": "3", "units_per_pack": "10", "unit_label": "RM", "keys": "amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton", "sources": "amazon", "last_paid_per_each": "5.499", "upp_source": "proposed" },
+    { "rank": "8", "canonical_name": "Preferred Copy Paper 8.5x11 White", "eaches": "30", "packs": "3", "units_per_pack": "10", "unit_label": "EA", "keys": "pbs:UNV21200", "sources": "preferred", "last_paid_per_each": "", "upp_source": "master" },
+    { "rank": "9", "canonical_name": "Kleenex Professional Facial Tissue", "eaches": "18", "packs": "3", "units_per_pack": "6", "unit_label": "EA", "keys": "amz:kleenex professional facial tissue display pack of 6", "sources": "amazon", "last_paid_per_each": "3.1", "upp_source": "title" },
+    { "rank": "10", "canonical_name": "Permanent Marker Fine Point Black", "eaches": "12", "packs": "12", "units_per_pack": "1", "unit_label": "EA", "keys": "pbs:SAN30001", "sources": "preferred", "last_paid_per_each": "", "upp_source": "master" },
+    { "rank": "11", "canonical_name": "Scotch Magic Tape 3/4in", "eaches": "6", "packs": "1", "units_per_pack": "6", "unit_label": "EA", "keys": "amz:scotch magic tape 3/4 x 1000 inches 6 rolls", "sources": "amazon", "last_paid_per_each": "2.165", "upp_source": "title" },
+    { "rank": "12", "canonical_name": "Letterhead Printed 2 Colour", "eaches": "4", "packs": "4", "units_per_pack": "1", "unit_label": "EA", "keys": "pbs:PBS9001", "sources": "preferred", "last_paid_per_each": "", "upp_source": "master" },
+    { "rank": "13", "canonical_name": "Binder Clips Medium, Black", "eaches": "2", "packs": "1", "units_per_pack": "2", "unit_label": "EA", "keys": "pbs:UNV35668B", "sources": "preferred", "last_paid_per_each": "", "upp_source": "proposed" }
+  ],
+
+  "masterRows": [
+    { "key": "amz:avery name badge inserts 400 printable name tag inserts 3 x 4 in white", "raw_title": "Avery Name Badge Inserts, 400 Printable Name Tag Inserts, 3 x 4 in, White", "canonical_name": "Avery Name Tag Inserts", "units_per_pack": "200", "upp_source": "master", "display_name": "" },
+    { "key": "amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches", "raw_title": "Avery Printable Name Tags, 400 Printable Name Tag Inserts, 3 x 4 Inches", "canonical_name": "Avery Name Tag Inserts", "units_per_pack": "400", "upp_source": "master", "display_name": "" },
+    { "key": "amz:bic round stic ballpoint pens medium point black 60-count", "raw_title": "BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count", "canonical_name": "BIC Ballpoint Pens Black Medium", "units_per_pack": "60", "upp_source": "title", "display_name": "" },
+    { "key": "pbs:UNV35668", "raw_title": "Binder Clips Medium Black", "canonical_name": "Binder Clips Medium Black", "units_per_pack": "100", "upp_source": "master", "display_name": "" },
+    { "key": "amz:expo low-odor dry erase markers chisel tip assorted 48/pack", "raw_title": "EXPO Low-Odor Dry Erase Markers, Chisel Tip, Assorted, 48/Pack", "canonical_name": "EXPO Dry Erase Markers Assorted", "units_per_pack": "48", "upp_source": "title", "display_name": "" },
+    { "key": "amz:post-it notes 3 x 3 inches canary yellow 12 pads", "raw_title": "Post-it Notes, 3 x 3 Inches, Canary Yellow, 12 Pads", "canonical_name": "Post-it Notes 3x3 Yellow", "units_per_pack": "12", "upp_source": "title", "display_name": "" },
+    { "key": "amz:sharpie permanent markers fine point assorted 12 count", "raw_title": "Sharpie Permanent Markers, Fine Point, Assorted, 12 Count", "canonical_name": "Sharpie Permanent Markers Assorted", "units_per_pack": "24", "upp_source": "master", "display_name": "" },
+    { "key": "amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton", "raw_title": "Hammermill Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton", "canonical_name": "Hammermill Copy Paper 8.5x11", "units_per_pack": "10", "upp_source": "proposed", "display_name": "Hammermill Copy Paper 8.5 x 11" },
+    { "key": "pbs:UNV21200", "raw_title": "Copy Paper 8.5 x 11 20lb White", "canonical_name": "Preferred Copy Paper 8.5x11 White", "units_per_pack": "10", "upp_source": "master", "display_name": "" },
+    { "key": "amz:kleenex professional facial tissue display pack of 6", "raw_title": "Kleenex Professional Facial Tissue, Display Pack of 6", "canonical_name": "Kleenex Professional Facial Tissue", "units_per_pack": "6", "upp_source": "title", "display_name": "" },
+    { "key": "pbs:SAN30001", "raw_title": "Permanent Marker Fine Point Black", "canonical_name": "Permanent Marker Fine Point Black", "units_per_pack": "1", "upp_source": "master", "display_name": "" },
+    { "key": "amz:scotch magic tape 3/4 x 1000 inches 6 rolls", "raw_title": "Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls", "canonical_name": "Scotch Magic Tape 3/4in", "units_per_pack": "6", "upp_source": "title", "display_name": "" },
+    { "key": "pbs:PBS9001", "raw_title": "Letterhead Printed 2 Colour", "canonical_name": "Letterhead Printed 2 Colour", "units_per_pack": "1", "upp_source": "master", "display_name": "" },
+    { "key": "pbs:UNV35668B", "raw_title": "Binder Clips Medium, Black", "canonical_name": "Binder Clips Medium, Black", "units_per_pack": "2", "upp_source": "proposed", "display_name": "" }
+  ],
+
+  "open": [
+    {
+      "key": "amz:cable zip ties 8 inch black (bulk 1000 pack)",
+      "raw_title": "Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)",
+      "canonical_name": "Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)",
+      "amazon_category": "Tools & Home Improvement",
+      "queue_reason": "unknown key",
+      "include": "",
+      "units_per_pack": "1000",
+      "upp_candidates": "1000 (1000 Pack)",
+      "eaches": "1000",
+      "would_rank": "2"
+    },
+    {
+      "key": "amz:boise x-9 copy paper 8.5 x 11 500 sheets/ream 10 reams/carton",
+      "raw_title": "Boise X-9 Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton",
+      "canonical_name": "Boise X-9 Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton",
+      "amazon_category": "Office Product",
+      "queue_reason": "pack size missing",
+      "include": "y",
+      "units_per_pack": "",
+      "upp_candidates": "500 (500 Sheets)|10 (10 Reams/Carton)",
+      "eaches": "40",
+      "would_rank": "7"
+    }
+  ],
+
+  "conflicts": [
+    { "key": "amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches", "name": "Avery Name Tag Inserts", "master_units": "200", "title_units": "400", "evidence": "400 Printable Name Tag Inserts" },
+    { "key": "amz:sharpie permanent markers fine point assorted 12 count", "name": "Sharpie Permanent Markers Assorted", "master_units": "24", "title_units": "12", "evidence": "12 Count" }
+  ],
+
+  "duplicates": [
+    { "names": ["Binder Clips Medium Black", "Binder Clips Medium, Black"], "ratio": "0.98" }
+  ],
+
+  "notes": [
+    { "code": "DATE_OUT_OF_YEAR", "text": "1 order line is dated outside 2025. It is still counted." },
+    { "code": "STATUS_NOT_CLOSED", "text": "1 order line has a status other than Closed. It is still counted." }
+  ],
+
+  "priceRows": [
+    { "rank": "1", "canonical_name": "Avery Name Tag Inserts", "vendor": "Office Depot", "unit_price": "0.10", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "1", "canonical_name": "Avery Name Tag Inserts", "vendor": "Preferred", "unit_price": "", "status": "not_available", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "1", "canonical_name": "Avery Name Tag Inserts", "vendor": "Amazon", "unit_price": "0.12", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "last paid per each: 0.1105" },
+    { "rank": "1", "canonical_name": "Avery Name Tag Inserts", "vendor": "Staples", "unit_price": "0.115", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+
+    { "rank": "2", "canonical_name": "BIC Ballpoint Pens Black Medium", "vendor": "Office Depot", "unit_price": "0.089", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "2", "canonical_name": "BIC Ballpoint Pens Black Medium", "vendor": "Preferred", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "2", "canonical_name": "BIC Ballpoint Pens Black Medium", "vendor": "Amazon", "unit_price": "0.0997", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "last paid per each: 0.0997" },
+    { "rank": "2", "canonical_name": "BIC Ballpoint Pens Black Medium", "vendor": "Staples", "unit_price": "0.095", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+
+    { "rank": "3", "canonical_name": "Binder Clips Medium Black", "vendor": "Office Depot", "unit_price": "0.04", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "3", "canonical_name": "Binder Clips Medium Black", "vendor": "Preferred", "unit_price": "0.038", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "3", "canonical_name": "Binder Clips Medium Black", "vendor": "Amazon", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "3", "canonical_name": "Binder Clips Medium Black", "vendor": "Staples", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+
+    { "rank": "4", "canonical_name": "EXPO Dry Erase Markers Assorted", "vendor": "Office Depot", "unit_price": "0.79", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "4", "canonical_name": "EXPO Dry Erase Markers Assorted", "vendor": "Preferred", "unit_price": "0.81", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "4", "canonical_name": "EXPO Dry Erase Markers Assorted", "vendor": "Amazon", "unit_price": "0.8331", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "last paid per each: 0.8331" },
+    { "rank": "4", "canonical_name": "EXPO Dry Erase Markers Assorted", "vendor": "Staples", "unit_price": "", "status": "discontinued", "url": "", "checked_on": "2026-09-17", "note": "" },
+
+    { "rank": "5", "canonical_name": "Post-it Notes 3x3 Yellow", "vendor": "Office Depot", "unit_price": "1.35", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "5", "canonical_name": "Post-it Notes 3x3 Yellow", "vendor": "Preferred", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "5", "canonical_name": "Post-it Notes 3x3 Yellow", "vendor": "Amazon", "unit_price": "1.2292", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "last paid per each: 1.2292" },
+    { "rank": "5", "canonical_name": "Post-it Notes 3x3 Yellow", "vendor": "Staples", "unit_price": "1.19", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+
+    { "rank": "6", "canonical_name": "Sharpie Permanent Markers Assorted", "vendor": "Office Depot", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "6", "canonical_name": "Sharpie Permanent Markers Assorted", "vendor": "Preferred", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "6", "canonical_name": "Sharpie Permanent Markers Assorted", "vendor": "Amazon", "unit_price": "0.4717", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "last paid per each: 0.4717" },
+    { "rank": "6", "canonical_name": "Sharpie Permanent Markers Assorted", "vendor": "Staples", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+
+    { "rank": "7", "canonical_name": "Hammermill Copy Paper 8.5x11", "vendor": "Office Depot", "unit_price": "5.29", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "7", "canonical_name": "Hammermill Copy Paper 8.5x11", "vendor": "Preferred", "unit_price": "5.60", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "7", "canonical_name": "Hammermill Copy Paper 8.5x11", "vendor": "Amazon", "unit_price": "5.499", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "last paid per each: 5.499" },
+    { "rank": "7", "canonical_name": "Hammermill Copy Paper 8.5x11", "vendor": "Staples", "unit_price": "5.45", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+
+    { "rank": "8", "canonical_name": "Preferred Copy Paper 8.5x11 White", "vendor": "Office Depot", "unit_price": "5.10", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "8", "canonical_name": "Preferred Copy Paper 8.5x11 White", "vendor": "Preferred", "unit_price": "4.99", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "8", "canonical_name": "Preferred Copy Paper 8.5x11 White", "vendor": "Amazon", "unit_price": "", "status": "not_available", "url": "", "checked_on": "2026-09-17", "note": "" },
+    { "rank": "8", "canonical_name": "Preferred Copy Paper 8.5x11 White", "vendor": "Staples", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+
+    { "rank": "9", "canonical_name": "Kleenex Professional Facial Tissue", "vendor": "Office Depot", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "9", "canonical_name": "Kleenex Professional Facial Tissue", "vendor": "Preferred", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "9", "canonical_name": "Kleenex Professional Facial Tissue", "vendor": "Amazon", "unit_price": "3.10", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "last paid per each: 3.1" },
+    { "rank": "9", "canonical_name": "Kleenex Professional Facial Tissue", "vendor": "Staples", "unit_price": "3.02", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
+
+    { "rank": "10", "canonical_name": "Permanent Marker Fine Point Black", "vendor": "Office Depot", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "10", "canonical_name": "Permanent Marker Fine Point Black", "vendor": "Preferred", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "10", "canonical_name": "Permanent Marker Fine Point Black", "vendor": "Amazon", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" },
+    { "rank": "10", "canonical_name": "Permanent Marker Fine Point Black", "vendor": "Staples", "unit_price": "", "status": "unpriced", "url": "", "checked_on": "", "note": "" }
+  ]
+}

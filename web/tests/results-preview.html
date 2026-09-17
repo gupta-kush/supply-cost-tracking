@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Results preview</title>
+<link rel="stylesheet" href="../vendor/main.css">
+<link rel="stylesheet" href="../css/app.css">
+<style>
+  /* Preview chrome only. Nothing here ships: the file is deleted in phase 4. */
+  .preview-bar {
+    display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+    padding: .6rem 1.25rem; border-bottom: 1px solid var(--app-rule);
+    background-color: var(--bs-body-bg); font-size: .8rem;
+  }
+  .preview-bar strong { font-weight: 600; margin-right: .5rem; }
+</style>
+</head>
+<body>
+
+<div class="preview-bar">
+  <strong>Results preview</strong>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="theme">Theme</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-none">No prices</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-some">Some prices</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-all">All prices</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="panel-empty">Empty panel</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="reset">Reset</button>
+  <span class="ms-auto" id="preview-width"></span>
+</div>
+
+<main id="app"></main>
+
+<script type="module">
+import { mountResults } from "../js/screens/results.js";
+
+/* ── format.js stubs ──────────────────────────────────────────────────────────
+   These stand in for worker A's format.js until task A3 lands. They implement the
+   spec section 5 truncation as the reviewer pinned it (never cut before 24, run on
+   to the next comma or parenthesis, hard cut at 40) and the three provenance
+   strings from section 2.2. When format.js exists, delete these and import it.     */
+
+const money = (value) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "";
+  // Unit prices are per each and are routinely under a dollar, so two decimals
+  // would flatten 0.0997 and 0.10 into the same figure and hide the comparison.
+  // Never fewer than two, or $0.10 prints as $0.1 and stops looking like money.
+  const places = Math.abs(n) > 0 && Math.abs(n) < 1 ? 4 : 2;
+  const text = n.toFixed(places).replace(/(\.\d{2}\d*?)0+$/, "$1");
+  const [whole, part] = text.split(".");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `$${grouped}${part ? `.${part}` : ""}`;
+};
+
+/* The headline money line is whole dollars; money() keeps cents for unit prices. */
+const moneyWhole = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? `$${Math.round(n).toLocaleString("en-US")}` : "";
+};
+
+const int = (value) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return String(value ?? "");
+  return Math.round(n).toLocaleString("en-US");
+};
+
+const plural = (n, word) => `${int(n)} ${word}${Number(n) === 1 ? "" : "s"}`;
+
+function displayName(row) {
+  const given = String(row.display_name || "").trim();
+  if (given) return given;
+  const full = String(row.canonical_name || row.raw_title || "");
+  if (full.length <= 24) return full;
+  let cut = -1;
+  for (let i = 24; i < full.length; i += 1) {
+    if (full[i] === "," || full[i] === "(") { cut = i; break; }
+  }
+  const short = cut > 0 ? full.slice(0, cut) : full;
+  return short.length > 40 ? `${short.slice(0, 39).trimEnd()}…` : short;
+}
+
+function provenance(row) {
+  const units = String(row.units_per_pack || "").trim();
+  if (!units) return "pack size varies between the listings";
+  const source = String(row.upp_source || "").trim();
+  if (source === "title") return `${int(units)} per pack, from the title`;
+  if (source === "proposed") return `${int(units)} per pack, proposed by the model`;
+  return `${int(units)} per pack, confirmed`;
+}
+
+const fmt = { money, moneyWhole, int, plural, displayName, provenance };
+
+/* ── the money line, spec section 4 ─────────────────────────────────────────── */
+
+const VENDORS = ["Office Depot", "Preferred", "Amazon", "Staples"];
+
+function moneyLine() {
+  const items = state.ranked.slice(0, state.top);
+  let amount = 0;
+  let itemsCounted = 0;
+  for (const item of items) {
+    const rows = state.priceRows.filter((r) => r.canonical_name === item.canonical_name);
+    const priced = new Map();
+    for (const r of rows) {
+      const v = Number(r.unit_price);
+      if (r.status === "priced" && Number.isFinite(v)) priced.set(r.vendor, v);
+    }
+    const amazon = priced.get("Amazon");
+    if (amazon === undefined || priced.size < 2) continue;
+    const cheapest = Math.min(...priced.values());
+    amount += (amazon - cheapest) * Number(item.eaches || 0);
+    itemsCounted += 1;
+  }
+  return {
+    amount: Math.round(amount),
+    itemsCounted,
+    basisSentence:
+      `on the table this year. Buying each item at its cheapest vendor instead of ` +
+      `Amazon, over the ${int(itemsCounted)} items priced at both, at today's list prices.`,
+  };
+}
+
+/* ── state and a small simulator ────────────────────────────────────────────── */
+
+const fixture = await (await fetch("fixtures/results-sample.json")).json();
+let state = null;
+const listeners = [];
+
+function load() {
+  listeners.length = 0;
+  const copy = JSON.parse(JSON.stringify(fixture));
+  state = {
+    year: copy.year,
+    top: copy.top,
+    counts: copy.counts,
+    ranked: copy.ranked,
+    masterRows: copy.masterRows,
+    master: new Map(copy.masterRows.map((r) => [r.key, r])),
+    open: copy.open,
+    conflicts: copy.conflicts,
+    duplicates: copy.duplicates,
+    notes: copy.notes,
+    priceRows: copy.priceRows,
+    findings: [],
+    modelAvailable: false,
+  };
+}
+
+const subscribe = (fn) => listeners.push(fn);
+const notify = () => listeners.forEach((fn) => fn());
+
+function reRank() {
+  state.ranked.sort((a, b) => Number(b.eaches) - Number(a.eaches));
+  state.ranked.forEach((row, i) => { row.rank = String(i + 1); });
+  state.counts.office = state.ranked.length;
+  state.counts.undecided = state.open.length;
+}
+
+/** Enough of app.answer to see the screen move. The real one calls applyQueue. */
+function answer(key, fields) {
+  const openRow = state.open.find((r) => r.key === key);
+  if (openRow) {
+    Object.assign(openRow, fields);
+    if (String(openRow.include) === "n") {
+      state.open = state.open.filter((r) => r !== openRow);
+    } else if (String(openRow.include) === "y" && String(openRow.units_per_pack || "").trim()) {
+      state.open = state.open.filter((r) => r !== openRow);
+      state.masterRows.push({
+        key: openRow.key, raw_title: openRow.raw_title,
+        canonical_name: openRow.canonical_name,
+        units_per_pack: openRow.units_per_pack, upp_source: "master", display_name: "",
+      });
+      state.master.set(openRow.key, state.masterRows[state.masterRows.length - 1]);
+      state.ranked.push({
+        rank: "0", canonical_name: openRow.canonical_name, eaches: openRow.eaches,
+        packs: "1", units_per_pack: openRow.units_per_pack, unit_label: "EA",
+        keys: openRow.key, sources: "amazon", last_paid_per_each: "", upp_source: "master",
+      });
+      reRank();
+    }
+    notify();
+    return;
+  }
+
+  const master = state.master.get(key) || state.masterRows.find((r) => r.key === key);
+  if (master) {
+    Object.assign(master, fields, { upp_source: "master" });
+    if (fields.canonical_name) {
+      const ranked = state.ranked.find((r) => String(r.keys).includes(key));
+      if (ranked) ranked.canonical_name = fields.canonical_name;
+      state.duplicates = [];
+    }
+    if (fields.units_per_pack) {
+      const ranked = state.ranked.find((r) => String(r.keys).includes(key))
+        || state.ranked.find((r) => r.canonical_name === master.canonical_name);
+      if (ranked) {
+        const factor = Number(fields.units_per_pack) / Number(ranked.units_per_pack || 1);
+        ranked.units_per_pack = fields.units_per_pack;
+        ranked.upp_source = "master";
+        if (Number.isFinite(factor) && factor > 0) {
+          ranked.eaches = String(Math.round(Number(ranked.eaches) * factor));
+        }
+      }
+      state.conflicts = state.conflicts.filter(
+        (c) => c.key !== key && c.name !== master.canonical_name
+      );
+      reRank();
+    }
+  }
+  notify();
+}
+
+function confirmProposed(keys) {
+  for (const key of keys) {
+    const row = state.master.get(key);
+    if (row) row.upp_source = "master";
+    const ranked = state.ranked.find((r) => String(r.keys).includes(key));
+    if (ranked) ranked.upp_source = "master";
+  }
+  notify();
+}
+
+function go(screen, focus) {
+  window.alert(`go("${screen}")${focus ? ` at ${focus.item} / ${focus.vendor}` : ""}`);
+}
+
+/* ── boot: use the real markup out of index.html so the preview cannot drift ── */
+
+const shell = await (await fetch("../index.html")).text();
+const parsed = new DOMParser().parseFromString(shell, "text/html");
+const live = document.importNode(parsed.querySelector("#status-live"), true);
+const results = document.importNode(parsed.querySelector("#screen-results"), true);
+results.removeAttribute("hidden");
+document.body.insertBefore(live, document.querySelector("#app"));
+document.querySelector("#app").appendChild(results);
+
+load();
+mountResults({ state, subscribe, go, answer, confirmProposed, moneyLine, fmt });
+
+/* ── preview controls ───────────────────────────────────────────────────────── */
+
+const clearPrices = () => {
+  for (const row of state.priceRows) { row.unit_price = ""; row.status = "unpriced"; }
+};
+
+document.querySelector(".preview-bar").addEventListener("click", (event) => {
+  const what = event.target.closest("[data-do]");
+  if (!what) return;
+  const action = what.dataset.do;
+  if (action === "theme") {
+    const next = document.documentElement.dataset.bsTheme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.bsTheme = next;
+    return;
+  }
+  if (action === "prices-none") { clearPrices(); notify(); return; }
+  if (action === "prices-some") { rebind(); return; }
+  if (action === "prices-all") {
+    for (const row of state.priceRows) {
+      if (row.status === "unpriced") { row.unit_price = "1.00"; row.status = "priced"; }
+    }
+    notify();
+    return;
+  }
+  if (action === "panel-empty") {
+    state.open = [];
+    state.conflicts = [];
+    state.duplicates = [];
+    state.notes = [];
+    notify();
+    return;
+  }
+  if (action === "reset") { rebind(); }
+});
+
+/* Reload the fixture and point the already-mounted screen at the new object. */
+function rebind() {
+  load();
+  mountResults({ state, subscribe, go, answer, confirmProposed, moneyLine, fmt });
+}
+
+const showWidth = () => {
+  document.querySelector("#preview-width").textContent =
+    `${window.innerWidth} x ${window.innerHeight}`;
+};
+window.addEventListener("resize", showWidth);
+showWidth();
+</script>
+</body>
+</html>
