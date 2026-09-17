@@ -310,6 +310,21 @@ function computeYearMovement(baselineRanked, afterRanked, top) {
   return { entered, left, movers };
 }
 
+/**
+ * `applyQueue` writes only the MASTER_COLUMNS it already knows about, so a model's proposed
+ * `display_name` (section 5, suggest.js's `mergeProposals`) is set here, straight onto the
+ * freshly written master row - `applyQueue` builds a new row object per decision, never an
+ * aliased one, so this never touches a row anything else still holds a reference to.
+ */
+function applyDisplayNames(master, decisions) {
+  for (const row of decisions) {
+    const name = String(row.display_name || "").trim();
+    if (!name) continue;
+    const entry = master.get(row.key);
+    if (entry) entry.display_name = name;
+  }
+}
+
 /** Park every row auto-decide could not finish with a blank `include` (spec section 7): a
  *  decision not made, never a false one. `rank` excludes it as "no decision yet" and it is
  *  requeued next run instead of vanishing. */
@@ -424,13 +439,32 @@ async function autoDecide(queueRows) {
   return suggestModule.autoAccept(rows);
 }
 
+/**
+ * `rank()`'s own output never carries `display_name` (RANKED_COLUMNS does not have it - a
+ * merged item can draw eaches from several master keys, so there is no single row to read it
+ * off inside `rank` itself). Attached here by canonical name so every screen can read
+ * `row.display_name` straight off a ranked row, the same as `format.displayName` expects.
+ */
+function attachDisplayNames(ranked, master) {
+  const byName = new Map();
+  for (const entry of master.values()) {
+    if (entry.display_name && !byName.has(entry.canonical_name)) {
+      byName.set(entry.canonical_name, entry.display_name);
+    }
+  }
+  return ranked.map((row) => {
+    const name = byName.get(row.canonical_name);
+    return name ? { ...row, display_name: name } : row;
+  });
+}
+
 /** Rank, reprice and revalidate against the master as it stands right now. */
 function recomputeRank(movementReason) {
   const before = topNames();
   const r = pipe.rank({
     lines: state.lines, master: state.master, year: state.year, run: state.run || {},
   });
-  state.ranked = r.ranked ?? [];
+  state.ranked = attachDisplayNames(r.ranked ?? [], state.master);
   state.excluded = r.excluded ?? [];
   if (movementReason) state.topMoved = movement(before, topNames(), movementReason);
   rebuildPrices();
@@ -516,6 +550,7 @@ export async function buildList({ onStage } = {}) {
         master: state.master, decisions: decided.ready, year: state.year, proposed: true,
       });
       state.master = applied.master;
+      applyDisplayNames(state.master, decided.ready);
     }
     state.open = decided.open.map((row) => ({ ...row, eaches: estimatedEaches(row) }));
     state.openCount = decided.open.length;
@@ -549,6 +584,7 @@ export function answer(key, fields) {
     master: state.master, decisions: [decision], year: state.year, proposed: false,
   });
   state.master = result.master;
+  applyDisplayNames(state.master, [decision]);
   state.open = state.open.filter((r) => r.key !== key);
   state.openCount = state.open.length;
   recomputeRank("a decision");
@@ -564,6 +600,7 @@ export function confirmProposed(keys) {
     master: state.master, decisions: rows, year: state.year, proposed: false,
   });
   state.master = result.master;
+  applyDisplayNames(state.master, rows);
   recomputeRank("confirming pack sizes");
   notify();
 }
