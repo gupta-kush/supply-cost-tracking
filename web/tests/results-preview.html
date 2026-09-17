@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Results preview</title>
+<title>Screen preview</title>
 <link rel="stylesheet" href="../vendor/main.css">
 <link rel="stylesheet" href="../css/app.css">
 <style>
@@ -19,7 +19,9 @@
 <body>
 
 <div class="preview-bar">
-  <strong>Results preview</strong>
+  <strong>Screen preview</strong>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="screen-results">Results</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-do="screen-price">Price</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="theme">Theme</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-none">No prices</button>
   <button type="button" class="btn btn-sm btn-outline-secondary" data-do="prices-some">Some prices</button>
@@ -33,88 +35,18 @@
 
 <script type="module">
 import { mountResults } from "../js/screens/results.js";
+import { mountPrice } from "../js/screens/price.js";
+import { pricesToCsv } from "../js/pipeline.js";
 
-/* ── format.js stubs ──────────────────────────────────────────────────────────
-   These stand in for worker A's format.js until task A3 lands. They implement the
-   spec section 5 truncation as the reviewer pinned it (never cut before 24, run on
-   to the next comma or parenthesis, hard cut at 40) and the three provenance
-   strings from section 2.2. When format.js exists, delete these and import it.     */
+/* ── format.js and the money line ───────────────────────────────────
+   The real module, not a stub. It was stubbed here only while task A3 was in
+   flight; importing it means the preview and the headless test exercise the same
+   formatting and the same money line the page will ship with, so neither can
+   quietly drift from the other.                                                   */
 
-/* format.js as worker A shipped it in task A3: whole dollars by default, two
-   places with {cents: true}. Delete this block and import ../js/format.js once
-   the preview no longer has to run before app.js exists. */
-const int = (value) => {
-  const n = Number(value) || 0;
-  return Math.round(n).toLocaleString("en-US");
-};
+import * as fmt from "../js/format.js";
 
-const money = (value, { cents = false } = {}) => {
-  const n = Number(value) || 0;
-  const rounded = cents ? n : Math.round(n);
-  const sign = rounded < 0 ? "-" : "";
-  const digits = Math.abs(rounded).toLocaleString("en-US", {
-    minimumFractionDigits: cents ? 2 : 0,
-    maximumFractionDigits: cents ? 2 : 0,
-  });
-  return `${sign}$${digits}`;
-};
-
-const plural = (n, word) => `${int(n)} ${word}${Number(n) === 1 ? "" : "s"}`;
-
-function displayName(row) {
-  const given = String(row.display_name || "").trim();
-  if (given) return given;
-  const full = String(row.canonical_name || row.raw_title || "");
-  if (full.length <= 24) return full;
-  let cut = -1;
-  for (let i = 24; i < full.length; i += 1) {
-    if (full[i] === "," || full[i] === "(") { cut = i; break; }
-  }
-  const short = cut > 0 ? full.slice(0, cut) : full;
-  return short.length > 40 ? `${short.slice(0, 39).trimEnd()}…` : short;
-}
-
-function provenance(row) {
-  const source = String(row.upp_source || "").trim();
-  const phrase = source === "master" ? "confirmed"
-    : source === "title" ? "from the title"
-    : source === "proposed" ? "proposed by the model" : "";
-  const raw = String(row.units_per_pack || "").trim();
-  const lead = raw ? `${int(raw)} per pack` : "pack size varies";
-  return phrase ? `${lead}, ${phrase}` : lead;
-}
-
-const fmt = { money, int, plural, displayName, provenance };
-
-/* ── the money line, spec section 4 ─────────────────────────────────────────── */
-
-const VENDORS = ["Office Depot", "Preferred", "Amazon", "Staples"];
-
-function moneyLine() {
-  const items = state.ranked.slice(0, state.top);
-  let amount = 0;
-  let itemsCounted = 0;
-  for (const item of items) {
-    const rows = state.priceRows.filter((r) => r.canonical_name === item.canonical_name);
-    const priced = new Map();
-    for (const r of rows) {
-      const v = Number(r.unit_price);
-      if (r.status === "priced" && Number.isFinite(v)) priced.set(r.vendor, v);
-    }
-    const amazon = priced.get("Amazon");
-    if (amazon === undefined || priced.size < 2) continue;
-    const cheapest = Math.min(...priced.values());
-    amount += (amazon - cheapest) * Number(item.eaches || 0);
-    itemsCounted += 1;
-  }
-  return {
-    amount: Math.round(amount),
-    itemsCounted,
-    basisSentence:
-      `on the table this year. Buying each item at its cheapest vendor instead of ` +
-      `Amazon, over the ${int(itemsCounted)} items priced at both, at today's list prices.`,
-  };
-}
+const moneyLine = () => fmt.moneyLine(state.ranked, state.priceRows, state.top);
 
 /* ── state and a small simulator ────────────────────────────────────────────── */
 
@@ -137,6 +69,7 @@ function load() {
     duplicates: copy.duplicates,
     notes: copy.notes,
     priceRows: copy.priceRows,
+    carriedPrices: copy.carriedPrices,
     findings: [],
     modelAvailable: false,
   };
@@ -216,8 +149,32 @@ function confirmProposed(keys) {
   notify();
 }
 
+/** One vendor cell, exactly the fields v1 kept in priceEdits. */
+function setPrice(name, vendor, fields) {
+  let row = state.priceRows.find((r) => r.canonical_name === name && r.vendor === vendor);
+  if (!row) {
+    const ranked = state.ranked.find((r) => r.canonical_name === name);
+    row = {
+      rank: ranked ? ranked.rank : "", canonical_name: name, vendor,
+      unit_price: "", status: "unpriced", url: "", checked_on: "", note: "",
+    };
+    state.priceRows.push(row);
+  }
+  Object.assign(row, fields);
+  row.checked_on = fields.status && fields.status !== "unpriced" ? "2026-09-17" : "";
+  notify();
+}
+
 function go(screen, focus) {
-  window.alert(`go("${screen}")${focus ? ` at ${focus.item} / ${focus.vendor}` : ""}`);
+  if (focus) state.priceFocus = focus;
+  showScreen(screen);
+  notify();
+}
+
+function showScreen(screen) {
+  for (const section of document.querySelectorAll("[data-screen]")) {
+    section.hidden = section.dataset.screen !== screen;
+  }
 }
 
 /* ── boot: use the real markup out of index.html so the preview cannot drift ── */
@@ -225,18 +182,27 @@ function go(screen, focus) {
 const shell = await (await fetch("../index.html")).text();
 const parsed = new DOMParser().parseFromString(shell, "text/html");
 const live = document.importNode(parsed.querySelector("#status-live"), true);
-const results = document.importNode(parsed.querySelector("#screen-results"), true);
-results.removeAttribute("hidden");
 document.body.insertBefore(live, document.querySelector("#app"));
-document.querySelector("#app").appendChild(results);
+for (const id of ["#screen-results", "#screen-price"]) {
+  document.querySelector("#app").appendChild(document.importNode(parsed.querySelector(id), true));
+}
 
 load();
-mountResults({ state, subscribe, go, answer, confirmProposed, moneyLine, fmt });
+mountAll();
+showScreen("results");
+
+function mountAll() {
+  const shared = { state, subscribe, go, answer, confirmProposed, setPrice, moneyLine, fmt };
+  mountResults(shared);
+  mountPrice(shared);
+}
 
 /* ── preview controls ───────────────────────────────────────────────────────── */
 
 const clearPrices = () => {
-  for (const row of state.priceRows) { row.unit_price = ""; row.status = "unpriced"; }
+  for (const row of state.priceRows) {
+    row.unit_price = ""; row.status = "unpriced"; row.checked_on = "";
+  }
 };
 
 document.querySelector(".preview-bar").addEventListener("click", (event) => {
@@ -257,6 +223,11 @@ document.querySelector(".preview-bar").addEventListener("click", (event) => {
     notify();
     return;
   }
+  if (action === "screen-results" || action === "screen-price") {
+    showScreen(action.slice("screen-".length));
+    notify();
+    return;
+  }
   if (action === "panel-empty") {
     state.open = [];
     state.conflicts = [];
@@ -271,8 +242,13 @@ document.querySelector(".preview-bar").addEventListener("click", (event) => {
 /* Reload the fixture and point the already-mounted screen at the new object. */
 function rebind() {
   load();
-  mountResults({ state, subscribe, go, answer, confirmProposed, moneyLine, fmt });
+  mountAll();
 }
+
+/* The headless test reads the real prices.csv text the page would download, built
+   by pipeline.js from whatever the price screen has written. */
+window.__previewPricesCsv = () => pricesToCsv(state.priceRows);
+window.__previewReady = true;
 
 const showWidth = () => {
   document.querySelector("#preview-width").textContent =

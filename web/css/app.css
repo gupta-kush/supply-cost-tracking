@@ -672,10 +672,17 @@ body {
 /* ─────────────────────────── worth a look panel ─────────────────────────── */
 
 /* One surface. Entries are separated by a hairline rather than each being its own
-   box, so the panel does not become cards inside a card. */
+   box, so the panel does not become cards inside a card.
+
+   The panel grows to its content and never scrolls inside itself. A fixed height
+   with an inner scroller cuts the last entry mid-sentence, and a question you can
+   only half read is worse than a panel that is taller than the window. Sticky
+   simply stops applying once it is taller than the viewport, and it then scrolls
+   with the page like everything else. */
 .panel {
   position: sticky;
   top: 1rem;
+  align-self: start;
   border: 1px solid var(--app-rule);
   border-radius: var(--app-radius);
   background-color: var(--app-surface);
@@ -704,8 +711,7 @@ body {
 }
 
 .panel-body {
-  max-height: calc(100vh - 12rem);
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .panel-list {
@@ -815,6 +821,17 @@ body {
   border-style: solid;
   border-color: var(--app-accent);
   color: var(--app-accent);
+}
+
+/* The order-line notes sit under their own quiet label so nobody counts them as
+   work. They are context, not a queue. */
+.panel-aside-head {
+  padding: 0.7rem 1rem 0.2rem;
+  border-top: 1px solid var(--app-rule);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-ink-quiet);
 }
 
 .panel-empty {
@@ -976,6 +993,15 @@ body {
   border-top-color: var(--app-accent);
 }
 
+/* The vendor name and the cheapest mark share a line, so the mark sits with the
+   rule that lights up rather than floating below an empty note. */
+.pv-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-height: 1.35rem;
+}
+
 .pv-name {
   font-size: 0.8rem;
   font-weight: 600;
@@ -991,14 +1017,17 @@ body {
 
 .pv-note {
   font-size: 0.7rem;
-  line-height: 1.35;
+  line-height: 1.3;
   color: var(--app-ink-quiet);
-  min-height: 1.9rem;
+  min-height: 1.7rem;
 }
 
 .pv-best-mark {
-  font-size: 0.7rem;
+  margin-left: auto;
+  font-size: 0.68rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--app-accent);
   visibility: hidden;
 }
@@ -1268,11 +1297,6 @@ body {
     max-width: 34rem;
   }
 
-  /* Stacked under the table there is vertical room, so the list flows instead of
-     becoming a second scroller inside the page. */
-  .panel-body {
-    max-height: none;
-  }
 }
 
 @media (max-width: 900px) {

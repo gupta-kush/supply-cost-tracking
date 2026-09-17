@@ -78,6 +78,14 @@
     { "code": "STATUS_NOT_CLOSED", "text": "1 order line has a status other than Closed. It is still counted." }
   ],
 
+  "carriedPrices": [
+    { "canonical_name": "Avery Name Tag Inserts", "vendor": "Office Depot", "unit_price": "0.108", "status": "priced" },
+    { "canonical_name": "Avery Name Tag Inserts", "vendor": "Staples", "unit_price": "0.121", "status": "priced" },
+    { "canonical_name": "BIC Ballpoint Pens Black Medium", "vendor": "Office Depot", "unit_price": "0.092", "status": "priced" },
+    { "canonical_name": "EXPO Dry Erase Markers Assorted", "vendor": "Office Depot", "unit_price": "0.82", "status": "priced" },
+    { "canonical_name": "Hammermill Copy Paper 8.5x11", "vendor": "Staples", "unit_price": "5.39", "status": "priced" }
+  ],
+
   "priceRows": [
     { "rank": "1", "canonical_name": "Avery Name Tag Inserts", "vendor": "Office Depot", "unit_price": "0.10", "status": "priced", "url": "", "checked_on": "2026-09-17", "note": "" },
     { "rank": "1", "canonical_name": "Avery Name Tag Inserts", "vendor": "Preferred", "unit_price": "", "status": "not_available", "url": "", "checked_on": "2026-09-17", "note": "" },

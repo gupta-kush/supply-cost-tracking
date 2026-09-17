@@ -20,7 +20,7 @@
  * app.js exists and keeps the two modules out of an import cycle.
  */
 
-const VENDORS = ["Office Depot", "Preferred", "Amazon", "Staples"];
+import { VENDORS, PILL_WORDS, toNumber, cheapestVendors } from "./vendor-prices.js";
 
 /* Local view state. Nothing here is a decision, so none of it belongs in app state. */
 const view = {
@@ -55,21 +55,20 @@ function esc(value) {
     .split('"').join("&quot;");
 }
 
-const num = (value) => {
-  const n = Number(String(value ?? "").trim());
-  return Number.isFinite(n) ? n : null;
-};
+const num = toNumber;
 
 const fmt = () => (api && api.fmt) || {};
 
-/* format.js money() is whole dollars for the headline and two places with
-   {cents: true} for a per-each price, which is what report.js writes. */
+/* format.js money(): whole dollars for the headline money line, and up to four
+   places with {unit: true} for a price per each. Two places would print 0.0997 and
+   0.10 as the same figure while filling one of them as the cheaper, which is the
+   one thing a comparison screen must never do. */
 function money(value, options) {
   const f = fmt().money;
   return f ? f(value, options) : String(value ?? "");
 }
 
-const price = (value) => money(value, { cents: true });
+const price = (value) => money(value, { unit: true });
 
 function int(value) {
   const f = fmt().int;
@@ -121,30 +120,12 @@ function fullTitle(row) {
   return String((m && m.raw_title) || row.raw_title || row.canonical_name || "");
 }
 
-/** Price rows for one item, keyed by vendor, with the cheapest priced vendor named. */
+/** Price rows for one item, keyed by vendor, plus every vendor at the lowest price. */
 function pricesFor(name) {
   const rows = (api.state.priceRows || []).filter((r) => r.canonical_name === name);
   const byVendor = new Map(rows.map((r) => [r.vendor, r]));
-  let best = null;
-  let bestValue = null;
-  for (const vendor of VENDORS) {
-    const row = byVendor.get(vendor);
-    if (!row || row.status !== "priced") continue;
-    const value = num(row.unit_price);
-    if (value === null) continue;
-    if (bestValue === null || value < bestValue) {
-      bestValue = value;
-      best = vendor;
-    }
-  }
-  return { byVendor, best };
+  return { byVendor, best: cheapestVendors(byVendor).best };
 }
-
-const PILL_WORDS = {
-  not_available: "not available",
-  discontinued: "discontinued",
-  unpriced: "not priced",
-};
 
 /* ───────────────────────────── render ───────────────────────────── */
 
@@ -365,7 +346,9 @@ function pillHtml(row, vendor, priceRow, best) {
   const label = priced ? price(value) : (PILL_WORDS[status] || PILL_WORDS.unpriced);
   const classes = ["pill"];
   if (!priced) classes.push("is-empty");
-  if (priced && vendor === best) classes.push("is-best");
+  // Every vendor at the lowest price is filled. Filling one of a tie says it is
+  // cheaper than the others when it is not.
+  if (priced && best.has(vendor)) classes.push("is-best");
   return `<button type="button" class="${classes.join(" ")}" data-test="lb-pill"` +
     ` data-price-item="${esc(row.canonical_name || "")}" data-vendor="${esc(vendor)}">` +
     `${esc(label)}</button>`;
@@ -499,24 +482,34 @@ function renderPanel() {
     return;
   }
 
+  // The count is the number of questions. The order-line notes are here so the
+  // panel is the whole truth, but they ask nothing and answering them is not
+  // possible, so counting them inflates what is waiting for her.
+  const questions = entries.filter((entry) => entry.kind !== "note");
+  const asides = entries.filter((entry) => entry.kind === "note");
+
   // A panel headed "0 things worth a look" above the sentence that says nothing
   // needs you reads as a contradiction. When the count is zero the sentence is the
-  // title and there is nothing under it.
-  if (!entries.length) {
+  // title.
+  if (!questions.length) {
     title.textContent = "Nothing needs you";
-    list.innerHTML = "";
-    list.hidden = true;
     empty.hidden = false;
     empty.textContent =
       "Everything ranked came from last year's decisions or a title that says its own pack size.";
   } else {
-    title.textContent = `${int(entries.length)} ${entries.length === 1 ? "thing" : "things"} worth a look`;
-    list.hidden = false;
+    title.textContent = `${int(questions.length)} ${questions.length === 1 ? "thing" : "things"} worth a look`;
     empty.hidden = true;
-    list.innerHTML = entries.map(entryHtml).join("");
   }
 
-  renderPanelFoot(entries.length);
+  list.hidden = !entries.length;
+  list.innerHTML =
+    questions.map(entryHtml).join("") +
+    (asides.length
+      ? `<li class="panel-aside-head">Also worth knowing</li>` +
+        asides.map(entryHtml).join("")
+      : "");
+
+  renderPanelFoot(questions.length);
 }
 
 function entryHtml(entry) {
