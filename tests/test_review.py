@@ -124,6 +124,20 @@ def test_two_listings_can_be_given_one_name(reviewed):
     assert names == {"Avery Name Tag Inserts"}
 
 
+def test_a_parked_row_with_blank_include_is_requeued(reviewed):
+    """webapp-v2-spec.md section 7: the page parks an undecided row with a
+    blank include rather than a real decision, and it must come back next run
+    rather than vanishing the way a real include=n would."""
+    master = load_master(reviewed)
+    key = next(iter(master))
+    master[key].include = ""
+    save_master(reviewed, master)
+
+    rows = read_csv(build_queue(reviewed, YEAR))
+    parked = next(r for r in rows if r["key"] == key)
+    assert parked["queue_reason"] == "unknown key"
+
+
 def test_a_row_with_no_decision_is_refused_by_line_number(ingested, tmp_path):
     queue = build_queue(ingested, YEAR)
     rows = read_csv(queue)

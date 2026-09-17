@@ -156,7 +156,9 @@ def check_master(data_dir: Path, year: int) -> list[Finding]:
     for key in sorted(used):
         entry = master.get(key)
         if entry is None or not entry.included:
-            if entry is not None and entry.include == "n" and entry.amazon_category:
+            # A parked row (blank include) has no decision yet, so it cannot be
+            # "odd for its category" - that warning is only for a real include=n.
+            if entry is not None and entry.include.strip() == "n" and entry.amazon_category:
                 if category_expected_include(entry.amazon_category) == "y":
                     odd_category.append(
                         f"{entry.canonical_name or entry.raw_title[:40]} is excluded but its "

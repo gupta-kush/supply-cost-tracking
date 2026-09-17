@@ -95,7 +95,10 @@ def rank(data_dir: Path, year: int) -> RankResult:
             excluded_rows.append(_excluded(row, "not in item master"))
             continue
         if not entry.included:
-            excluded_rows.append(_excluded(row, "include=n"))
+            # A parked row (blank include) has not been decided either way, so
+            # it is not the same fact as include=n and must not read like one.
+            reason = "include=n" if entry.include.strip() else "no decision yet"
+            excluded_rows.append(_excluded(row, reason))
             continue
 
         agg = per_key.setdefault(

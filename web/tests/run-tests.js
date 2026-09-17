@@ -543,6 +543,49 @@ function testConvenienceNames() {
   }
 }
 
+/**
+ * webapp-v2-spec.md section 7: a row the page parks with a blank `include`
+ * (v2's undecided rows) is not the same fact as a real `include=n` - it must
+ * come back next run, be excluded under its own reason, and never trip the
+ * category-rule warning meant for a real decision.
+ */
+function testParkedRows() {
+  const master = new Map([
+    ["amz:parked", P.makeMasterRow({
+      key: "amz:parked", include: "", canonical_name: "Parked Item",
+      amazon_category: "Office Product", source: "amazon", raw_title: "Parked Item",
+    })],
+  ]);
+  const lines = [{
+    key: "amz:parked", source: "amazon", raw_title: "Parked Item",
+    amazon_category: "Office Product", packs: 1, order_date: "2025-01-01",
+  }];
+
+  const { queueRows } = P.buildQueue({ lines, master, year: 2025 });
+  assertEqual(
+    "a parked row (blank include) is requeued as unknown key",
+    queueRows[0] && queueRows[0].queue_reason,
+    P.REASON_UNKNOWN
+  );
+
+  const ranking = P.rank({ lines, master, year: 2025 });
+  assertTrue(
+    "a parked row does not fail the ranking",
+    !ranking.findings.some((f) => f.level === "fail"),
+    JSON.stringify(ranking.findings.filter((f) => f.level === "fail"))
+  );
+  assertDeep(
+    "a parked row is excluded with its own reason, not include=n",
+    ranking.excluded.map((e) => e.reason),
+    ["no decision yet"]
+  );
+  assertTrue(
+    "a parked row raises no CATEGORY_UNUSUAL warning",
+    !ranking.findings.some((f) => f.code === "CATEGORY_UNUSUAL"),
+    JSON.stringify(ranking.findings)
+  );
+}
+
 /** A decision row that is not ready to apply is rejected, and nothing is written. */
 function testApplyQueueRejects() {
   const base = { key: "amz:x", raw_title: "Widget", canonical_name: "Widget" };
@@ -1057,6 +1100,7 @@ testEndToEnd();
 testSecondRun();
 testConvenienceNames();
 testApplyQueueRejects();
+testParkedRows();
 
 if (failures.length) {
   console.log("");

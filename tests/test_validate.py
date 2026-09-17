@@ -80,6 +80,21 @@ def test_an_item_included_against_its_category_is_flagged(reviewed):
     assert "Grocery" in [f for f in findings if f.code == "CATEGORY_UNUSUAL"][0].message
 
 
+def test_a_parked_row_raises_no_category_warning(reviewed):
+    """webapp-v2-spec.md section 7: a blank include has no decision yet, so it
+    cannot be "odd for its category" - that warning is only for a real
+    include=n."""
+    master = load_master(reviewed)
+    office = next(k for k, row in master.items() if row.amazon_category == "Office Product")
+    canonical = master[office].canonical_name or master[office].raw_title[:40]
+    master[office].include = ""
+    save_master(reviewed, master)
+    findings = check_master(reviewed, YEAR)
+    assert codes(findings, "fail") == []
+    cat_messages = " ".join(f.message for f in findings if f.code == "CATEGORY_UNUSUAL")
+    assert canonical not in cat_messages
+
+
 def test_two_names_that_should_probably_be_one_item_are_flagged(reviewed):
     master = load_master(reviewed)
     master["pbs:UNV35668"].canonical_name = "Binder Clips Medium Black"

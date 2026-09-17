@@ -106,6 +106,20 @@ def test_excluded_lines_are_listed_with_their_reason(reviewed, ranked):
     assert all(row["reason"] in ("include=n", "not in item master") for row in rows)
 
 
+def test_a_parked_row_is_excluded_as_no_decision_yet(reviewed):
+    """webapp-v2-spec.md section 7: a blank include is not the same fact as a
+    real include=n, and the excluded reason must say so rather than implying
+    someone decided against the item."""
+    master = load_master(reviewed)
+    key = next(iter(master))
+    master[key].include = ""
+    save_master(reviewed, master)
+
+    result = rank(reviewed, YEAR)
+    rows = [r for r in read_csv(result.excluded_path) if r["key"] == key]
+    assert rows and all(r["reason"] == "no decision yet" for r in rows)
+
+
 def test_included_plus_excluded_equals_every_line_read(ranked):
     assert ranked.included_lines + ranked.excluded_lines == ranked.total_lines == 17
     assert ranked.excluded_lines == 2

@@ -1575,6 +1575,10 @@ export function ingest({
 
 function queueReason(known) {
   if (!known) return REASON_UNKNOWN;
+  // A row parked with a blank include (v2's undecided rows, spec section 7) is
+  // asked about again next run rather than vanishing; a real include=n is a
+  // decision and is not requeued.
+  if (!String(known.include ?? "").trim()) return REASON_UNKNOWN;
   if (!masterIncluded(known)) return "";
   if (masterUnitsPerPackInt(known) === null) return REASON_MISSING;
   if (UNCONFIRMED_UPP_SOURCES.has(casefold(String(known.upp_source ?? "").trim()))) {
@@ -2042,7 +2046,10 @@ export function rank({ lines, master, year, run = {} } = {}) {
       continue;
     }
     if (!masterIncluded(entry)) {
-      excluded.push(excludedRow(row, "include=n"));
+      // A parked row (blank include) has not been decided either way, so it is
+      // not the same fact as include=n and must not read like one.
+      const reason = String(entry.include ?? "").trim() ? "include=n" : "no decision yet";
+      excluded.push(excludedRow(row, reason));
       continue;
     }
     let agg = perKey.get(row.key);
@@ -2494,7 +2501,10 @@ export function checkMaster({ lines, master, year } = {}) {
   for (const key of used) {
     const entry = m.get(key);
     if (!entry || !masterIncluded(entry)) {
-      if (entry && entry.include === "n" && entry.amazon_category) {
+      // A parked row (blank include) has no decision yet, so it cannot be "odd
+      // for its category" - that warning is only for a real include=n.
+      const includeText = casefold(String((entry && entry.include) ?? "").trim());
+      if (entry && includeText === "n" && entry.amazon_category) {
         if (categoryExpectedInclude(entry.amazon_category) === "y") {
           oddCategory.push(
             `${entry.canonical_name || slicePoints(entry.raw_title, 40)} is excluded but its ` +

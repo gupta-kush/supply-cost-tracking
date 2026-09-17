@@ -142,6 +142,11 @@ def _queue_reason(known: MasterRow | None) -> str:
     """Why this key is in the queue, or "" when it needs nothing."""
     if known is None:
         return REASON_UNKNOWN
+    # A row parked with a blank include (v2's undecided rows) is asked about
+    # again next run rather than vanishing; a real include=n is a decision and
+    # is not requeued.
+    if not known.include.strip():
+        return REASON_UNKNOWN
     if not known.included:
         return ""
     if known.units_per_pack_int is None:
