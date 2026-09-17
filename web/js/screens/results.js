@@ -2,8 +2,7 @@
  *
  * This module renders and nothing else. It reads `api.state`, it calls `api.answer`,
  * `api.confirmProposed` and `api.go` on a click, and it never writes to state or
- * touches pipeline.js. Everything it needs is passed in, so the preview harness in
- * tests/results-preview.html can drive the same code from a JSON fixture:
+ * touches pipeline.js. Everything it needs is passed in:
  *
  *   mountResults({ state, subscribe, go, answer, confirmProposed, moneyLine, fmt })
  *
@@ -14,10 +13,13 @@
  *   confirmProposed(keys)   confirm pack sizes the page proposed, no other change
  *   moneyLine()      {amount, itemsCounted, basisSentence} per spec section 4;
  *                    falls back to fmt.moneyLine(ranked, priceRows, top)
- *   fmt              format.js: money, int, plural, displayName, provenance
+ *   fmt              format.js: money, int, plural, displayName,
+ *                    distinctDisplayNames, provenance
  *
- * Injecting the api rather than importing app.js keeps this file loadable before
- * app.js exists and keeps the two modules out of an import cycle.
+ * Injecting the api rather than importing app.js keeps the two modules out of an
+ * import cycle, and is what let this screen be built and checked against a fixture
+ * before app.js had a buildList. That scaffolding is gone now; the headless tests
+ * drive the real page.
  */
 
 import { VENDORS, PILL_WORDS, toNumber, cheapestVendors } from "./vendor-prices.js";
@@ -89,7 +91,33 @@ function plural(n, word) {
   return f ? f(n, word) : `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
+/**
+ * Display names for one render, computed over the whole set at once.
+ *
+ * `displayName` truncates a row on its own, so three product names that differ only
+ * past the cut come out identical: the three Qeeenar flag colours all read
+ * "Qeeenar 1250 Pcs Sign and Date Flags Her..." at ranks 1, 2 and 3.
+ * `distinctDisplayNames` compares the set and extends only the colliding ones, so it
+ * has to be given every row the screen is about to show, once, rather than called
+ * per row. The cache is keyed by row identity and rebuilt each render.
+ */
+let names = new Map();
+
+function buildNames() {
+  names = new Map();
+  const f = fmt().distinctDisplayNames;
+  if (!f) return;
+  const s = api.state;
+  const rows = []
+    .concat(s.ranked || [])
+    .concat(openRows())
+    .concat(proposedRows());
+  const distinct = f(rows);
+  rows.forEach((row, i) => names.set(row, distinct[i]));
+}
+
 function displayName(row) {
+  if (names.has(row)) return names.get(row);
   const f = fmt().displayName;
   return f ? f(row) : String(row.canonical_name || row.raw_title || "");
 }
@@ -145,6 +173,7 @@ function pricesFor(name) {
 
 function render() {
   if (!api || !api.state) return;
+  buildNames();
   renderHead();
   renderLeaderboard();
   renderPanel();

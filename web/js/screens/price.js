@@ -6,6 +6,10 @@
  *
  *   mountPrice({ state, subscribe, go, setPrice, fmt })
  *
+ * `fmt` is format.js; the card names items with `distinctDisplayNames` over the set
+ * being priced, not `displayName` per item, so two colours of the same product do
+ * not appear under one name on consecutive cards.
+ *
  * Entered from Results, either by the button or by a vendor pill. A pill sets
  * `state.priceFocus = {item, vendor}`; this module reads it once and clears it, so
  * `go("price", focus)` and a plain `go("price")` both work.
@@ -102,7 +106,25 @@ function int(value) {
   return f ? f(value) : String(value ?? "");
 }
 
+/**
+ * The same set-at-a-time naming the leaderboard uses, so the card, the vendor
+ * search links, the dot titles and the live region all say what the leaderboard
+ * said. Calling `displayName` per item would show two of the three flag colours
+ * under the same name on consecutive cards.
+ */
+let names = new Map();
+
+function buildNames() {
+  names = new Map();
+  const f = fmt().distinctDisplayNames;
+  if (!f) return;
+  const rows = items();
+  const distinct = f(rows);
+  rows.forEach((row, i) => names.set(row, distinct[i]));
+}
+
 function displayName(row) {
+  if (names.has(row)) return names.get(row);
   const f = fmt().displayName;
   return f ? f(row) : String(row.canonical_name || row.raw_title || "");
 }
@@ -201,6 +223,7 @@ function render() {
   const screen = $("#screen-price");
   const visible = !!screen && !screen.hidden;
 
+  buildNames();
   renderProgress();
   renderCard();
   renderDots();
