@@ -4,8 +4,10 @@ Why this exists
 ----------------
 GitHub Pages serves every file with `Cache-Control: max-age=600`, and the browser app is a
 graph of ES modules loaded one file at a time (`index.html` -> `js/app.js` -> `js/pipeline.js`,
-`js/report.js`, `js/xlsxio.js`, `js/csv.js`, `js/suggest.js`, plus `prompts/proposal.json`
-fetched at runtime). A browser that already has one file cached can, for up to ten minutes
+`js/report.js`, `js/xlsxio.js`, `js/csv.js`, `js/suggest.js`, `js/format.js`, `js/screens/drop.js`,
+`js/screens/results.js`, `js/screens/price.js`, `js/screens/done.js`,
+`js/screens/vendor-prices.js`, plus `prompts/proposal.json` fetched at runtime). A browser that
+already has one file cached can, for up to ten minutes
 after a deploy, load that stale file next to a fresh one - an old `app.js` calling into a new
 `pipeline.js`, for example. Appending `?v=<short commit sha>` to every reference makes each
 deploy either fully old or fully new: the query string is part of the URL a browser caches
