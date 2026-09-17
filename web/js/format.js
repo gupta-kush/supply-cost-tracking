@@ -82,6 +82,66 @@ export function displayName(row) {
   return truncateCanonical(row && row.canonical_name);
 }
 
+const MAX_DISTINCT_NAME = 60;
+
+/** How much of the start of every string in the group is identical. */
+function commonPrefixLength(strings) {
+  if (!strings.length) return 0;
+  let len = strings[0].length;
+  for (const s of strings.slice(1)) {
+    let i = 0;
+    while (i < len && i < s.length && s[i] === strings[0][i]) i += 1;
+    len = i;
+  }
+  return len;
+}
+
+/**
+ * Display names for a set of rows (the Top N leaderboard, in practice), made
+ * distinct when truncation collapses two or more to the same text - three
+ * real 2025 rows ("Qeeenar ... 1 Inch(Blue,Initial Here)", "...(Green,Sign &
+ * Date)", "...(Yellow,Please Sign Here)") all read "Qeeenar 1250 Pcs Sign and
+ * Date Flags He..." otherwise, because the part that differs sits past the
+ * 40-character cut. Every row in a colliding group is extended with its own
+ * tail - the part of `canonical_name` past what the whole group has in
+ * common - in parentheses, the whole name capped at 60 characters. A row
+ * that collides with nothing is untouched.
+ */
+export function distinctDisplayNames(rows) {
+  const list = rows || [];
+  const base = list.map((row) => displayName(row));
+  const groups = new Map();
+  base.forEach((name, i) => {
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(i);
+  });
+
+  const result = base.slice();
+  for (const indices of groups.values()) {
+    if (indices.length < 2) continue;
+    const fullNames = indices.map((i) => String((list[i] && list[i].canonical_name) || "").trim());
+    const prefixLen = commonPrefixLength(fullNames);
+    indices.forEach((i, n) => {
+      const name = base[i].replace(new RegExp(`${ELLIPSIS}$`), "").trim();
+      const tail = fullNames[n]
+        .slice(prefixLen)
+        .replace(/^[,;:\-\s(]+/, "")
+        .replace(/\)+$/, "")
+        .trim();
+      if (!tail) return;
+      const suffix = ` (${tail})`;
+      const room = Math.max(10, MAX_DISTINCT_NAME - suffix.length);
+      const shortened = name.length <= room ? name : name.slice(0, room).trim();
+      let extended = `${shortened}${suffix}`;
+      if (extended.length > MAX_DISTINCT_NAME) {
+        extended = `${extended.slice(0, MAX_DISTINCT_NAME - 1)}${ELLIPSIS}`;
+      }
+      result[i] = extended;
+    });
+  }
+  return result;
+}
+
 /**
  * The one-sentence provenance line for a ranked row's pack size.
  * webapp-v2-spec.md section 2.2: "1,250 per pack, from the title" /

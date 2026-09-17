@@ -148,6 +148,65 @@ function testDisplayName() {
   );
 }
 
+// ------------------------------------------------- distinct display names
+
+function testDistinctDisplayNames() {
+  // Synthetic: three names that share a 50-character common run, so they all
+  // truncate to the same 40 characters plus an ellipsis before ever reaching
+  // the parenthetical that actually tells them apart.
+  const common = "A".repeat(50);
+  const rows = [
+    { canonical_name: `${common} (Alpha One)` },
+    { canonical_name: `${common} (Beta Two)` },
+    { canonical_name: `${common} (Gamma Three)` },
+  ];
+  const plain = rows.map((r) => F.displayName(r));
+  assertEqual(
+    "the plain names really do collide first",
+    new Set(plain).size,
+    1
+  );
+  const distinct = F.distinctDisplayNames(rows);
+  assertEqual("distinctDisplayNames returns one name per row", distinct.length, 3);
+  assertEqual("collision resolved: three distinct names", new Set(distinct).size, 3);
+  assertTrue(
+    "each extended name carries its own tail",
+    distinct[0].includes("Alpha One") && distinct[1].includes("Beta Two") &&
+      distinct[2].includes("Gamma Three"),
+    JSON.stringify(distinct)
+  );
+  assertTrue(
+    "every extended name stays at or under 60 characters",
+    distinct.every((n) => n.length <= 60),
+    JSON.stringify(distinct.map((n) => n.length))
+  );
+
+  // A row with nothing colliding is returned exactly as displayName would give it.
+  const solo = F.distinctDisplayNames([{ canonical_name: "Copy Paper" }]);
+  assertEqual("a lone row is untouched", solo[0], "Copy Paper");
+  assertEqual("no rows means no names", F.distinctDisplayNames([]).length, 0);
+
+  // The real case, when the real 2025 data is present: three Qeeenar flag
+  // colours that render identically under truncateCanonical alone.
+  const rankedPath = path.resolve(HERE, "../../../data/2025/ranked.csv");
+  if (!fs.existsSync(rankedPath)) {
+    console.log("SKIP real Qeeenar rows - data/2025/ranked.csv is not present");
+    return;
+  }
+  const ranked = csv.parseObjects(fs.readFileSync(rankedPath, "utf8")).rows;
+  const qeeenar = ranked.filter((r) => r.canonical_name.startsWith("Qeeenar"));
+  assertEqual("the real fixture has the three Qeeenar rows", qeeenar.length, 3);
+  const realPlain = qeeenar.map((r) => F.displayName(r));
+  assertEqual("the three real rows collide under plain displayName", new Set(realPlain).size, 1);
+  const realDistinct = F.distinctDisplayNames(qeeenar);
+  assertEqual("distinctDisplayNames separates the three real rows", new Set(realDistinct).size, 3);
+  assertTrue(
+    "every real extended name stays at or under 60 characters",
+    realDistinct.every((n) => n.length <= 60),
+    JSON.stringify(realDistinct)
+  );
+}
+
 // --------------------------------------------------------------- provenance
 
 function testProvenance() {
@@ -268,6 +327,7 @@ testInt();
 testMoney();
 testPlural();
 testDisplayName();
+testDistinctDisplayNames();
 testProvenance();
 testMoneyLine();
 
