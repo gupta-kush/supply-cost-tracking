@@ -26,15 +26,21 @@ const STATUS_LABELS = [
 ];
 
 /**
- * Where a vendor name links to. Each is that vendor's own search, opened in a new
- * tab with the display name as the query. Preferred is an account site with no
- * public search, so it is a link only when the app supplies the address in
- * `state.vendorSites`; until then the name is plain text rather than a guess.
+ * Where a vendor name links to, opened in a new tab. Three of them take the display
+ * name as a search query. Preferred is the Pettus order portal and its prices are
+ * behind a login, so there is no query to send: it opens the portal home and she
+ * searches there. `state.vendorSites` overrides any of them.
  */
 const VENDOR_SEARCH = {
   "Office Depot": (q) => `https://www.officedepot.com/catalog/search.do?Ntt=${q}`,
   Amazon: (q) => `https://www.amazon.com/s?k=${q}`,
   Staples: (q) => `https://www.staples.com/search?query=${q}`,
+  Preferred: () => "https://www.pbsorder.com/",
+};
+
+/** Said on the link, because one of the four does not land on the product. */
+const VENDOR_LINK_TITLE = {
+  Preferred: "Opens the Preferred order portal. Prices are behind the account login.",
 };
 
 /* Local view state. None of it is a decision, so none of it belongs in app state. */
@@ -335,11 +341,12 @@ function vendorHtml(item, vendor, row, best) {
   const isBest = vendor === best;
 
   const query = encodeURIComponent(displayName(item));
-  const site = VENDOR_SEARCH[vendor]
-    ? VENDOR_SEARCH[vendor](query)
-    : (api.state.vendorSites && api.state.vendorSites[vendor]) || "";
+  const override = api.state.vendorSites && api.state.vendorSites[vendor];
+  const site = override || (VENDOR_SEARCH[vendor] ? VENDOR_SEARCH[vendor](query) : "");
+  const hint = VENDOR_LINK_TITLE[vendor];
   const heading = site
-    ? `<a href="${esc(site)}" target="_blank" rel="noopener noreferrer">${esc(vendor)}</a>`
+    ? `<a href="${esc(site)}" target="_blank" rel="noopener noreferrer"` +
+      `${hint ? ` title="${esc(hint)}"` : ""}>${esc(vendor)}</a>`
     : esc(vendor);
 
   const note = noteFor(item, vendor, status);
