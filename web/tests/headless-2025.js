@@ -21,6 +21,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import * as csv from "../js/csv.js";
+import * as fmt from "../js/format.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = path.resolve(HERE, "..");
@@ -111,7 +112,9 @@ async function readState(page) {
       screen: s.screen,
       error: s.error,
       lines: s.lines ? s.lines.length : null,
-      ranked: s.ranked.length,
+      ranked: s.ranked,
+      priceRows: s.priceRows,
+      top: s.top,
       undecided: s.openCount,
       names: s.ranked.map((r) => r.canonical_name),
     };
@@ -140,11 +143,17 @@ async function testWithCarriedMaster(browser, url) {
   assertEqual("with the carried master: no error", state.error, null);
   assertEqual("with the carried master: Results is reached", state.screen, "results");
   assertEqual("with the carried master: 1,238 order lines read", state.lines, 1238);
-  assertEqual("with the carried master: 140 ranked", state.ranked, 140);
+  assertEqual("with the carried master: 140 ranked", state.ranked.length, 140);
   assertEqual("with the carried master: 0 undecided", state.undecided, 0);
 
   const expected = rankedNames(fs.readFileSync(RANKED_2025, "utf8"));
   assertEqual("ranked names match data/2025/ranked.csv, in order", state.names, expected);
+
+  // Reviewer, review-phase1-2.md item 8: the money line is the number the whole report exists
+  // to surface, and the least loose check here was leaving it unasserted entirely.
+  const money = fmt.moneyLine(state.ranked, state.priceRows, state.top);
+  assertEqual("money line: $427 on the table", money.amount, 427);
+  assertEqual("money line: 17 items priced at both", money.itemsCounted, 17);
 
   await page.close();
 }
@@ -155,11 +164,10 @@ async function testExportsAlone(browser, url) {
 
   assertEqual("exports alone: no error", state.error, null);
   assertEqual("exports alone: Results is reached", state.screen, "results");
-  assertTrue(
-    "exports alone: undecided is above zero",
-    state.undecided > 0,
-    `undecided was ${state.undecided}`
-  );
+  // Reviewer, review-phase1-2.md item 8: pinned exact counts, not just "> 0", so an
+  // auto-decide regression that still leaves some undecided rows does not slip through.
+  assertEqual("exports alone: 95 ranked", state.ranked.length, 95);
+  assertEqual("exports alone: 286 undecided", state.undecided, 286);
 
   await page.close();
 }
