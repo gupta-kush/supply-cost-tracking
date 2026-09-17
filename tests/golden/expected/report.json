@@ -1623,6 +1623,11 @@
           "f": null,
           "t": "s",
           "v": "purchase unit is the carton: 10 reams per carton"
+        },
+        "M1": {
+          "f": null,
+          "t": "s",
+          "v": "display_name"
         }
       },
       "column_widths": {
@@ -1637,7 +1642,8 @@
         "I": 24.0,
         "J": 12.0,
         "K": 12.0,
-        "L": 36.0
+        "L": 36.0,
+        "M": 16.0
       },
       "conditional_formatting": [],
       "fills": {},

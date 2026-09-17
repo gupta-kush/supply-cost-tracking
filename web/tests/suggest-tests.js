@@ -368,6 +368,33 @@ function testMerge() {
     S.PROPOSE_COLUMNS,
     [...REVIEW_COLUMNS, "confidence", "proposed_by"]
   );
+
+  // webapp-v2-spec.md section 5: display_name is not a queue column, carried on the row like
+  // proposed_by, present only when the model actually returned one.
+  const named = S.mergeProposals(
+    [{ key: "k" }],
+    [{ key: "k", display_name: "Avery Name Tag Inserts", confidence: "high" }],
+    "f"
+  )[0];
+  assertEqual("a model's display_name is carried onto the merged row", named.display_name, "Avery Name Tag Inserts");
+  const capped = S.mergeProposals(
+    [{ key: "k" }],
+    [{ key: "k", display_name: "A".repeat(60), confidence: "high" }],
+    "f"
+  )[0];
+  assertEqual("a display_name past 40 characters is capped", capped.display_name.length, 40);
+  const blankName = S.mergeProposals([{ key: "k" }], [{ key: "k", confidence: "high" }], "f")[0];
+  assertEqual("no display_name from the model leaves it blank", blankName.display_name, "");
+  const keptName = S.mergeProposals(
+    [{ key: "k", display_name: "Existing Name" }],
+    [{ key: "k", confidence: "high" }],
+    "f"
+  )[0];
+  assertEqual(
+    "a display_name already on the row survives a proposal that says nothing new",
+    keptName.display_name,
+    "Existing Name"
+  );
 }
 
 // ------------------------------------------------------------ batching

@@ -46,6 +46,7 @@ MASTER_COLUMNS = [
     "first_seen",
     "last_seen",
     "note",
+    "display_name",
 ]
 
 # Amazon's own product categories. Anything in neither list is a decision for a
@@ -114,6 +115,9 @@ class MasterRow:
     first_seen: str = ""
     last_seen: str = ""
     note: str = ""
+    # webapp-v2-spec.md section 5: a model's short leaderboard name, up to 40
+    # characters. Blank means the page falls back to truncating canonical_name.
+    display_name: str = ""
 
     @property
     def included(self) -> bool:

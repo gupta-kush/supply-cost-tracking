@@ -577,6 +577,9 @@ export const LINES_COLUMNS = [
 export const MASTER_COLUMNS = [
   "key", "source", "raw_title", "include", "canonical_name", "units_per_pack",
   "unit_label", "upp_source", "amazon_category", "first_seen", "last_seen", "note",
+  // webapp-v2-spec.md section 5: a model's short leaderboard name, up to 40 characters.
+  // Blank means the page falls back to truncating canonical_name. makeMasterRow defaults it.
+  "display_name",
 ];
 
 export const REVIEW_COLUMNS = [

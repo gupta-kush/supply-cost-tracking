@@ -18,6 +18,7 @@
       "unit_label": "EA",
       "note": "confidential-note-do-not-send ordered by buyer@example.invalid",
       "proposed_by": "anthropic:claude-sonnet-5",
+      "display_name": "",
       "confidence": "high"
     },
     {
@@ -37,6 +38,7 @@
       "unit_label": "RM",
       "note": "",
       "proposed_by": "anthropic:claude-sonnet-5",
+      "display_name": "",
       "confidence": "high"
     },
     {
@@ -56,6 +58,7 @@
       "unit_label": "EA",
       "note": "",
       "proposed_by": "anthropic:claude-sonnet-5",
+      "display_name": "",
       "confidence": "high"
     },
     {
@@ -75,6 +78,7 @@
       "unit_label": "EA",
       "note": "",
       "proposed_by": "anthropic:claude-sonnet-5",
+      "display_name": "",
       "confidence": "medium"
     },
     {
@@ -94,6 +98,7 @@
       "unit_label": "EA",
       "note": "",
       "proposed_by": "anthropic:claude-sonnet-5",
+      "display_name": "",
       "confidence": "low"
     },
     {
@@ -113,6 +118,7 @@
       "unit_label": "EA",
       "note": "",
       "proposed_by": "anthropic:claude-sonnet-5",
+      "display_name": "",
       "confidence": "high"
     },
     {
@@ -132,6 +138,7 @@
       "unit_label": "EA",
       "note": "",
       "proposed_by": "anthropic:claude-sonnet-5",
+      "display_name": "",
       "confidence": "low"
     },
     {
@@ -151,6 +158,7 @@
       "unit_label": "EA",
       "note": "",
       "proposed_by": "anthropic:claude-sonnet-5",
+      "display_name": "",
       "confidence": "none"
     }
   ]

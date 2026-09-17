@@ -451,6 +451,9 @@ export function mergeProposals(batch, proposals, proposedBy) {
     const merged = {};
     for (const column of REVIEW_COLUMNS) merged[column] = String(row[column] ?? "");
     merged.proposed_by = String(proposedBy ?? "");
+    // webapp-v2-spec.md section 5: not a queue column, carried on the row like proposed_by,
+    // through to the master row app.js writes.
+    merged.display_name = String(row.display_name ?? "");
 
     const proposal = byKey.get(String(row.key ?? ""));
     if (!proposal) {
@@ -475,6 +478,9 @@ export function mergeProposals(batch, proposals, proposedBy) {
     if (canonical) merged.canonical_name = canonical;
     const canonicalReason = reasonText(proposal.canonical_reason);
     if (canonicalReason) merged.canonical_reason = canonicalReason;
+
+    const displayName = text(proposal.display_name).slice(0, 40);
+    if (displayName) merged.display_name = displayName;
 
     const confidence = casefold(text(proposal.confidence));
     merged.confidence = VALID_CONFIDENCE.has(confidence) ? confidence : "low";

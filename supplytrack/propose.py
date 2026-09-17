@@ -501,6 +501,9 @@ def merge_proposals(batch: list[dict], proposals: list[dict], proposed_by: str) 
         merged = {column: str(row.get(column, "") or "") for column in REVIEW_COLUMNS}
         proposal = by_key.get(str(row.get("key") or ""))
         merged["proposed_by"] = proposed_by
+        # webapp-v2-spec.md section 5: not a queue column, carried on the row like
+        # proposed_by, through to the master row the page writes.
+        merged["display_name"] = str(row.get("display_name", "") or "")
 
         if proposal is None:
             merged["confidence"] = "none"
@@ -531,6 +534,10 @@ def merge_proposals(batch: list[dict], proposals: list[dict], proposed_by: str) 
         canonical_reason = _reason(proposal.get("canonical_reason"))
         if canonical_reason:
             merged["canonical_reason"] = canonical_reason
+
+        display_name = str(proposal.get("display_name") or "").strip()[:40]
+        if display_name:
+            merged["display_name"] = display_name
 
         confidence = str(proposal.get("confidence") or "").strip().casefold()
         merged["confidence"] = confidence if confidence in _VALID_CONFIDENCE else "low"

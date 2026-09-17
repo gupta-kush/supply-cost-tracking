@@ -1,16 +1,16 @@
-key,source,raw_title,include,canonical_name,units_per_pack,unit_label,upp_source,amazon_category,first_seen,last_seen,note
-amz:avery name badge inserts 400 printable name tag inserts 3 x 4 in white,amazon,"Avery Name Badge Inserts, 400 Printable Name Tag Inserts, 3 x 4 in, White",y,Avery Name Tag Inserts,200,EA,master,Office Product,2025,2025,listing states 400 but this SKU ships a half case (200); merged with the other Name Tag listing
-amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches,amazon,"Avery Printable Name Tags, 400 Printable Name Tag Inserts, 3 x 4 Inches",y,Avery Name Tag Inserts,400,EA,master,Office Product,2025,2025,
-amz:bic round stic ballpoint pens medium point black 60-count,amazon,"BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count",y,BIC Ballpoint Pens Black Medium,60,EA,master,Office Product,2025,2025,
-amz:bubly sparkling water variety pack 18 count,amazon,"Bubly Sparkling Water, Variety Pack, 18 Count",n,Bubly Sparkling Water,1,EA,,Grocery,2025,2025,excluded: Grocery item is not an office supply
-amz:cable zip ties 8 inch black (bulk 1000 pack),amazon,"Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)",n,Cable Zip Ties,1,EA,,Tools & Home Improvement,2025,2025,excluded by the office manager in 2025
-amz:expo low-odor dry erase markers chisel tip assorted 48/pack,amazon,"EXPO Low-Odor Dry Erase Markers, Chisel Tip, Assorted, 48/Pack",y,EXPO Dry Erase Markers Assorted,48,EA,master,Office Product,2025,2025,
-amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton,amazon,"Hammermill Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton",y,Hammermill Copy Paper 8.5x11,10,RM,master,Office Product,2025,2025,purchase unit is the carton: 10 reams per carton
-amz:kleenex professional facial tissue display pack of 6,amazon,"Kleenex Professional Facial Tissue, Display Pack of 6",y,Kleenex Professional Facial Tissue,6,EA,master,"Business, Industrial, & Scientific Supplies Basic",2025,2025,
-amz:post-it notes 3 x 3 inches canary yellow 12 pads,amazon,"Post-it Notes, 3 x 3 Inches, Canary Yellow, 12 Pads",y,Post-it Notes 3x3 Yellow,12,EA,master,Office Product,2025,2025,
-amz:scotch magic tape 3/4 x 1000 inches 6 rolls,amazon,"Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls",y,Scotch Magic Tape 3/4in,6,EA,master,Office Product,2025,2025,
-amz:sharpie permanent markers fine point assorted 12 count,amazon,"Sharpie Permanent Markers, Fine Point, Assorted, 12 Count",y,Sharpie Permanent Markers Assorted,24,EA,master,Office Product,2025,2025,title says 12 Count; box actually holds two dozen; confirmed against invoice
-pbs:PBS9001,preferred,Letterhead Printed 2 Colour,y,Letterhead Printed 2 Colour,1,EA,master,,2025,2025,
-pbs:SAN30001,preferred,Permanent Marker Fine Point Black,y,Permanent Marker Fine Point Black,1,EA,master,,2025,2025,
-pbs:UNV21200,preferred,Copy Paper 8.5 x 11 20lb White,y,Preferred Copy Paper 8.5x11 White,10,EA,master,,2025,2025,
-pbs:UNV35668,preferred,Binder Clips Medium Black,y,Binder Clips Medium Black,100,EA,master,,2025,2025,
+key,source,raw_title,include,canonical_name,units_per_pack,unit_label,upp_source,amazon_category,first_seen,last_seen,note,display_name
+amz:avery name badge inserts 400 printable name tag inserts 3 x 4 in white,amazon,"Avery Name Badge Inserts, 400 Printable Name Tag Inserts, 3 x 4 in, White",y,Avery Name Tag Inserts,200,EA,master,Office Product,2025,2025,listing states 400 but this SKU ships a half case (200); merged with the other Name Tag listing,
+amz:avery printable name tags 400 printable name tag inserts 3 x 4 inches,amazon,"Avery Printable Name Tags, 400 Printable Name Tag Inserts, 3 x 4 Inches",y,Avery Name Tag Inserts,400,EA,master,Office Product,2025,2025,,
+amz:bic round stic ballpoint pens medium point black 60-count,amazon,"BIC Round Stic Ballpoint Pens, Medium Point, Black, 60-Count",y,BIC Ballpoint Pens Black Medium,60,EA,master,Office Product,2025,2025,,
+amz:bubly sparkling water variety pack 18 count,amazon,"Bubly Sparkling Water, Variety Pack, 18 Count",n,Bubly Sparkling Water,1,EA,,Grocery,2025,2025,excluded: Grocery item is not an office supply,
+amz:cable zip ties 8 inch black (bulk 1000 pack),amazon,"Cable Zip Ties, 8 Inch, Black (Bulk 1000 Pack)",n,Cable Zip Ties,1,EA,,Tools & Home Improvement,2025,2025,excluded by the office manager in 2025,
+amz:expo low-odor dry erase markers chisel tip assorted 48/pack,amazon,"EXPO Low-Odor Dry Erase Markers, Chisel Tip, Assorted, 48/Pack",y,EXPO Dry Erase Markers Assorted,48,EA,master,Office Product,2025,2025,,
+amz:hammermill copy paper 8.5 x 11 500 sheets/ream 10 reams/carton,amazon,"Hammermill Copy Paper, 8.5 x 11, 500 Sheets/Ream, 10 Reams/Carton",y,Hammermill Copy Paper 8.5x11,10,RM,master,Office Product,2025,2025,purchase unit is the carton: 10 reams per carton,
+amz:kleenex professional facial tissue display pack of 6,amazon,"Kleenex Professional Facial Tissue, Display Pack of 6",y,Kleenex Professional Facial Tissue,6,EA,master,"Business, Industrial, & Scientific Supplies Basic",2025,2025,,
+amz:post-it notes 3 x 3 inches canary yellow 12 pads,amazon,"Post-it Notes, 3 x 3 Inches, Canary Yellow, 12 Pads",y,Post-it Notes 3x3 Yellow,12,EA,master,Office Product,2025,2025,,
+amz:scotch magic tape 3/4 x 1000 inches 6 rolls,amazon,"Scotch Magic Tape, 3/4 x 1000 Inches, 6 Rolls",y,Scotch Magic Tape 3/4in,6,EA,master,Office Product,2025,2025,,
+amz:sharpie permanent markers fine point assorted 12 count,amazon,"Sharpie Permanent Markers, Fine Point, Assorted, 12 Count",y,Sharpie Permanent Markers Assorted,24,EA,master,Office Product,2025,2025,title says 12 Count; box actually holds two dozen; confirmed against invoice,
+pbs:PBS9001,preferred,Letterhead Printed 2 Colour,y,Letterhead Printed 2 Colour,1,EA,master,,2025,2025,,
+pbs:SAN30001,preferred,Permanent Marker Fine Point Black,y,Permanent Marker Fine Point Black,1,EA,master,,2025,2025,,
+pbs:UNV21200,preferred,Copy Paper 8.5 x 11 20lb White,y,Preferred Copy Paper 8.5x11 White,10,EA,master,,2025,2025,,
+pbs:UNV35668,preferred,Binder Clips Medium Black,y,Binder Clips Medium Black,100,EA,master,,2025,2025,,

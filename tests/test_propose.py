@@ -194,6 +194,29 @@ def test_the_merged_rows_match_the_shared_fixture(queue_rows):
     assert rows == expected["rows"]
 
 
+def test_display_name_is_carried_when_the_model_returns_one():
+    rows = P.merge_proposals(
+        [{"key": "k"}],
+        [{"key": "k", "display_name": "Avery Name Tag Inserts", "confidence": "high"}],
+        "f",
+    )
+    assert rows[0]["display_name"] == "Avery Name Tag Inserts"
+
+
+def test_display_name_past_40_characters_is_capped():
+    rows = P.merge_proposals(
+        [{"key": "k"}],
+        [{"key": "k", "display_name": "A" * 60, "confidence": "high"}],
+        "f",
+    )
+    assert len(rows[0]["display_name"]) == 40
+
+
+def test_no_display_name_from_the_model_leaves_it_blank():
+    rows = P.merge_proposals([{"key": "k"}], [{"key": "k", "confidence": "high"}], "f")
+    assert rows[0]["display_name"] == ""
+
+
 def test_a_proposal_for_a_key_that_was_never_sent_is_dropped(queue_rows):
     rows = P.merge_proposals(
         queue_rows,
