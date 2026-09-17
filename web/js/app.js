@@ -15,6 +15,7 @@ import {
   sequenceRatio, casefold, cmpCodePoint,
 } from "./pipeline.js";
 import { mountResults } from "./screens/results.js";
+import { mountPrice } from "./screens/price.js";
 import { mount as mountDrop } from "./screens/drop.js";
 
 window.__supplytrackReady = true;
@@ -617,6 +618,31 @@ export function downloadTables(kind) {
   }
 }
 
+/* ───────────────────────────── theme ───────────────────────────── */
+
+/** Ported from v1 unchanged. Never stores anything except the theme and Top N (adapter-contract.md). */
+function wireTheme() {
+  const toggle = document.getElementById("theme-toggle");
+  const icon = document.getElementById("theme-icon");
+  if (!toggle || !icon) return;
+  const apply = (theme) => {
+    document.documentElement.dataset.bsTheme = theme;
+    const dark = theme === "dark";
+    icon.className = `bi ${dark ? "bi-sun-fill" : "bi-moon-fill"} fs-5`;
+    toggle.setAttribute("aria-pressed", String(dark));
+    const label = toggle.querySelector(".visually-hidden");
+    if (label) label.textContent = dark ? "Switch to light mode" : "Switch to dark mode";
+  };
+  let saved = null;
+  try { saved = localStorage.getItem("supplytrack.theme"); } catch { /* private mode */ }
+  apply(saved || (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  toggle.addEventListener("click", () => {
+    const next = document.documentElement.dataset.bsTheme === "dark" ? "light" : "dark";
+    apply(next);
+    try { localStorage.setItem("supplytrack.theme", next); } catch { /* fine */ }
+  });
+}
+
 /* ───────────────────────────── boot ───────────────────────────── */
 
 const api = {
@@ -629,5 +655,7 @@ loadLogicModules.__ready = loadLogicModules().then((ok) => {
   return ok;
 });
 
+wireTheme();
 mountResults(api);
+mountPrice(api);
 mountDrop(api);
