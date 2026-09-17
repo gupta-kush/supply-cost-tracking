@@ -48,28 +48,15 @@
       <span class="ms-auto caption" id="load-state">Nothing loaded yet</span>
     </div>
     <div class="card-body">
-      <p class="step-note">
-        Pick the exports for one year. They are read in this tab and nothing is sent anywhere.
-        Check the row counts and the date range below before moving on.
-      </p>
       <div class="row g-3">
         <div class="col-12">
           <div class="dropzone" data-for="file-input">
             <label class="form-label fw-semibold" for="file-input">Files <span class="text-danger">*</span></label>
-            <div class="caption caption-plain mb-2">
-              Everything for the run, in one box. .xlsx or .csv, one file or several.
-            </div>
             <input class="form-control" type="file" id="file-input" accept=".xlsx,.csv" data-kind="files" multiple>
-            <div class="file-note caption caption-plain mt-2" id="note-files">Drop the files here or choose them</div>
             <div class="caption caption-plain mt-2">
-              Add the working workbook as it is kept, the Amazon .csv, or each export saved as its
-              own file. On a returning year, also add last year's report workbook, or the item
-              master and prices files. Every sheet of every file is scanned and recognised by its
-              columns, so it does not matter how many files you drop or in what order.
+              Drop files here or choose them. Each pick adds to the list below.
             </div>
-            <div class="caption caption-plain mt-1">
-              Not the FINAL workbook: it holds only the finished table, not the order lines.
-            </div>
+            <div id="file-list" class="file-chips mt-2"></div>
           </div>
         </div>
       </div>
@@ -83,7 +70,7 @@
         <div class="col-6 col-md-3 col-xl-2">
           <label class="form-label" for="top-n">Top N</label>
           <input class="form-control" type="number" id="top-n" min="1" max="200" step="1" value="25" inputmode="numeric">
-          <div class="caption caption-plain mt-1">Rows on the comparison sheet. Changing it re-cuts the ranking and the price grid.</div>
+          <div class="caption caption-plain mt-1">Rows on the comparison sheet.</div>
         </div>
       </div>
 
@@ -107,10 +94,6 @@
       <span class="ms-auto caption" id="review-state">Load the files first</span>
     </div>
     <div class="card-body">
-      <p class="step-note">
-        Every item the tool has not seen before, blocking rows first. Set include and how many
-        units come in one pack, then confirm. Step 3 stays locked while any blocking row is left.
-      </p>
       <div id="queue-breakdown" class="summary-strip mb-3"></div>
       <div id="review-change" class="mb-3"></div>
       <div class="row g-2 align-items-end mb-3">
@@ -132,21 +115,18 @@
           <p class="caption caption-plain mb-0" id="review-impact"></p>
         </div>
       </div>
-      <details class="ai-panel mb-3" id="ai-panel">
-        <summary>Advanced: AI suggestions</summary>
+      <div class="ai-panel mb-3" id="ai-panel">
+        <div class="ai-panel-head">
+          <span class="fw-semibold">AI suggestions</span>
+          <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">Optional</span>
+        </div>
         <div class="ai-panel-body">
-          <p class="caption caption-plain">
-            Asks a model to fill in the suggestion columns for rows the regular expressions
-            could not read, such as "5 Dozen" or a carton counted in reams. It fills
-            suggestions only. You still confirm or accept them below, exactly as you would
-            the tool's own.
-          </p>
           <div class="row g-2 align-items-end">
             <div class="col-6 col-lg-3">
               <label class="form-label" for="ai-provider">Provider</label>
               <select class="form-select" id="ai-provider">
-                <option value="anthropic">Anthropic</option>
                 <option value="gemini">Gemini</option>
+                <option value="anthropic">Anthropic (needs org setting)</option>
               </select>
             </div>
             <div class="col-6 col-lg-3">
@@ -167,8 +147,7 @@
             </div>
             <div class="col-12">
               <p class="caption caption-plain mb-0" id="ai-key-note">
-                Kept in memory for this visit only. Use your own key; nothing is stored or sent
-                anywhere except the provider you chose.
+                Your own key, held for this visit only and never stored.
               </p>
             </div>
           </div>
@@ -180,7 +159,7 @@
           </div>
           <div id="ai-result" class="mt-3"></div>
         </div>
-      </details>
+      </div>
 
       <div class="table-wrap">
         <table class="table table-sm table-hover align-middle app-table" id="review-table">
@@ -190,11 +169,6 @@
         </table>
       </div>
       <datalist id="canonical-names"></datalist>
-      <p class="caption caption-plain mb-0 mt-2">
-        Confirm selected records your pack size as confirmed. Accept suggestions for now records it as
-        proposed, which still counts but stays flagged until somebody confirms it. Use every suggestion
-        only fills the boxes in the rows on screen; nothing is written until you confirm or accept.
-      </p>
     </div>
   </section>
 
@@ -205,10 +179,6 @@
       <span class="ms-auto caption" id="rank-state">Clear the blocking rows first</span>
     </div>
     <div class="card-body">
-      <p class="step-note">
-        Read-only. Check the top rows and their pack sizes before pricing them. Warnings name the
-        items they are about, and Review these filters step 2 down to those items.
-      </p>
       <div id="rank-summary" class="summary-strip mb-3"></div>
       <div id="rank-moved" class="mb-3"></div>
       <div id="rank-findings" class="mb-3 always-on"></div>
@@ -230,10 +200,6 @@
       <span class="ms-auto caption" id="prices-state">Ranking has to run first</span>
     </div>
     <div class="card-body">
-      <p class="step-note">
-        Type the price per each for every vendor you have a quote for, and set the status beside it.
-        Prices from the file you loaded are already filled in, so you only have to fill the gaps.
-      </p>
       <div id="price-coverage" class="d-flex flex-wrap gap-2 mb-3"></div>
       <div id="price-new" class="mb-3"></div>
       <div id="price-problems" class="mb-3"></div>
@@ -255,10 +221,6 @@
       <span class="ms-auto caption" id="download-state">Nothing to download yet</span>
     </div>
     <div class="card-body">
-      <p class="step-note">
-        What each file holds is listed below, with every failing and warning check above it. The
-        report stays disabled while any check is failing.
-      </p>
       <div id="download-findings" class="mb-3 always-on"></div>
       <h3 class="caption mb-2">What you are about to download</h3>
       <div id="download-files" class="mb-3"></div>
@@ -273,9 +235,7 @@
       </div>
       <p class="caption caption-plain mt-3 mb-0" id="dl-report-reason"></p>
       <p class="caption caption-plain mt-2 mb-0">
-        Keep the report workbook. Next year, upload it together with the new order export and
-        nothing else is needed: it carries the item master and the prices on sheets of its own.
-        The three CSV buttons are there if you would rather keep those files separately.
+        Keep the report workbook: it carries the item master and the prices forward to next year.
       </p>
     </div>
   </section>

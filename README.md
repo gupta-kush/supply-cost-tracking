@@ -152,9 +152,12 @@ hand-filled queue - `--apply ... --proposed` if nobody has checked it yet. Full 
 how to read the proposals: `docs/spec.md` section 4.2, `src/skills/supply-top25/SKILL.md`
 section 2.
 
-The same pass is also on the page: step 2 (Review) has an "Advanced: AI suggestions" disclosure,
-closed by default, with a provider, a model, a scope (blocking rows only or every queued row) and
-a password-type key field kept in memory for the visit only. It sends the same allow-listed
+The same pass is also on the page: step 2 (Review) has an "AI suggestions" row, badged
+*Optional*, with a provider, a model, a scope (blocking rows only or every queued row) and
+a password-type key field kept in memory for the visit only. The page defaults to Gemini,
+which answers a browser request today; Anthropic needs the key owner's organisation to allow
+browser requests, which is tabled pending a security review, so the page marks it and the
+error message names the way round it. The CLI is unaffected and still defaults to Anthropic. It sends the same allow-listed
 fields and shows them before the click; answers still only reach the master through Confirm
 selected or Accept suggestions for now. Not something to hand to the office manager: it is for the owner's
 own key. See `docs/webapp-spec.md` section 9.

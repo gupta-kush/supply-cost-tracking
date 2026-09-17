@@ -720,20 +720,18 @@ function renderLoad() {
       ? `${plural(state.lines.length, "order line")} read`
       : (anyFile ? "Ready to read" : "Nothing loaded yet");
 
-  const note = $("#note-files");
+  const list = $("#file-list");
   const zone = document.querySelector(`.dropzone[data-for="file-input"]`);
-  if (note && zone) {
-    if (f.length) {
-      note.textContent = f
-        .map((file) => `${file.name} (${Math.round(file.size / 1024)} KB)`)
-        .join(", ");
-      zone.classList.add("is-loaded");
-    } else {
-      // Put the prompt back when the box is emptied, rather than leaving the
-      // name of a file that is no longer loaded.
-      note.textContent = "Drop the files here or choose them";
-      zone.classList.remove("is-loaded");
-    }
+  if (list && zone) {
+    zone.classList.toggle("is-loaded", f.length > 0);
+    list.innerHTML = !f.length ? "" : f.map((file) =>
+      `<span class="file-chip">${esc(file.name)}` +
+      `<span class="file-chip-size">${Math.round(file.size / 1024)} KB</span>` +
+      `<button type="button" class="file-chip-x" data-remove="${esc(fileId(file))}" ` +
+      `title="Remove this file"><span aria-hidden="true">&times;</span>` +
+      `<span class="visually-hidden">Remove ${esc(file.name)}</span></button></span>`
+    ).join("") +
+      `<button type="button" class="btn btn-link btn-sm p-0 ms-1" data-remove="*">Remove all</button>`;
   }
 
   const box = $("#load-summary");
@@ -1112,8 +1110,12 @@ function renderSelectionImpact() {
  * logged, and gone on reload.
  */
 
+// Anthropic only answers a browser when the key owner's organisation has the
+// browser-request setting on, and that is tabled pending a security review. Gemini
+// answers one today, so it is the page's default; the CLI `supplytrack propose`
+// keeps Anthropic as its own default, where the setting does not apply.
 function aiVendor() {
-  return $("#ai-provider")?.value || "anthropic";
+  return $("#ai-provider")?.value || "gemini";
 }
 
 /** The rows the chosen scope would send, with the Preferred pack code attached. */
@@ -1214,10 +1216,7 @@ function renderAiPanel() {
           "the prompt is fetched when you press Propose"),
   ].join("");
 
-  fields.textContent =
-    "Each row sends only these fields: " + suggestModule.SENT_FIELDS.join(", ") +
-    ". The account user, email and payment columns from the export are not included: they are " +
-    "dropped when the files are read and never reach this page.";
+  fields.textContent = "Sends only: " + suggestModule.SENT_FIELDS.join(", ") + ".";
 
   if (!state.ai.busy) {
     // A queue with nothing blocking left is the common case by the end of a session, and a
@@ -1240,10 +1239,10 @@ function renderAiResult() {
     // suggest.js phrases a rejected request as "...refused the request (401). ...", so this is
     // the provider's own status code, not a guess at one. The line below is added after it,
     // never in place of it.
-    const corsNote = /\(401\)/.test(run.error)
-      ? `<div class="mt-1">For Anthropic keys, a 401 that mentions CORS means the ` +
-        `organisation's Console setting that allows browser requests is off. The key's owner ` +
-        `needs to turn it on.</div>`
+    const corsNote = /\(401\)/.test(run.error) && /cors/i.test(run.error)
+      ? `<div class="mt-1">That is the Anthropic organisation refusing browser requests, ` +
+        `not a fault in this page. Switch the provider to Gemini, which answers a browser ` +
+        `today, or run <code>supplytrack propose</code> outside the browser.</div>`
       : "";
     box.innerHTML =
       `<div class="change-note"><span class="caption">The model did not answer</span>` +
@@ -2012,35 +2011,64 @@ function resetAll() {
 
 /* ───────────────────────────── wiring ───────────────────────────── */
 
-/** The one box holds a single list of files; each can be a workbook or a .csv. */
-function takeFiles(input, fileList) {
-  state.files = Array.from(fileList || []);
+/**
+ * The one box holds one list of files, and every pick or drop *adds* to it.
+ *
+ * A file picker can only select inside one folder at a time, and a second pick used to
+ * replace the first, so the export and last year's report could not both be loaded
+ * unless they sat side by side. Adding instead of replacing is what makes the box hold
+ * a run's worth of files however they arrive. Same name, size and timestamp is treated
+ * as the same file so a repeated pick does not double it up.
+ */
+function fileId(file) {
+  return `${file.name}|${file.size}|${file.lastModified}`;
+}
+
+function addFiles(fileList) {
+  const seen = new Set(state.files.map(fileId));
+  let added = 0;
+  for (const file of Array.from(fileList || [])) {
+    const id = fileId(file);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    state.files.push(file);
+    added += 1;
+  }
+  return added;
+}
+
+function removeFile(id) {
+  state.files = state.files.filter((file) => fileId(file) !== id);
 }
 
 function wireFileInputs() {
   for (const input of $$('input[type="file"]')) {
     input.addEventListener("change", () => {
-      takeFiles(input, input.files);
+      addFiles(input.files);
+      // Picking the same file twice must still fire `change`, which it only does if the
+      // input is emptied first. The page owns the list now, not the input.
+      input.value = "";
       renderLoad();
     });
   }
   for (const zone of $$(".dropzone")) {
-    const input = document.getElementById(zone.dataset.for);
     const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
     zone.addEventListener("dragover", (e) => { stop(e); zone.classList.add("is-over"); });
     zone.addEventListener("dragleave", (e) => { stop(e); zone.classList.remove("is-over"); });
     zone.addEventListener("drop", (e) => {
       stop(e);
       zone.classList.remove("is-over");
-      const dropped = Array.from(e.dataTransfer?.files || []);
-      if (!dropped.length) return;
-      const dt = new DataTransfer();
-      for (const file of input.multiple ? dropped : dropped.slice(0, 1)) dt.items.add(file);
-      input.files = dt.files;
-      takeFiles(input, dt.files);
+      addFiles(e.dataTransfer?.files);
       renderLoad();
     });
   }
+  $("#file-list")?.addEventListener("click", (e) => {
+    const button = e.target.closest("[data-remove]");
+    if (!button) return;
+    if (button.dataset.remove === "*") state.files = [];
+    else removeFile(button.dataset.remove);
+    renderLoad();
+  });
 }
 
 function wireReview() {

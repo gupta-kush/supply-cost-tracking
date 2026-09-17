@@ -47,15 +47,6 @@ body {
   letter-spacing: 0;
 }
 
-/* A short working note under a step title, or beside a control. Sentence case, body colour
-   at a smaller size, so it reads as instruction rather than as chrome. */
-.step-note {
-  font-size: 0.875rem;
-  color: var(--bs-secondary-color);
-  max-width: 62rem;
-  margin-bottom: 0.9rem;
-}
-
 /* ─────────────────────────── summary strips ─────────────────────────── */
 
 /* The before-and-after line for a step: a row of small fact chips. */
@@ -283,6 +274,41 @@ body {
   margin-bottom: 0.1rem;
 }
 
+.file-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.3rem 0.15rem 0.55rem;
+  font-size: 0.8125rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 2rem;
+  background-color: var(--bs-tertiary-bg);
+}
+
+.file-chip-size {
+  color: var(--bs-secondary-color);
+}
+
+.file-chip-x {
+  border: 0;
+  background: none;
+  line-height: 1;
+  padding: 0 0.25rem;
+  color: var(--bs-secondary-color);
+  cursor: pointer;
+}
+
+.file-chip-x:hover {
+  color: var(--bs-danger);
+}
+
 /* ─────────────────────────── tables ─────────────────────────── */
 
 .table-wrap {
@@ -476,14 +502,12 @@ body {
   background-color: var(--bs-tertiary-bg);
 }
 
-.ai-panel > summary {
-  cursor: pointer;
+.ai-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: var(--bs-secondary-color);
-}
-
-.ai-panel[open] > summary {
   border-bottom: 1px solid var(--bs-border-color);
 }
 
