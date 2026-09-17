@@ -380,55 +380,95 @@ body {
   padding: 0.15rem 0.4rem;
 }
 
-.cell-suggestion {
+/* ─────────────────────────── review table ─────────────────────────── */
+
+/* Six columns that fit one screen. Each suggestion sits under the control it fills, so
+   nothing has to be read across a horizontal scroll. Widths are percentages because the
+   table is laid out fixed: without that, one long product title stretches its column and
+   squeezes every control. */
+
+#review-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.w-pick { width: 2.5rem; }
+.w-title { width: 30%; }
+.w-inc { width: 5.5rem; }
+.w-upp { width: 9.5rem; }
+.w-name { width: auto; }
+.w-decide { width: 7.5rem; }
+
+/* Two lines of title is enough to recognise a product; the rest is on the tooltip. Left
+   unclamped, a single Amazon title runs to six lines and the row is taller than the box. */
+.item-title {
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.item-meta {
+  font-size: 0.75rem;
   color: var(--bs-secondary-color);
+  margin-top: 0.15rem;
+}
+
+.upp-pair {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.upp-pair input { min-width: 0; }
+.upp-pair select { width: 4.25rem; flex: none; }
+
+.note-input {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.suggests {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.suggests-none {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+/* A chip is the suggestion and the button that applies it in one thing, rather than a
+   value with a separate "use" link beside it. The dashed edge is what marks it as
+   something waiting to be put in the box above, which is why no cell needs the word
+   "suggested" on it; the line above the table says that once. */
+.suggest-chip {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: left;
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 2rem;
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  cursor: pointer;
 }
 
-.w-name { min-width: 15rem; }
-.w-title { min-width: 18rem; max-width: 28rem; }
-.w-upp { width: 6rem; }
-.w-unit { width: 6rem; }
-.w-inc { width: 5rem; }
-.w-note { min-width: 10rem; }
-
-/* The review table is wider than any screen, so the two columns a person works from stay
-   put while the middle scrolls: the item on the left, the Confirm buttons on the right.
-   Only thead and tbody cells are pinned - the grouping rows keep their full width. */
-
-#review-table thead th:first-child,
-#review-table tbody td:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  width: 3rem;
-  min-width: 3rem;
-  background-color: var(--bs-body-bg);
+.suggest-chip:hover,
+.suggest-chip:focus-visible {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
 }
 
-#review-table thead th:nth-child(2),
-#review-table tbody td:nth-child(2) {
-  position: sticky;
-  left: 3rem;
-  z-index: 3;
-  background-color: var(--bs-body-bg);
-  box-shadow: inset -1px 0 0 var(--bs-border-color);
-}
-
-#review-table thead th:last-child,
-#review-table tbody td:last-child {
-  position: sticky;
-  right: 0;
-  z-index: 3;
-  background-color: var(--bs-body-bg);
-  box-shadow: inset 1px 0 0 var(--bs-border-color);
-}
-
-/* The header's own pinned cells sit above the pinned body cells they scroll over. */
-#review-table thead th:first-child,
-#review-table thead th:nth-child(2),
-#review-table thead th:last-child {
-  z-index: 5;
+#review-table thead th {
   background-color: var(--bs-tertiary-bg);
 }
 

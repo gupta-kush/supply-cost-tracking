@@ -815,21 +815,24 @@ function renderLoad() {
 
 /** The head is rebuilt from this template on every review render, so "checked" has to be
  *  passed in rather than left on the markup - otherwise a rebuild silently unchecks it. */
+/**
+ * Six columns, and every suggestion sits under the box it would fill.
+ *
+ * It was eleven until 2026-09-17, with each suggestion in a column of its own beside its
+ * control. That is wider than any screen, so the table scrolled sideways and the person
+ * reading it had to hold "Suggested" against "Include" four columns away. Pairing them
+ * vertically fits the table on one screen and puts the answer next to the question.
+ */
 function reviewHead(checked) {
   return `
 <tr>
-  <th scope="col" class="w-inc"><input type="checkbox" class="form-check-input" id="select-all"
+  <th scope="col" class="w-pick"><input type="checkbox" class="form-check-input" id="select-all"
       aria-label="Select every row shown"${checked ? " checked" : ""}></th>
   <th scope="col" class="w-title">Item</th>
   <th scope="col" class="w-inc">Include</th>
-  <th scope="col">Suggested</th>
-  <th scope="col" class="w-upp num">Units per pack</th>
-  <th scope="col">Candidates</th>
-  <th scope="col" class="w-unit">Unit</th>
-  <th scope="col" class="w-name">Canonical name</th>
-  <th scope="col">Suggested name</th>
-  <th scope="col" class="w-note">Note</th>
-  <th scope="col">Decision</th>
+  <th scope="col" class="w-upp">Units per pack</th>
+  <th scope="col" class="w-name">Counted as</th>
+  <th scope="col" class="w-decide">Decision</th>
 </tr>`;
 }
 
@@ -962,7 +965,7 @@ function renderReview() {
 
   if (!rows.length) {
     table.tBodies[0].innerHTML =
-      `<tr><td colspan="11" class="text-center py-4 caption caption-plain">` +
+      `<tr><td colspan="6" class="text-center py-4 caption caption-plain">` +
       (state.queueRows.length
         ? "Nothing matches that filter."
         : "Nothing to review. Every item in these files is already known.") +
@@ -981,7 +984,7 @@ function renderReview() {
     if (reason !== group) {
       group = reason;
       const blocking = BLOCKING_REASONS.has(reason);
-      html += `<tr class="group-row"><th colspan="11" scope="colgroup">` +
+      html += `<tr class="group-row"><th colspan="6" scope="colgroup">` +
         `<span class="badge rounded-pill ${blocking ? "bg-danger" : "bg-warning text-dark"} me-2">` +
         `${blocking ? "blocking" : "warning"}</span>${esc(reason)}</th></tr>`;
     }
@@ -1002,59 +1005,79 @@ function reviewRow(row, names) {
   const uppSuggestion = String(row.units_per_pack || "");
   const candidates = candidateParts(row);
 
-  const sel = (field, options, current) =>
+  const sel = (field, options, current, label) =>
     `<select class="form-select form-select-sm" data-edit="${field}" data-key="${esc(key)}"` +
-    ` aria-label="${esc(field)} for ${esc(row.raw_title || key)}">` +
-    options.map(([v, label]) =>
-      `<option value="${esc(v)}"${String(current) === String(v) ? " selected" : ""}>${esc(label)}</option>`
+    ` aria-label="${esc(label)} for ${esc(row.raw_title || key)}">` +
+    options.map(([v, text]) =>
+      `<option value="${esc(v)}"${String(current) === String(v) ? " selected" : ""}>${esc(text)}</option>`
     ).join("") + `</select>`;
 
-  const useBtn = (field, v, label, title) =>
-    `<button type="button" class="btn btn-link btn-sm p-0 ms-1" data-use="${field}"` +
-    ` data-key="${esc(key)}" data-value="${esc(v)}" title="${esc(title || "Use this")}">${esc(label)}</button>`;
+  // A suggestion is a chip that fills the box above it. The reason is the chip's tooltip,
+  // which is where an "AI:" prefix shows up, so a proposed answer is never mistaken for one
+  // the regular expressions read straight out of the title.
+  const chip = (field, v, text, reason, extra = "") =>
+    `<button type="button" class="suggest-chip" data-use="${field}" data-key="${esc(key)}"` +
+    ` data-value="${esc(v)}" title="${esc(reason || "Use this")}">${esc(text)}${extra}</button>`;
+
+  const suggests = (inner) => (inner ? `<div class="suggests">${inner}</div>` : "");
+
+  const meta = [
+    row.amazon_category || "",
+    row.packs_in_year ? `${row.packs_in_year} bought` : "",
+  ].filter(Boolean).join(" · ");
+
+  const uppChips = candidates.length
+    ? candidates.map((c) => chip("units_per_pack", c.value, c.value, c.label)).join("")
+    : uppSuggestion
+      ? chip("units_per_pack", uppSuggestion, uppSuggestion, row.upp_reason)
+      : "";
+
+  const merges = nameSuggestion && names.has(nameSuggestion);
 
   return (
     `<tr data-key="${esc(key)}" class="${blocking ? "is-blocking" : ""}">` +
-    `<td><input type="checkbox" class="form-check-input" data-select="${esc(key)}"${checked}` +
+    `<td class="w-pick"><input type="checkbox" class="form-check-input" data-select="${esc(key)}"${checked}` +
       ` aria-label="Select ${esc(row.raw_title || key)}"></td>` +
-    `<td class="w-title"><div class="fw-semibold">${esc(row.raw_title || "")}</div>` +
-      `<div class="caption caption-plain">${esc(key)}` +
-      (row.amazon_category ? ` &middot; ${esc(row.amazon_category)}` : "") +
-      (row.packs_in_year ? ` &middot; ${esc(row.packs_in_year)} packs this year` : "") +
-      `</div></td>` +
-    `<td>${sel("include", [["", "-"], ["y", "y"], ["n", "n"]], value("include"))}</td>` +
-    `<td class="cell-suggestion">` +
-      (includeSuggestion
-        ? `<span title="${esc(row.include_reason || "")}">${esc(includeSuggestion)}</span>` +
-          useBtn("include", includeSuggestion, "use", row.include_reason)
-        : `<span class="caption caption-plain">no suggestion</span>`) +
+
+    `<td class="w-title">` +
+      `<div class="item-title" title="${esc(row.raw_title || "")}">${esc(row.raw_title || "")}</div>` +
+      (meta ? `<div class="item-meta">${esc(meta)}</div>` : "") +
     `</td>` +
-    `<td class="num"><input type="text" inputmode="numeric" class="form-control form-control-sm text-end"` +
-      ` data-edit="units_per_pack" data-key="${esc(key)}" value="${esc(value("units_per_pack"))}"` +
-      ` aria-label="Units per pack for ${esc(row.raw_title || key)}"></td>` +
-    `<td class="cell-suggestion">` +
-      (candidates.length
-        ? candidates.map((c) =>
-            `<div>${esc(c.label)}${useBtn("units_per_pack", c.value, "use", row.upp_reason)}</div>`).join("")
-        : uppSuggestion
-          ? `${esc(uppSuggestion)}${useBtn("units_per_pack", uppSuggestion, "use", row.upp_reason)}`
-          : `<span class="caption caption-plain">nothing in the title</span>`) +
+
+    `<td class="w-inc">` +
+      sel("include", [["", "-"], ["y", "y"], ["n", "n"]], value("include"), "include") +
+      suggests(includeSuggestion
+        ? chip("include", includeSuggestion, includeSuggestion, row.include_reason)
+        : "") +
     `</td>` +
-    `<td>${sel("unit_label", [["", "-"], ["EA", "EA"], ["RM", "RM"]], value("unit_label"))}</td>` +
-    `<td class="w-name"><input type="text" class="form-control form-control-sm" list="canonical-names"` +
+
+    `<td class="w-upp">` +
+      `<div class="upp-pair">` +
+        `<input type="text" inputmode="numeric" class="form-control form-control-sm text-end"` +
+        ` data-edit="units_per_pack" data-key="${esc(key)}" value="${esc(value("units_per_pack"))}"` +
+        ` aria-label="Units per pack for ${esc(row.raw_title || key)}">` +
+        sel("unit_label", [["", "-"], ["EA", "EA"], ["RM", "RM"]], value("unit_label"), "unit") +
+      `</div>` +
+      (uppChips
+        ? suggests(uppChips)
+        : `<div class="suggests"><span class="suggests-none">nothing in the title</span></div>`) +
+    `</td>` +
+
+    `<td class="w-name">` +
+      `<input type="text" class="form-control form-control-sm" list="canonical-names"` +
       ` data-edit="canonical_name" data-key="${esc(key)}" value="${esc(value("canonical_name"))}"` +
-      ` aria-label="Canonical name for ${esc(row.raw_title || key)}"></td>` +
-    `<td class="cell-suggestion">` +
-      (nameSuggestion
-        ? `<span title="${esc(row.canonical_reason || "")}">${esc(nameSuggestion)}</span>` +
-          (names.has(nameSuggestion) ? ` <i class="bi bi-link-45deg" title="merges with an existing item" aria-hidden="true"></i>` : "") +
-          useBtn("canonical_name", nameSuggestion, "use", row.canonical_reason)
-        : `<span class="caption caption-plain">no suggestion</span>`) +
-    `</td>` +
-    `<td class="w-note"><input type="text" class="form-control form-control-sm"` +
+      ` placeholder="Same as the title" ` +
+      ` aria-label="Name for ${esc(row.raw_title || key)}">` +
+      suggests(nameSuggestion
+        ? chip("canonical_name", nameSuggestion, nameSuggestion, row.canonical_reason,
+            merges ? ` <i class="bi bi-link-45deg" aria-hidden="true"></i>` : "")
+        : "") +
+      `<input type="text" class="form-control form-control-sm note-input"` +
       ` data-edit="note" data-key="${esc(key)}" value="${esc(value("note"))}"` +
-      ` aria-label="Note for ${esc(row.raw_title || key)}"></td>` +
-    `<td class="text-nowrap">` +
+      ` placeholder="Note (optional)" aria-label="Note for ${esc(row.raw_title || key)}">` +
+    `</td>` +
+
+    `<td class="w-decide">` +
       `<button type="button" class="btn btn-sm btn-primary" data-row-confirm="${esc(key)}">Confirm</button>` +
       `<button type="button" class="btn btn-sm btn-link" data-row-accept="${esc(key)}"` +
       ` title="Record the suggestions as proposed, not confirmed">Accept</button>` +
