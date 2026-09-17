@@ -1,18 +1,10 @@
 /* app.js - v2: state, the pipeline adapter, the screen router, Build the list.
  *
- * This module owns no DOM of its own beyond showing/hiding the four `[data-screen]` sections
- * and setting `window.__supplytrackReady`. Every screen under js/screens/ is mounted here by
- * injection - `mountResults(api)`, `mountDrop(api)`, and the same pattern for price and done
- * once they exist (STATUS.md, orchestrator ruling 2026-09-17) - so no screen imports app.js and
- * the two are never in a cycle; `screens/results-preview.html` drives the same mount function
- * against a fixture instead of a live run.
- *
- * Every call into the logic modules goes through the `pipe` adapter resolved once at boot:
- * `src/web/js/adapter-contract.md` lists the frozen surface, and section 7 of
- * webapp-v2-spec.md is the complete list of what may change in it for v2. `state.conflicts` and
- * `state.duplicates` are computed here from the master directly, with the pipeline's own
- * exported helpers, rather than parsed back out of finding messages - see `computeConflicts`
- * and `computeDuplicates` below.
+ * Owns no DOM beyond showing/hiding the four `[data-screen]` sections and setting
+ * `window.__supplytrackReady`. Screens are mounted here by injection (`mountResults(api)`,
+ * `mountDrop(api)`) so no screen imports app.js and the two are never in a cycle. Every call
+ * into the logic modules goes through the `pipe` adapter resolved once at boot -
+ * `src/web/js/adapter-contract.md` and webapp-v2-spec.md section 7 are the frozen surface.
  */
 
 import * as csvlib from "./csv.js";
@@ -87,14 +79,17 @@ let reportModule = null;
 let suggestModule = null;
 const adapterNotes = [];
 
-function bind(mod, target, key) {
-  if (mod && typeof mod[key] === "function") {
-    target[key] = mod[key];
-    return true;
-  }
-  adapterNotes.push(`pipeline.${key} is missing`);
-  return false;
-}
+// Section 7: an undecided row is parked with a blank include via makeMasterRow, never through
+// applyQueue, which rightly refuses a row that is not a complete decision.
+const PIPE_CALLS = [
+  "ingest", "classifyFiles", "carryRows", "buildQueue", "applyQueue", "rank",
+  "pricesTemplate", "pricesUpdate", "loadPrices", "validateAll", "masterToCsv",
+  "pricesToCsv", "runToJson", "masterFromRows", "sortMaster", "emptyMaster", "makeMasterRow",
+];
+const PIPE_REQUIRED = [
+  "ingest", "classifyFiles", "carryRows", "buildQueue", "applyQueue", "rank",
+  "validateAll", "makeMasterRow",
+];
 
 async function loadLogicModules() {
   let pipeline = null;
@@ -115,29 +110,12 @@ async function loadLogicModules() {
     adapterNotes.push(`suggest.js did not load: ${err && err.message}`);
   }
 
-  if (pipeline) {
-    for (const fn of [
-      "ingest", "classifyFiles", "carryRows", "buildQueue", "applyQueue", "rank",
-      "pricesTemplate", "pricesUpdate", "loadPrices", "validateAll",
-    ]) {
-      bind(pipeline, pipe, fn);
-    }
-    pipe.masterToCsv = pipeline.masterToCsv || null;
-    pipe.pricesToCsv = pipeline.pricesToCsv || null;
-    pipe.runToJson = pipeline.runToJson || null;
-    pipe.masterFromRows = pipeline.masterFromRows || null;
-    pipe.sortMaster = pipeline.sortMaster || null;
-    pipe.emptyMaster = pipeline.emptyMaster || null;
-    // webapp-v2-spec.md section 7: an undecided row is parked with a blank
-    // include via makeMasterRow, never through applyQueue, which rightly
-    // refuses a row that is not a complete decision.
-    pipe.makeMasterRow = pipeline.makeMasterRow || null;
+  for (const fn of PIPE_CALLS) {
+    if (pipeline && typeof pipeline[fn] === "function") pipe[fn] = pipeline[fn];
+    else adapterNotes.push(`pipeline.${fn} is missing`);
   }
 
-  const ready = [
-    "ingest", "classifyFiles", "carryRows", "buildQueue", "applyQueue", "rank",
-    "validateAll", "makeMasterRow",
-  ].every((fn) => typeof pipe[fn] === "function");
+  const ready = PIPE_REQUIRED.every((fn) => typeof pipe[fn] === "function");
   if (!ready) {
     state.error = `The calculation modules are not available. ${adapterNotes.join("; ")}`;
   }
@@ -198,32 +176,23 @@ function knownNames(master) {
   return names;
 }
 
-function readAsText(file) {
+function readFile(file, asText) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = () => resolve(String(r.result ?? ""));
+    r.onload = () => resolve(asText ? String(r.result ?? "") : r.result);
     r.onerror = () => reject(new Error(`${file.name} could not be read from disk.`));
-    r.readAsText(file);
-  });
-}
-
-function readAsArrayBuffer(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = () => reject(new Error(`${file.name} could not be read from disk.`));
-    r.readAsArrayBuffer(file);
+    if (asText) r.readAsText(file); else r.readAsArrayBuffer(file);
   });
 }
 
 /** One uploaded export file as {file, sheets:[{name, grid}]}. A .csv is one unnamed sheet. */
 async function readExportFile(file) {
   if (/\.csv$/i.test(file.name)) {
-    const grid = csvlib.parse(await readAsText(file));
+    const grid = csvlib.parse(await readFile(file, true));
     if (!grid.length) throw new Error(`${file.name} is empty.`);
     return { file: file.name, sheets: [{ name: "", grid }] };
   }
-  const sheets = await xlsxio.readSheets(await readAsArrayBuffer(file));
+  const sheets = await xlsxio.readSheets(await readFile(file, false));
   return { file: file.name, sheets };
 }
 
@@ -289,12 +258,9 @@ function movement(before, after, reason) {
   return entered.length || left.length ? { reason, entered, left } : null;
 }
 
-/**
- * Park every row auto-decide could not finish with a blank `include` - a
- * decision that has not been made, never a false one. `rank` then excludes it
- * with reason "no decision yet" (webapp-v2-spec.md section 7) and it is
- * requeued next run instead of vanishing.
- */
+/** Park every row auto-decide could not finish with a blank `include` (spec section 7): a
+ *  decision not made, never a false one. `rank` excludes it as "no decision yet" and it is
+ *  requeued next run instead of vanishing. */
 function parkOpenRows(open) {
   for (const row of open) {
     state.master.set(row.key, pipe.makeMasterRow({
@@ -314,23 +280,16 @@ function parkOpenRows(open) {
   }
 }
 
-/**
- * A volume figure for an undecided row so the panel can place it on the
- * leaderboard at the position its volume would earn. The true pack size is
- * exactly what is unknown, so this is a plain estimate - the single pack
- * candidate if there is one, otherwise 1 - never a value written anywhere.
- */
+/** A volume estimate so an undecided row can be placed on the leaderboard by the volume it
+ *  would earn. Never written anywhere; the true pack size is exactly what is unknown. */
 function estimatedEaches(row) {
   const packs = Number(row.packs_in_year) || 0;
   const units = Number(row.units_per_pack);
   return packs * (Number.isFinite(units) && units > 0 ? units : 1);
 }
 
-/**
- * The run object's `undecided_items` key names every parked row so the Done
- * screen and the report's Sources sheet can say how many are left. Absent,
- * not an empty list, when nothing is undecided - report parity depends on it.
- */
+/** `run.undecided_items` names every parked row for Done and the report's Sources sheet.
+ *  Absent, not an empty list, when nothing is undecided - report parity depends on it. */
 function updateUndecidedRun() {
   const base = state.run || {};
   if (state.open.length) {
@@ -344,16 +303,12 @@ function updateUndecidedRun() {
   }
 }
 
-/**
- * Pack-size disagreements between the master and a line's own title, for the
- * worth-a-look panel's second entry kind. Computed from the master directly
- * with the pipeline's own `uppCandidates`, not parsed from the
- * `UPP_TITLE_MISMATCH` finding text, so wording changes there cannot break
- * this. A simpler read than `checkMaster`'s own `contradictingCandidates`
- * (no allowance for two candidates whose product explains the pack size);
- * that trade only ever means an occasional row worth a second glance here
- * that the validator would not have warned about, never the reverse.
- */
+/** Pack-size disagreements between the master and a title, for the panel's second entry kind.
+ *  Computed from the master with pipeline.js's own `uppCandidates`, not parsed from the
+ *  `UPP_TITLE_MISMATCH` finding text, so wording drift there cannot break this. Simpler than
+ *  `checkMaster`'s own `contradictingCandidates` (no allowance for two candidates whose product
+ *  explains the size); the only cost is an occasional row flagged here the validator would not
+ *  have warned about, never the reverse. */
 function computeConflicts() {
   const keys = Array.from(new Set((state.lines || []).map((l) => l.key))).sort(cmpCodePoint);
   const conflicts = [];
@@ -375,13 +330,9 @@ function computeConflicts() {
   return conflicts;
 }
 
-/**
- * Near-duplicate canonical names among this run's included items, for the
- * panel's third entry kind. Same threshold `checkMaster` uses for
- * `NEAR_DUPLICATE_NAMES` (pipeline.js's own `NEAR_DUPLICATE`, 0.9), same
- * `sequenceRatio`, computed here so the shape is a pair of names, not a
- * sentence to parse.
- */
+/** Near-duplicate canonical names among this run's included items, for the panel's third entry
+ *  kind - same threshold and `sequenceRatio` as `checkMaster`'s `NEAR_DUPLICATE_NAMES`, as a
+ *  pair of names rather than a sentence to parse. */
 function computeDuplicates() {
   const used = new Set((state.lines || []).map((l) => l.key));
   const names = new Set();
@@ -399,11 +350,8 @@ function computeDuplicates() {
   return duplicates;
 }
 
-/**
- * The regex provider over every queued row, then the model over whatever it
- * left incomplete (or over everything, with "ask about everything"), then
- * autoAccept. webapp-v2-spec.md section 3, item 3.
- */
+/** Regex over every queued row, then the model over what it left incomplete (or everything,
+ *  with "ask about everything"), then autoAccept. Spec section 3, item 3. */
 async function autoDecide(queueRows) {
   if (!suggestModule) return { ready: [], open: queueRows };
   const names = knownNames(state.master);
@@ -470,11 +418,8 @@ export function go(screen, focus) {
 
 /* ───────────────────────────── build the list ───────────────────────────── */
 
-/**
- * webapp-v2-spec.md section 3, run end to end: read the files, auto-decide,
- * rank, price and validate, then show Results. `onStage(name, value)` fires
- * with each funnel figure as soon as it is known: lines, products, items, top.
- */
+/** Section 3, run end to end: read the files, auto-decide, rank, price, validate, show Results.
+ *  `onStage(name, value)` fires with each funnel figure as soon as it is known. */
 export async function buildList({ onStage } = {}) {
   const emit = (name, value) => { if (onStage) onStage(name, value); };
   state.busy = true;
@@ -533,11 +478,8 @@ export async function buildList({ onStage } = {}) {
 
 /* ───────────────────────────── decisions ───────────────────────────── */
 
-/**
- * One panel answer: a complete decision (`include`, `units_per_pack` and, for
- * a merge, `canonical_name`), always written as confirmed
- * (`upp_source = master`), and the ranking is redone. Section 2.2.
- */
+/** One panel answer (`include`, `units_per_pack`, and `canonical_name` for a merge), always
+ *  written as confirmed (`upp_source = master`); the ranking is redone. Section 2.2. */
 export function answer(key, fields) {
   const row =
     state.queueRows.find((r) => r.key === key) ||
@@ -554,10 +496,8 @@ export function answer(key, fields) {
   notify();
 }
 
-/**
- * Confirm one or more already-proposed (unconfirmed) pack sizes with no
- * change in value - the review-mode "one-click confirm" in the panel.
- */
+/** Confirm one or more already-proposed pack sizes unchanged - the review-mode one-click
+ *  confirm in the panel. */
 export function confirmProposed(keys) {
   const rows = (keys || []).map((k) => state.queueRows.find((r) => r.key === k)).filter(Boolean);
   if (!rows.length) return;
